@@ -1,0 +1,534 @@
+/* =========================================================
+   Yummyland — the box builder
+   Renders every step, keeps the live preview + price in sync
+   and persists the draft box between visits.
+   ========================================================= */
+window.YL = window.YL || {};
+
+(function (YL) {
+  'use strict';
+
+  var $ = YL.$, $$ = YL.$$;
+  var box, filter = 'all', showAll = false;
+
+  var STEPS = [
+    { id: 'step-size', t: 'Choose size', d: 'Pick the perfect box' },
+    { id: 'step-candy', t: 'Pick candy', d: 'Choose your favorites' },
+    { id: 'step-vibe', t: 'Choose vibe', d: 'Set the mood' },
+    { id: 'step-extras', t: 'Add extras', d: 'Notes & goodies' },
+    { id: 'step-review', t: 'Review', d: 'Check out your box' }
+  ];
+
+  /* ------------------------------------------------------------------ */
+  /* state helpers                                                       */
+  /* ------------------------------------------------------------------ */
+  function slots() { return YL.getSize(box.size).slots; }
+  function used() { return YL.boxSlotsUsed(box); }
+  function left() { return slots() - used(); }
+  function qtyOf(id) {
+    for (var i = 0; i < box.candies.length; i++) if (box.candies[i].id === id) return box.candies[i].qty;
+    return 0;
+  }
+  function hasExtra(id) { return box.extras.indexOf(id) > -1; }
+
+  function persist() { YL.saveDraft(box); }
+
+  function addCandy(id, silent) {
+    if (left() <= 0) {
+      if (!silent) YL.toast('Box is full — remove a candy or size up.');
+      return false;
+    }
+    var found = false;
+    box.candies.forEach(function (c) { if (c.id === id) { c.qty++; found = true; } });
+    if (!found) box.candies.push({ id: id, qty: 1 });
+    persist();
+    return true;
+  }
+
+  function removeCandy(id, all) {
+    box.candies = box.candies.reduce(function (acc, c) {
+      if (c.id !== id) { acc.push(c); return acc; }
+      if (!all && c.qty > 1) { c.qty--; acc.push(c); }
+      return acc;
+    }, []);
+    persist();
+  }
+
+  function setSize(id) {
+    box.size = id;
+    var over = used() - slots();
+    while (over > 0 && box.candies.length) {
+      var last = box.candies[box.candies.length - 1];
+      var take = Math.min(last.qty, over);
+      last.qty -= take;
+      over -= take;
+      if (last.qty === 0) box.candies.pop();
+    }
+    persist();
+  }
+
+  function fillRandom(pool) {
+    var list = (pool || YL.CANDIES.map(function (c) { return c.id; })).slice();
+    for (var i = list.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = list[i]; list[i] = list[j]; list[j] = t;
+    }
+    box.candies = [];
+    var i2 = 0;
+    while (left() > 0) {
+      addCandy(list[i2 % list.length], true);
+      i2++;
+      if (i2 > 200) break;
+    }
+    persist();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* render: step chips                                                  */
+  /* ------------------------------------------------------------------ */
+  function renderSteps() {
+    var host = $('#steps');
+    if (!host) return;
+    host.innerHTML = STEPS.map(function (s, i) {
+      return '<button class="step-chip" data-goto="' + s.id + '" data-step="' + i + '">' +
+        '<span class="step-chip__n">' + (i + 1) + '</span>' +
+        '<span><span class="step-chip__t">' + s.t + '</span>' +
+        '<span class="step-chip__d">' + s.d + '</span></span></button>' +
+        (i < STEPS.length - 1 ? '<span class="steps__sep"></span>' : '');
+    }).join('');
+    host.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-goto]');
+      if (!btn) return;
+      var el = document.getElementById(btn.dataset.goto);
+      if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
+  }
+
+  function markSteps() {
+    var chips = $$('.step-chip');
+    if (!chips.length) return;
+    var y = window.scrollY + 220;
+    var active = 0;
+    STEPS.forEach(function (s, i) {
+      var el = document.getElementById(s.id);
+      if (el && el.offsetTop <= y) active = i;
+    });
+    chips.forEach(function (c, i) {
+      c.classList.toggle('is-active', i === active);
+      c.classList.toggle('is-done', isStepDone(i) && i !== active);
+    });
+  }
+
+  function isStepDone(i) {
+    if (i === 0) return !!box.size;
+    if (i === 1) return used() > 0;
+    if (i === 2) return !!box.vibe;
+    if (i === 3) return box.extras.length > 0;
+    return used() === slots();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* render: step 1 — size                                               */
+  /* ------------------------------------------------------------------ */
+  function renderSize() {
+    var host = $('#step-size');
+    if (!host) return;
+    var pct = slots() ? Math.min(100, (used() / slots()) * 100) : 0;
+    host.innerHTML =
+      head(1, 'Step 1: Choose your box size', 'How much candy do you need?') +
+      '<div class="sizes">' + YL.SIZES.map(function (s) {
+        return '<button class="size' + (s.id === box.size ? ' is-on' : '') + '" data-size="' + s.id + '" ' +
+          'aria-pressed="' + (s.id === box.size) + '">' +
+          '<span class="tick">' + YL.icon('check') + '</span>' +
+          YL.boxIcon(0.5 + YL.SIZES.indexOf(s) * 0.16) +
+          '<b>' + s.name + '</b><span>' + s.serves + '</span>' +
+          '<span>Up to ' + s.slots + ' candies</span>' +
+          '<span class="price">' + YL.money(s.price) + '</span></button>';
+      }).join('') + '</div>' +
+      '<div class="capacity">' +
+      '<b>' + YL.getSize(box.size).name + '</b>' +
+      '<span class="meter"><i style="width:' + pct + '%"></i></span>' +
+      '<span class="count">' + used() + ' / ' + slots() + ' candies</span></div>';
+
+    $$('[data-size]', host).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var before = used();
+        setSize(b.dataset.size);
+        if (used() < before) YL.toast('Trimmed to fit your new box size.');
+        renderAll();
+      });
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* render: step 2 — candy                                              */
+  /* ------------------------------------------------------------------ */
+  function renderCandy() {
+    var host = $('#step-candy');
+    if (!host) return;
+    var list = YL.CANDIES.filter(function (c) {
+      return filter === 'all' || c.cats.indexOf(filter) > -1;
+    });
+    var visible = showAll ? list : list.slice(0, 12);
+    var full = left() <= 0;
+
+    host.innerHTML =
+      head(2, 'Step 2: Pick your candies', 'Tap to add — premium picks add a little extra.',
+        '<span class="badge">' + used() + ' / ' + slots() + ' picked</span>') +
+      '<div class="filters">' + YL.CATEGORIES.map(function (c) {
+        return '<button class="filter' + (c.id === filter ? ' is-on' : '') + '" data-filter="' + c.id + '">' + c.name + '</button>';
+      }).join('') + '</div>' +
+      '<div class="candies">' + visible.map(function (c) { return candyCard(c, full); }).join('') + '</div>' +
+      (list.length > 12 ? '<div class="more-row"><button class="btn btn--soft" data-toggle-more>' +
+        (showAll ? 'Show fewer candies' : 'Show more candies (' + (list.length - 12) + ')') + '</button></div>' : '') +
+      (list.length === 0 ? '<p class="center" style="color:var(--ink-40)">No candy in this category yet.</p>' : '');
+
+    $$('[data-filter]', host).forEach(function (b) {
+      b.addEventListener('click', function () { filter = b.dataset.filter; showAll = false; renderCandy(); });
+    });
+    var more = $('[data-toggle-more]', host);
+    if (more) more.addEventListener('click', function () { showAll = !showAll; renderCandy(); });
+
+    $$('[data-add]', host).forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (addCandy(b.dataset.add)) { renderAll(); flash(b.dataset.add); }
+      });
+    });
+    $$('[data-inc]', host).forEach(function (b) {
+      b.addEventListener('click', function () { if (addCandy(b.dataset.inc)) renderAll(); });
+    });
+    $$('[data-dec]', host).forEach(function (b) {
+      b.addEventListener('click', function () { removeCandy(b.dataset.dec); renderAll(); });
+    });
+  }
+
+  function candyCard(c, full) {
+    var q = qtyOf(c.id);
+    var tag = c.tag === 'premium'
+      ? '<span class="candy__tag">Premium</span>'
+      : (c.tag ? '<span class="candy__tag candy__tag--mint">' + c.tag + '</span>' : '');
+    var control = q > 0
+      ? '<div class="qty"><button data-dec="' + c.id + '" aria-label="Remove one ' + YL.esc(c.name) + '">' + YL.icon('minus') + '</button>' +
+        '<span>' + q + '</span>' +
+        '<button data-inc="' + c.id + '" aria-label="Add one more ' + YL.esc(c.name) + '">' + YL.icon('plus') + '</button></div>'
+      : '<button class="candy__add" data-add="' + c.id + '">' + YL.icon('plus') + ' Add' +
+        (c.extra ? ' · +' + YL.money(c.extra) : '') + '</button>';
+    return '<div class="candy' + (q ? ' is-on' : '') + (full && !q ? ' is-full' : '') + '" data-candy="' + c.id + '">' +
+      tag + '<div class="candy__art">' + YL.candyTile(c) + '</div>' +
+      '<b>' + c.name + '</b><small>' + c.flavor + '</small>' + control + '</div>';
+  }
+
+  function flash(id) {
+    var el = $('[data-candy="' + id + '"]');
+    if (el) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* render: step 3 — vibe                                               */
+  /* ------------------------------------------------------------------ */
+  function renderVibe() {
+    var host = $('#step-vibe');
+    if (!host) return;
+    host.innerHTML =
+      head(3, 'Step 3: Choose your vibe', 'We match the packing style, card and stickers to the occasion.',
+        '<span class="opt">Optional</span>') +
+      '<div class="vibes">' + YL.VIBES.map(function (v) {
+        return '<button class="vibe' + (v.id === box.vibe ? ' is-on' : '') + '" data-vibe="' + v.id + '">' +
+          YL.icon(v.icon) + '<b>' + v.name + '</b></button>';
+      }).join('') + '</div>';
+
+    $$('[data-vibe]', host).forEach(function (b) {
+      b.addEventListener('click', function () {
+        box.vibe = b.dataset.vibe;
+        persist();
+        if (box.vibe === 'surprise') {
+          fillRandom();
+          YL.toast('Surprise! We filled your box with a random mix.');
+        }
+        renderAll();
+      });
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* render: step 4 — extras                                             */
+  /* ------------------------------------------------------------------ */
+  function renderExtras() {
+    var host = $('#step-extras');
+    if (!host) return;
+    host.innerHTML =
+      head(4, 'Step 4: Add extras', 'Make your box even more special.', '<span class="opt">Optional</span>') +
+      '<div class="extras">' + YL.EXTRAS.map(function (e) {
+        return '<button class="extra' + (hasExtra(e.id) ? ' is-on' : '') + '" data-extra="' + e.id + '" ' +
+          'aria-pressed="' + hasExtra(e.id) + '">' +
+          '<span class="box">' + YL.icon('check') + '</span>' +
+          YL.icon(e.icon, 'ico') +
+          '<span><b>' + e.name + '</b><small>' + e.desc + '</small>' +
+          '<span class="cost">' + (e.price ? '+' + YL.money(e.price) : 'Free') + '</span></span></button>';
+      }).join('') + '</div>' +
+
+      (hasExtra('theme')
+        ? '<div class="swatches" data-swatches><span style="font-size:12.5px;font-weight:800">Box color:</span>' +
+          YL.BOX_THEMES.map(function (t) {
+            return '<button class="swatch' + (box.color === t.id ? ' is-on' : '') + '" data-color="' + t.id +
+              '" style="background:' + t.hex + '" title="' + t.name + '" aria-label="' + t.name + '"></button>';
+          }).join('') + '</div>'
+        : '') +
+
+      (hasExtra('note')
+        ? '<div class="note-field"><textarea maxlength="200" data-note placeholder="Write your gift note (we hand-write it on a Yummyland card)">' +
+          YL.esc(box.note || '') + '</textarea><span class="counter"><span data-note-count>' +
+          (box.note || '').length + '</span> / 200</span></div>'
+        : '') +
+
+      '<div class="note-field"><textarea maxlength="200" data-prefs placeholder="Candy preferences or allergies (optional)">' +
+      YL.esc(box.prefs || '') + '</textarea><span class="counter"><span data-prefs-count>' +
+      (box.prefs || '').length + '</span> / 200</span></div>';
+
+    $$('[data-extra]', host).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var id = b.dataset.extra;
+        if (hasExtra(id)) box.extras = box.extras.filter(function (x) { return x !== id; });
+        else box.extras.push(id);
+        persist();
+        renderAll();
+      });
+    });
+    $$('[data-color]', host).forEach(function (b) {
+      b.addEventListener('click', function () { box.color = b.dataset.color; persist(); renderAll(); });
+    });
+    bindText($('[data-note]', host), 'note', $('[data-note-count]', host));
+    bindText($('[data-prefs]', host), 'prefs', $('[data-prefs-count]', host));
+  }
+
+  function bindText(el, key, counter) {
+    if (!el) return;
+    el.addEventListener('input', function () {
+      box[key] = el.value;
+      if (counter) counter.textContent = el.value.length;
+      persist();
+      renderReview();
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* render: step 5 — review                                             */
+  /* ------------------------------------------------------------------ */
+  function renderReview() {
+    var host = $('#step-review');
+    if (!host) return;
+    var p = YL.boxPrice(box);
+    var size = YL.getSize(box.size);
+    var vibe = YL.VIBES.filter(function (v) { return v.id === box.vibe; })[0];
+    var extras = box.extras.map(function (id) { return YL.getExtra(id).name; });
+
+    host.innerHTML =
+      head(5, 'Step 5: Review your box', 'Everything look good? Then let us get packing.') +
+      '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px" class="review-grid">' +
+      '<div>' + YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'review' }) + '</div>' +
+      '<div>' +
+      row('Box size', size.name + ' · ' + size.serves, 'step-size') +
+      row('Candies', used() ? box.candies.map(function (c) {
+        return YL.getCandy(c.id).name + (c.qty > 1 ? ' ×' + c.qty : '');
+      }).join(', ') : 'Nothing picked yet', 'step-candy') +
+      row('Vibe', vibe ? vibe.name : '—', 'step-vibe') +
+      row('Extras', extras.length ? extras.join(', ') : 'None', 'step-extras') +
+      (box.note ? row('Gift note', '“' + YL.esc(box.note) + '”', 'step-extras') : '') +
+      (box.prefs ? row('Preferences', YL.esc(box.prefs), 'step-extras') : '') +
+      '<div class="lines">' +
+      line('Box price', YL.money(p.base)) +
+      line('Premium candy', p.premium ? YL.money(p.premium) : '$0.00') +
+      line('Extras', p.extras ? YL.money(p.extras) : '$0.00') +
+      '<div class="line line--total"><span>Estimated total</span><b>' + YL.money(p.total) + '</b></div>' +
+      '</div>' +
+      '<button class="btn btn--lg btn--block" data-add-cart style="margin-top:16px">' +
+      YL.icon('cart') + ' Add to cart</button>' +
+      '</div></div>';
+
+    $$('[data-jump]', host).forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.getElementById(b.dataset.jump).scrollIntoView({ block: 'start', behavior: 'smooth' });
+      });
+    });
+    var cta = $('[data-add-cart]', host);
+    if (cta) cta.addEventListener('click', addToCart);
+  }
+
+  function row(label, value, jump) {
+    return '<div style="display:flex;gap:10px;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line)">' +
+      '<span style="font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-40);flex:none">' + label + '</span>' +
+      '<span style="text-align:right;font-size:13.5px">' + value + '</span>' +
+      '<button class="link-btn" data-jump="' + jump + '">Edit</button></div>';
+  }
+  function line(label, value) {
+    return '<div class="line"><span>' + label + '</span><b>' + value + '</b></div>';
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* render: live preview panel                                          */
+  /* ------------------------------------------------------------------ */
+  function fillRatio() { return slots() ? used() / slots() : 0; }
+  function recipeOrNull() {
+    var r = YL.boxRecipe(box);
+    return r.length ? r : null;
+  }
+
+  function renderPanel() {
+    var host = $('#panel');
+    if (!host) return;
+    var p = YL.boxPrice(box);
+    var size = YL.getSize(box.size);
+    var theme = YL.BOX_THEMES.filter(function (t) { return t.id === box.color; })[0];
+    var pct = Math.min(100, fillRatio() * 100);
+
+    var chips = box.candies.map(function (c) {
+      var candy = YL.getCandy(c.id);
+      return '<span class="chip">' + YL.candyDot(candy, 22) + ' ' + candy.name + (c.qty > 1 ? ' ×' + c.qty : '') +
+        '<button class="x" data-drop="' + c.id + '" aria-label="Remove ' + YL.esc(candy.name) + '">' + YL.icon('x') + '</button></span>';
+    }).join('');
+    var openSlots = left();
+    if (openSlots > 0) {
+      chips += '<span class="chip chip--slot">+ ' + openSlots + ' slot' + (openSlots > 1 ? 's' : '') + ' free</span>';
+    }
+
+    host.innerHTML =
+      '<div class="panel__head"><h3>Your box preview</h3>' +
+      '<span class="badge">' + size.name.replace(' Box', '') + '</span></div>' +
+      '<div class="panel__stage">' + YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'panel' }) + '</div>' +
+      '<div class="panel__body">' +
+      '<div class="capacity" style="margin:0 0 14px"><b>' + used() + ' / ' + slots() + '</b>' +
+      '<span class="meter"><i style="width:' + pct + '%"></i></span>' +
+      '<span class="count">' + (openSlots > 0 ? openSlots + ' to go' : 'Full!') + '</span></div>' +
+      '<div class="chips">' + chips + '</div>' +
+      '<div class="lines">' +
+      line('Box (' + size.name + ')', YL.money(p.base)) +
+      line('Premium candy', p.premium ? YL.money(p.premium) : '$0.00') +
+      line('Extras' + (box.extras.length ? ' (' + box.extras.length + ')' : ''), p.extras ? YL.money(p.extras) : '$0.00') +
+      (theme && hasExtra('theme') ? line('Box color', theme.name) : '') +
+      '<div class="line line--total"><span>Total</span><b>' + YL.money(p.total) + '</b></div>' +
+      '<div class="line ' + (p.total >= YL.SHIPPING.freeOver ? 'line--free' : '') + '"><span>Shipping</span><b>' +
+      (p.total >= YL.SHIPPING.freeOver ? 'Free' : 'Calculated at checkout') + '</b></div>' +
+      '</div>' +
+      '<div class="panel__cta">' +
+      '<button class="btn btn--lg" data-add-cart>' + YL.icon('cart') + ' Add to cart</button>' +
+      '<button class="btn btn--ghost" data-save>' + YL.icon('heart') + ' Save my box</button>' +
+      '</div>' +
+      '<div class="guarantee">' + YL.icon('shield') +
+      '<span><b>100% happiness guarantee</b>Not happy? We will make it right.</span></div>' +
+      '</div>';
+
+    $$('[data-drop]', host).forEach(function (b) {
+      b.addEventListener('click', function () { removeCandy(b.dataset.drop, true); renderAll(); });
+    });
+    $('[data-add-cart]', host).addEventListener('click', addToCart);
+    $('[data-save]', host).addEventListener('click', function () {
+      YL.saveBox(box);
+      YL.toast('Box saved — find it any time on this device.');
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* render: inspiration / auto-build                                    */
+  /* ------------------------------------------------------------------ */
+  function renderInspo() {
+    var host = $('#inspo');
+    if (!host) return;
+    host.className = 'card inspo';
+    host.innerHTML =
+      '<div class="card__head" style="margin-bottom:8px"><div><h2 style="font-size:17px">Need inspiration?</h2>' +
+      '<p>Auto-build with one of our favourite mixes.</p></div></div>' +
+      YL.PRESETS.map(function (p) {
+        var sample = p.candies ? YL.getCandy(p.candies[0]) : YL.CANDIES[0];
+        return '<div class="inspo__row">' + YL.candyDot(sample, 34) +
+          '<span><b>' + p.name + '</b><small>' + p.desc + '</small></span>' +
+          '<button class="btn btn--soft btn--sm" data-preset="' + p.id + '">Auto-build</button></div>';
+      }).join('');
+
+    $$('[data-preset]', host).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var preset = YL.PRESETS.filter(function (p) { return p.id === b.dataset.preset; })[0];
+        fillRandom(preset.candies);
+        renderAll();
+        YL.toast(preset.name + ' box built — tweak anything you like.');
+        var el = document.getElementById('step-candy');
+        if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      });
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* add to cart                                                         */
+  /* ------------------------------------------------------------------ */
+  function addToCart() {
+    if (used() === 0) {
+      YL.toast('Pick at least one candy first!');
+      var el = document.getElementById('step-candy');
+      if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      return;
+    }
+    YL.addToCart(box, 1);
+    YL.toast('Added to cart — ' + YL.boxLabel(box) + '.');
+  }
+
+  /* ------------------------------------------------------------------ */
+  function head(n, title, sub, aside) {
+    return '<div class="card__head"><span class="card__num">' + n + '</span>' +
+      '<div><h2>' + title + '</h2><p>' + sub + '</p></div>' +
+      (aside ? '<span class="card__aside">' + aside + '</span>' : '') + '</div>';
+  }
+
+  function renderAll() {
+    renderSize();
+    renderCandy();
+    renderVibe();
+    renderExtras();
+    renderReview();
+    renderPanel();
+    markSteps();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* boot                                                                */
+  /* ------------------------------------------------------------------ */
+  YL.initBuilder = function () {
+    box = YL.getDraft();
+
+    /* ?box=movie-night loads a ready-made box into the builder */
+    var params = new URLSearchParams(location.search);
+    var pre = params.get('box');
+    if (pre) {
+      var pb = YL.getPrebuilt(pre);
+      if (pb) {
+        box = YL.emptyBox();
+        box.size = pb.size;
+        box.color = pb.color === 'pink' ? 'pink' : pb.color;
+        box.vibe = pb.vibe || 'me';
+        box.extras = (pb.extras || []).slice();
+        box.title = pb.name;
+        pb.candies.forEach(function (id) { addCandy(id, true); });
+        persist();
+      }
+    }
+    var presetId = params.get('preset');
+    if (presetId) {
+      var pr = YL.PRESETS.filter(function (p) { return p.id === presetId; })[0];
+      if (pr) fillRandom(pr.candies);
+    }
+
+    renderSteps();
+    renderInspo();
+    renderAll();
+
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () { markSteps(); ticking = false; });
+    }, { passive: true });
+
+    if (pre || presetId) {
+      var el = document.getElementById('builder');
+      if (el) setTimeout(function () { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 120);
+    }
+  };
+})(window.YL);

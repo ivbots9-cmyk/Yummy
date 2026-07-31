@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yummyland Candy — Build Your Own Candy Box</title>
+<meta name="description" content="Build your own candy box at Yummyland: pick your size, choose your favourite gummies, sour candy, chocolate and freeze dried treats, add extras and we pack it fresh.">
+<meta property="og:title" content="Yummyland Candy — Build Your Own Candy Box">
+<meta property="og:description" content="Your candy. Your way. Pick a size, fill it with your favourites and we pack it fresh.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='22' fill='%23ff2e8b'/><path d='M24 38C8 27 10 14 18 12c4.5-1 6 3 6 5 0-2 1.5-6 6-5 8 2 10 15-6 26z' fill='%23fff'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header id="site-header"></header>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="wrap hero__in">
+    <div>
+      <span class="badge">Packed fresh · Shipped nationwide</span>
+      <h1 style="margin-top:14px">Build your<span>own box.</span></h1>
+      <p class="lede">Choose your size, pick your favourite gummies, sour candy, chocolate and freeze dried treats,
+        add fun extras — and we&rsquo;ll pack it fresh just for you.</p>
+      <div class="hero__cta">
+        <a class="btn btn--lg" href="#builder">Start building</a>
+        <a class="btn btn--lg btn--ghost" href="boxes.html">Shop ready-made boxes</a>
+      </div>
+      <div class="hero__usps">
+        <div class="usp" id="usp-1"></div>
+        <div class="usp" id="usp-2"></div>
+        <div class="usp" id="usp-3"></div>
+      </div>
+    </div>
+    <div class="hero__art">
+      <div id="hero-box"></div>
+      <div class="float-badge">Made<br>to share <span aria-hidden="true">♥</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== BUILDER ==================== -->
+<section class="builder" id="builder">
+  <div class="wrap">
+    <div class="steps" id="steps"></div>
+    <div class="builder__grid">
+      <div>
+        <div class="card" id="step-size"></div>
+        <div class="card" id="step-candy"></div>
+        <div class="card" id="step-vibe"></div>
+        <div class="card" id="step-extras"></div>
+        <div class="card" id="step-review"></div>
+      </div>
+      <aside class="preview">
+        <div class="panel" id="panel"></div>
+        <div class="card" id="inspo" style="margin-top:20px"></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== HOW IT WORKS ==================== -->
+<section class="section section--tint" id="how">
+  <div class="wrap">
+    <div class="section__head">
+      <span class="eyebrow">Sweet and simple</span>
+      <h2>How it works</h2>
+      <p>From your screen to your door in five happy steps.</p>
+    </div>
+    <div id="how-list"></div>
+  </div>
+</section>
+
+<!-- ==================== POPULAR BOXES ==================== -->
+<section class="section">
+  <div class="wrap">
+    <div class="section__head">
+      <span class="eyebrow">Not sure where to start?</span>
+      <h2>Popular box ideas</h2>
+      <p>Customer favourites you can send as-is — or open in the builder and make them yours.</p>
+    </div>
+    <div id="popular-boxes"></div>
+    <div class="center" style="margin-top:28px"><a class="btn btn--ghost btn--lg" href="boxes.html">View all boxes</a></div>
+  </div>
+</section>
+
+<!-- ==================== OCCASIONS ==================== -->
+<section class="section section--tint">
+  <div class="wrap">
+    <div class="section__head"><h2>Perfect for any occasion</h2></div>
+    <div id="occasions"></div>
+  </div>
+</section>
+
+<!-- ==================== OFFICE BANNER ==================== -->
+<section class="section">
+  <div class="wrap">
+    <div class="banner">
+      <div>
+        <span class="badge" style="background:rgba(255,255,255,.25);color:#fff">For business</span>
+        <h2 style="margin:12px 0 10px">Candy boxes for offices, events &amp; teams</h2>
+        <p>From small offices to big events, Yummyland has the perfect candy solution for your team,
+          clients and guests. Custom branding, recurring refills and volume pricing available.</p>
+        <a class="btn btn--lg" href="about.html#office" style="margin-top:18px">Learn more</a>
+      </div>
+      <div class="banner__list" id="banner-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== REVIEWS ==================== -->
+<section class="section section--tint">
+  <div class="wrap">
+    <div class="section__head"><h2>What our yummy fans say</h2></div>
+    <div id="reviews"></div>
+  </div>
+</section>
+
+<!-- ==================== FAQ TEASER ==================== -->
+<section class="section">
+  <div class="wrap">
+    <div class="section__head"><h2>Good to know</h2></div>
+    <div id="faq"></div>
+    <div class="center" style="margin-top:22px"><a class="btn btn--ghost" href="faq.html">See all FAQs</a></div>
+  </div>
+</section>
+
+<footer id="site-footer"></footer>
+
+<script src="assets/js/art.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/pages.js"></script>
+<script src="assets/js/builder.js"></script>
+<script>
+  YL.initChrome('build');
+  YL.initBuilder();
+
+  document.getElementById('hero-box').innerHTML =
+    YL.boxArt({ color: 'pink', recipe: YL.mixedRecipe(), fill: 1, seed: 'hero' });
+
+  [['heart', 'Fresh &amp; delicious', 'Packed fresh to order'],
+   ['candy', 'Made your way', 'You choose everything'],
+   ['truck', 'Shipped fast', 'Free over $50, USA-wide']]
+    .forEach(function (u, i) {
+      document.getElementById('usp-' + (i + 1)).innerHTML =
+        YL.icon(u[0]) + '<span><b>' + u[1] + '</b><span>' + u[2] + '</span></span>';
+    });
+
+  document.getElementById('banner-list').innerHTML =
+    [['briefcase', 'Office deliveries'], ['party', 'Events &amp; pop-ups'],
+     ['gift', 'Corporate gifting'], ['cake', 'Birthday surprises']]
+      .map(function (b) { return '<div>' + YL.icon(b[0]) + b[1] + '</div>'; }).join('');
+
+  YL.renderHow('#how-list');
+  YL.renderPrebuilt('#popular-boxes', 4);
+  YL.renderOccasions('#occasions');
+  YL.renderReviews('#reviews', 3);
+  YL.renderFaq('#faq', 4);
+</script>
+</body>
+</html>

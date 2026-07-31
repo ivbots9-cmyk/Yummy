@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ, Shipping &amp; Returns — Yummyland Candy</title>
+<meta name="description" content="Answers about building your candy box, shipping times, returns and the Yummyland happiness guarantee.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='22' fill='%23ff2e8b'/><path d='M24 38C8 27 10 14 18 12c4.5-1 6 3 6 5 0-2 1.5-6 6-5 8 2 10 15-6 26z' fill='%23fff'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header id="site-header"></header>
+
+<section class="page-head">
+  <div class="wrap">
+    <span class="eyebrow">Help centre</span>
+    <h1>Questions? <span class="pink">Answers.</span></h1>
+    <p>Everything about building, shipping and loving your Yummyland box.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div id="faq"></div>
+  </div>
+</section>
+
+<section class="section section--tint" id="shipping">
+  <div class="wrap">
+    <div class="section__head"><h2>Shipping &amp; delivery</h2>
+      <p>We ship across the USA. Free standard shipping on orders over $50.</p></div>
+    <div id="shipping-list"></div>
+  </div>
+</section>
+
+<section class="section" id="returns">
+  <div class="wrap" style="max-width:780px">
+    <div class="section__head"><h2>Returns &amp; happiness guarantee</h2></div>
+    <div class="card" style="margin:0">
+      <p style="color:var(--ink-60);margin-top:0">Candy is a food product, so we cannot accept returns of opened boxes.
+        What we can do is make it right: if your box arrives damaged, melted, incomplete or simply not what you expected,
+        message us within <b>30 days</b> with your order number and a photo.</p>
+      <p style="color:var(--ink-60)">We will replace the box or refund you — your choice. No forms, no restocking fees,
+        no arguing about who is right. Unopened boxes can be returned within 14 days for a full refund.</p>
+      <a class="btn" href="about.html#contact">Contact the crew</a>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tint">
+  <div class="wrap center">
+    <h2 style="font-size:clamp(26px,3.4vw,38px);text-transform:uppercase">Still hungry for answers?</h2>
+    <p style="color:var(--ink-60);max-width:520px;margin:12px auto 22px">
+      Our candy crew replies within one business day — or just start building and ask as you go.</p>
+    <div class="hero__cta" style="justify-content:center">
+      <a class="btn btn--lg" href="index.html">Build your box</a>
+      <a class="btn btn--lg btn--ghost" href="about.html#contact">Contact us</a>
+    </div>
+  </div>
+</section>
+
+<footer id="site-footer"></footer>
+
+<script src="assets/js/art.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/pages.js"></script>
+<script>
+  YL.initChrome('faq');
+  YL.renderFaq('#faq');
+
+  document.getElementById('shipping-list').innerHTML = '<div class="how">' +
+    [['clock', 'Same-day packing', 'Order before 2pm and it ships today.'],
+     ['truck', 'Standard 2–5 days', '$4.99 flat, free over $50.'],
+     ['sparkle', 'Express 1–2 days', 'Available at checkout.'],
+     ['box', 'Order tracking', 'Tracking link the moment it leaves us.'],
+     ['shield', 'Safe arrival', 'Insulated packing in hot weather.']]
+      .map(function (q) {
+        return '<div class="how__item">' + YL.icon(q[0]) + '<b>' + q[1] + '</b><p>' + q[2] + '</p></div>';
+      }).join('') + '</div>';
+</script>
+</body>
+</html>

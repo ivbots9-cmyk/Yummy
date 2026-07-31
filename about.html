@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About &amp; Office Boxes — Yummyland Candy</title>
+<meta name="description" content="Meet Yummyland Candy: custom candy boxes packed fresh, plus office refills, event boxes and corporate gifting.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='22' fill='%23ff2e8b'/><path d='M24 38C8 27 10 14 18 12c4.5-1 6 3 6 5 0-2 1.5-6 6-5 8 2 10 15-6 26z' fill='%23fff'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header id="site-header"></header>
+
+<section class="page-head">
+  <div class="wrap">
+    <span class="eyebrow">Our story</span>
+    <h1>Candy that turns any moment <span class="pink">into a party</span></h1>
+    <p>Yummyland started with one simple idea: candy is better when you choose it yourself
+      and better still when you share it.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap" style="display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:center" id="story">
+    <div id="story-art"></div>
+    <div>
+      <h2 style="font-size:30px;text-transform:uppercase">Built one box at a time</h2>
+      <p style="color:var(--ink-60)">We packed our first boxes on a kitchen table for friends&rsquo; birthdays.
+        People kept asking for their own mix — more sour, less chocolate, extra gummy worms — so we built
+        a box builder that lets you decide every single piece.</p>
+      <p style="color:var(--ink-60)">Today our crew packs thousands of boxes for birthdays, offices,
+        weddings and just-because moments across the USA. Every box is still packed by hand,
+        checked by a human and sent out the same day it is made.</p>
+      <div class="hero__usps" style="margin-top:22px">
+        <div class="usp" id="a1"></div>
+        <div class="usp" id="a2"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tint" id="quality">
+  <div class="wrap">
+    <div class="section__head"><h2>Quality &amp; ingredients</h2>
+      <p>Good candy, handled properly. Here is what that means for us.</p></div>
+    <div id="quality-list"></div>
+  </div>
+</section>
+
+<section class="section" id="office">
+  <div class="wrap">
+    <div class="banner">
+      <div>
+        <span class="badge" style="background:rgba(255,255,255,.25);color:#fff">Office &amp; events</span>
+        <h2 style="margin:12px 0 10px">Candy for teams, clients and guests</h2>
+        <p>Recurring office refills, event boxes, branded corporate gifting and pop-up candy bars.
+          Tell us the headcount and the vibe — we handle the rest.</p>
+        <a class="btn btn--lg" href="#contact" style="margin-top:18px">Get a quote</a>
+      </div>
+      <div class="banner__list" id="office-list"></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tint">
+  <div class="wrap">
+    <div class="section__head"><h2>What our yummy fans say</h2></div>
+    <div id="reviews"></div>
+  </div>
+</section>
+
+<section class="section" id="contact">
+  <div class="wrap" style="max-width:720px">
+    <div class="section__head"><h2>Get in touch</h2>
+      <p>Office orders, events, wholesale or a question about your box — we answer within one business day.</p></div>
+    <form class="card" id="contact-form" style="margin:0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" class="cf-grid">
+        <label style="display:block"><span style="font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Name</span>
+          <input required type="text" style="width:100%;margin-top:6px;border:1.5px solid var(--line);border-radius:14px;padding:12px 15px;outline:0"></label>
+        <label style="display:block"><span style="font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">Email</span>
+          <input required type="email" style="width:100%;margin-top:6px;border:1.5px solid var(--line);border-radius:14px;padding:12px 15px;outline:0"></label>
+      </div>
+      <label style="display:block;margin-top:14px"><span style="font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase">How can we help?</span>
+        <textarea required rows="4" style="width:100%;margin-top:6px;border:1.5px solid var(--line);border-radius:14px;padding:12px 15px;outline:0;resize:vertical"></textarea></label>
+      <button class="btn btn--lg btn--block" style="margin-top:16px" type="submit">Send message</button>
+      <p style="font-size:12.5px;color:var(--ink-40);text-align:center;margin:12px 0 0">
+        Or email <b>hello@yummylandcandy.com</b> · (833) YUM-MLAND · Los Angeles, CA</p>
+    </form>
+  </div>
+</section>
+
+<footer id="site-footer"></footer>
+
+<script src="assets/js/art.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/pages.js"></script>
+<script>
+  YL.initChrome('about');
+
+  document.getElementById('story-art').innerHTML =
+    YL.boxArt({ color: 'pink', recipe: YL.mixedRecipe(), fill: 1, seed: 'story' });
+
+  [['heart', 'Hand-packed', 'Every single box'],
+   ['leaf', 'Fresh stock', 'Fast-moving inventory']]
+    .forEach(function (u, i) {
+      document.getElementById('a' + (i + 1)).innerHTML =
+        YL.icon(u[0]) + '<span><b>' + u[1] + '</b><span>' + u[2] + '</span></span>';
+    });
+
+  document.getElementById('quality-list').innerHTML = '<div class="how">' +
+    [['candy', 'Top brands', 'Names you know plus small-batch finds.'],
+     ['clock', 'Packed to order', 'Nothing sits waiting on a shelf.'],
+     ['shield', 'Sealed & safe', 'Food-safe packing, sealed for transit.'],
+     ['note', 'Allergen notes', 'Tell us what to avoid, we read every note.'],
+     ['heart', 'Happiness guarantee', '30 days to make it right.']]
+      .map(function (q) {
+        return '<div class="how__item">' + YL.icon(q[0]) + '<b>' + q[1] + '</b><p>' + q[2] + '</p></div>';
+      }).join('') + '</div>';
+
+  document.getElementById('office-list').innerHTML =
+    [['briefcase', 'Office deliveries'], ['party', 'Events &amp; pop-ups'],
+     ['gift', 'Brand activations'], ['truck', 'Recurring refills']]
+      .map(function (b) { return '<div>' + YL.icon(b[0]) + b[1] + '</div>'; }).join('');
+
+  YL.renderReviews('#reviews');
+
+  document.getElementById('contact-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    e.target.reset();
+    YL.toast('Thanks! The candy crew will be in touch.');
+  });
+</script>
+<style>
+  @media (max-width: 860px) {
+    #story { grid-template-columns: 1fr !important; }
+    .cf-grid { grid-template-columns: 1fr !important; }
+  }
+</style>
+</body>
+</html>

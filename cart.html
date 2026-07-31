@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Cart — Yummyland Candy</title>
+<meta name="description" content="Review your custom Yummyland candy boxes and check out.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='22' fill='%23ff2e8b'/><path d='M24 38C8 27 10 14 18 12c4.5-1 6 3 6 5 0-2 1.5-6 6-5 8 2 10 15-6 26z' fill='%23fff'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header id="site-header"></header>
+
+<section class="page-head">
+  <div class="wrap">
+    <h1>Your <span class="pink">cart</span></h1>
+    <p>Everything below is packed fresh on the day it ships.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:34px">
+  <div class="wrap cart-grid">
+    <div id="cart-items"></div>
+    <aside class="preview" id="cart-summary"></aside>
+  </div>
+</section>
+
+<section class="section section--tint">
+  <div class="wrap">
+    <div class="section__head"><h2>Add a little extra</h2><p>Popular boxes people add before checking out.</p></div>
+    <div id="upsell"></div>
+  </div>
+</section>
+
+<footer id="site-footer"></footer>
+
+<script src="assets/js/art.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/pages.js"></script>
+<script src="assets/js/cart.js"></script>
+<script>
+  YL.initChrome('');
+  YL.initCart();
+  YL.renderPrebuilt('#upsell', 3);
+</script>
+</body>
+</html>
