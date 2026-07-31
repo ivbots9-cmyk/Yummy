@@ -1,0 +1,172 @@
+{%- comment -%}
+  Yummyland — marketing blocks that go with the builder
+  (how it works, popular boxes, occasions, reviews, FAQ).
+  Add it below the builder section, or on any other page.
+{%- endcomment -%}
+
+{{ 'yummyland-style.css' | asset_url | stylesheet_tag }}
+
+<div class="yummyland">
+  {%- for block in section.blocks -%}
+    {%- case block.type -%}
+
+      {%- when 'how' -%}
+        <section class="section section--tint" {{ block.shopify_attributes }}>
+          <div class="wrap">
+            <div class="section__head">
+              {%- if block.settings.eyebrow != blank -%}<span class="eyebrow">{{ block.settings.eyebrow }}</span>{%- endif -%}
+              <h2>{{ block.settings.title | default: 'How it works' }}</h2>
+              {%- if block.settings.text != blank -%}<p>{{ block.settings.text }}</p>{%- endif -%}
+            </div>
+            <div data-yl-render="how"></div>
+          </div>
+        </section>
+
+      {%- when 'boxes' -%}
+        <section class="section" {{ block.shopify_attributes }}>
+          <div class="wrap">
+            <div class="section__head">
+              <h2>{{ block.settings.title | default: 'Popular box ideas' }}</h2>
+              {%- if block.settings.text != blank -%}<p>{{ block.settings.text }}</p>{%- endif -%}
+            </div>
+            <div data-yl-render="prebuilt" data-limit="{{ block.settings.limit | default: 4 }}"></div>
+          </div>
+        </section>
+
+      {%- when 'occasions' -%}
+        <section class="section section--tint" {{ block.shopify_attributes }}>
+          <div class="wrap">
+            <div class="section__head"><h2>{{ block.settings.title | default: 'Perfect for any occasion' }}</h2></div>
+            <div data-yl-render="occasions"></div>
+          </div>
+        </section>
+
+      {%- when 'reviews' -%}
+        <section class="section" {{ block.shopify_attributes }}>
+          <div class="wrap">
+            <div class="section__head"><h2>{{ block.settings.title | default: 'What our yummy fans say' }}</h2></div>
+            <div data-yl-render="reviews"></div>
+          </div>
+        </section>
+
+      {%- when 'faq' -%}
+        <section class="section section--tint" {{ block.shopify_attributes }}>
+          <div class="wrap">
+            <div class="section__head"><h2>{{ block.settings.title | default: 'Good to know' }}</h2></div>
+            <div data-yl-render="faq" data-limit="{{ block.settings.limit | default: 6 }}"></div>
+          </div>
+        </section>
+
+      {%- when 'banner' -%}
+        <section class="section" {{ block.shopify_attributes }}>
+          <div class="wrap">
+            <div class="banner">
+              <div>
+                <h2 style="margin:0 0 10px">{{ block.settings.title | default: 'Candy boxes for offices, events & teams' }}</h2>
+                <p>{{ block.settings.text }}</p>
+                {%- if block.settings.url != blank -%}
+                  <a class="btn btn--lg" href="{{ block.settings.url }}" style="margin-top:18px">
+                    {{ block.settings.label | default: 'Learn more' }}</a>
+                {%- endif -%}
+              </div>
+              <div class="banner__list"
+                   data-yl-list="briefcase|Office deliveries;party|Events &amp; pop-ups;gift|Corporate gifting;cake|Birthday surprises"></div>
+            </div>
+          </div>
+        </section>
+
+    {%- endcase -%}
+  {%- endfor -%}
+</div>
+
+<script src="{{ 'yummyland-config.js' | asset_url }}" defer></script>
+<script src="{{ 'yummyland-art.js' | asset_url }}" defer></script>
+<script src="{{ 'yummyland-data.js' | asset_url }}" defer></script>
+<script src="{{ 'yummyland-store.js' | asset_url }}" defer></script>
+<script src="{{ 'yummyland-site.js' | asset_url }}" defer></script>
+<script src="{{ 'yummyland-pages.js' | asset_url }}" defer></script>
+<script src="{{ 'yummyland-shopify-cart.js' | asset_url }}" defer></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!window.YL) return;
+    var i = 0;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-yl-render]'), function (el) {
+      var kind = el.getAttribute('data-yl-render');
+      var limit = parseInt(el.getAttribute('data-limit'), 10) || null;
+      el.id = el.id || 'yl-render-' + (i++);
+      var sel = '#' + el.id;
+      if (kind === 'how') YL.renderHow(sel);
+      if (kind === 'prebuilt') YL.renderPrebuilt(sel, limit);
+      if (kind === 'occasions') YL.renderOccasions(sel);
+      if (kind === 'reviews') YL.renderReviews(sel, limit);
+      if (kind === 'faq') YL.renderFaq(sel, limit);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-yl-list]'), function (el) {
+      el.innerHTML = el.getAttribute('data-yl-list').split(';').map(function (pair) {
+        var p = pair.split('|');
+        return '<div>' + YL.icon(p[0]) + p[1] + '</div>';
+      }).join('');
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Yummyland marketing",
+  "tag": "section",
+  "class": "yummyland-section",
+  "max_blocks": 8,
+  "blocks": [
+    {
+      "type": "how", "name": "How it works",
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Sweet and simple" },
+        { "type": "text", "id": "title", "label": "Title", "default": "How it works" },
+        { "type": "text", "id": "text", "label": "Text", "default": "From your screen to your door in five happy steps." }
+      ]
+    },
+    {
+      "type": "boxes", "name": "Popular boxes",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Popular box ideas" },
+        { "type": "text", "id": "text", "label": "Text" },
+        { "type": "range", "id": "limit", "label": "How many", "min": 2, "max": 6, "step": 1, "default": 4 }
+      ]
+    },
+    {
+      "type": "occasions", "name": "Occasions",
+      "settings": [{ "type": "text", "id": "title", "label": "Title", "default": "Perfect for any occasion" }]
+    },
+    {
+      "type": "banner", "name": "Business banner",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Candy boxes for offices, events & teams" },
+        { "type": "textarea", "id": "text", "label": "Text" },
+        { "type": "text", "id": "label", "label": "Button", "default": "Learn more" },
+        { "type": "url", "id": "url", "label": "Button link" }
+      ]
+    },
+    {
+      "type": "reviews", "name": "Reviews",
+      "settings": [{ "type": "text", "id": "title", "label": "Title", "default": "What our yummy fans say" }]
+    },
+    {
+      "type": "faq", "name": "FAQ",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Good to know" },
+        { "type": "range", "id": "limit", "label": "How many questions", "min": 3, "max": 10, "step": 1, "default": 6 }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Yummyland marketing",
+      "blocks": [
+        { "type": "how" }, { "type": "boxes" }, { "type": "occasions" },
+        { "type": "banner" }, { "type": "reviews" }, { "type": "faq" }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,42 @@
+{
+  "sections": {
+    "builder": {
+      "type": "yummyland-builder",
+      "settings": {
+        "box_product": "build-your-own-candy-box",
+        "addons_collection": "box-add-ons",
+        "show_hero": true,
+        "eyebrow": "Packed fresh · Shipped nationwide",
+        "heading": "Build your",
+        "heading_accent": "own box.",
+        "subheading": "Choose your size, pick your favourite candy, add fun extras — and we'll pack it fresh just for you.",
+        "cta_label": "Start building",
+        "secondary_label": "Shop ready-made boxes",
+        "secondary_url": "shopify://collections/all",
+        "show_inspiration": true,
+        "go_to_cart": false
+      }
+    },
+    "marketing": {
+      "type": "yummyland-marketing",
+      "blocks": {
+        "how": { "type": "how", "settings": {} },
+        "boxes": { "type": "boxes", "settings": { "limit": 4 } },
+        "occasions": { "type": "occasions", "settings": {} },
+        "banner": {
+          "type": "banner",
+          "settings": {
+            "title": "Candy boxes for offices, events & teams",
+            "text": "From small offices to big events, Yummyland has the perfect candy solution for your team, clients and guests.",
+            "label": "Learn more"
+          }
+        },
+        "reviews": { "type": "reviews", "settings": {} },
+        "faq": { "type": "faq", "settings": { "limit": 6 } }
+      },
+      "block_order": ["how", "boxes", "occasions", "banner", "reviews", "faq"],
+      "settings": {}
+    }
+  },
+  "order": ["builder", "marketing"]
+}

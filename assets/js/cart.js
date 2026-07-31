@@ -47,14 +47,14 @@ window.YL = window.YL || {};
       host.innerHTML = '<div class="empty">' +
         YL.boxArt({ color: 'pink', fill: 0.2, seed: 'empty' }) +
         '<h3>Your cart is empty</h3><p>Let&rsquo;s fix that — your candy box is only four steps away.</p>' +
-        '<a class="btn btn--lg" href="index.html">Build your box</a></div>';
+        '<a class="btn btn--lg" href="' + YL.PATHS.builder + '">Build your box</a></div>';
       sum.innerHTML = '';
       return;
     }
 
     host.innerHTML = cart.map(itemHtml).join('') +
       '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px">' +
-      '<a class="btn btn--ghost btn--sm" href="index.html">＋ Build another box</a>' +
+      '<a class="btn btn--ghost btn--sm" href="' + YL.PATHS.builder + '">＋ Build another box</a>' +
       '<button class="link-btn" data-clear>Clear cart</button></div>';
 
     var t = YL.cartTotals(promo);
@@ -135,7 +135,7 @@ window.YL = window.YL || {};
         '<h3>Thank you! Order placed</h3>' +
         '<p>' + n + ' box' + (n > 1 ? 'es' : '') + ' · ' + YL.money(t.total) +
         '<br>We are packing it fresh — you will get a tracking email shortly.</p>' +
-        '<a class="btn btn--lg" href="index.html">Build another box</a></div>';
+        '<a class="btn btn--lg" href="' + YL.PATHS.builder + '">Build another box</a></div>';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }

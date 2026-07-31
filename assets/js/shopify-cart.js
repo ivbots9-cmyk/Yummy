@@ -1,0 +1,193 @@
+/* =========================================================
+   Yummyland — Shopify cart adapter
+   Only loaded inside the Shopify theme. Turns a built box into
+   Shopify line items via the AJAX Cart API (/cart/add.js).
+
+   Expects window.YL_SHOPIFY, rendered by the Liquid section:
+   {
+     routes:   { cart: '/cart', cart_add: '/cart/add.js', builder: '/pages/build-your-box' },
+     variants: [{ title: 'Medium Box', id: 44444444, price: 3499 }, ...],   // box product
+     addons:   [{ handle: 'yl-extra-stickers', id: 55555555 }, ...],        // add-on collection
+     goToCart: true
+   }
+   Sizes are matched to variants by name (small / medium / large / party),
+   so the merchant never has to copy variant IDs by hand.
+   ========================================================= */
+window.YL = window.YL || {};
+
+(function (YL) {
+  'use strict';
+
+  var CFG = window.YL_SHOPIFY;
+  if (!CFG) return;
+
+  var routes = CFG.routes || {};
+  var cartAdd = routes.cart_add || '/cart/add.js';
+  var cartUrl = routes.cart || '/cart';
+
+  YL.PATHS = {
+    builder: routes.builder || '/pages/build-your-box',
+    boxes: routes.boxes || '/collections/candy-boxes',
+    cart: cartUrl
+  };
+
+  /* ---- normalise whatever Liquid handed us into two lookup maps ---- */
+  var SIZE_MAP = (function () {
+    var map = {};
+    if (CFG.sizes && !Array.isArray(CFG.sizes)) return CFG.sizes;   /* explicit ids win */
+    (CFG.variants || []).forEach(function (v) {
+      var t = String(v.title || '').toLowerCase();
+      YL.SIZES.forEach(function (s) {
+        var key = s.id === 'party' ? 'party' : s.id;               /* small|medium|large|party */
+        if (!map[s.id] && t.indexOf(key) > -1) map[s.id] = v.id;
+      });
+    });
+    /* fall back to variant order if the titles do not say the size */
+    YL.SIZES.forEach(function (s, i) {
+      if (!map[s.id] && CFG.variants && CFG.variants[i]) map[s.id] = CFG.variants[i].id;
+    });
+    return map;
+  })();
+
+  var ADDON_MAP = (function () {
+    if (CFG.addons && !Array.isArray(CFG.addons)) return CFG.addons;
+    var map = {};
+    (CFG.addons || []).forEach(function (a) { map[a.handle] = a.id; });
+    return map;
+  })();
+
+  function sizeVariant(sizeId) { return SIZE_MAP[sizeId] || null; }
+  function addonVariant(handle) { return ADDON_MAP[handle] || null; }
+
+  /* human-readable contents shown on the cart, checkout and packing slip */
+  function properties(box) {
+    var size = YL.getSize(box.size);
+    var vibe = YL.VIBES.filter(function (v) { return v.id === box.vibe; })[0];
+    var props = {
+      'Box size': size.name + ' (up to ' + size.slots + ' candies)',
+      'Candy': box.candies.map(function (c) {
+        var candy = YL.getCandy(c.id);
+        return candy ? candy.name + (c.qty > 1 ? ' x' + c.qty : '') : c.id;
+      }).join(', ')
+    };
+    if (vibe) props['Vibe'] = vibe.name;
+    if (box.extras.length) {
+      props['Extras'] = box.extras.map(function (id) {
+        var e = YL.getExtra(id);
+        return e ? e.name : id;
+      }).join(', ');
+    }
+    var theme = YL.BOX_THEMES.filter(function (t) { return t.id === box.color; })[0];
+    if (box.extras.indexOf('theme') > -1 && theme) props['Box colour'] = theme.name;
+    if (box.note) props['Gift note'] = box.note;
+    if (box.prefs) props['Candy preferences'] = box.prefs;
+    /* underscore-prefixed properties stay hidden from the customer */
+    props['_yl_payload'] = JSON.stringify(box);
+    return props;
+  }
+
+  /* one box = the size variant + one line item per paid add-on */
+  function buildItems(box, qty, group) {
+    var items = [];
+    var main = sizeVariant(box.size);
+    if (!main) throw new Error('No Shopify variant mapped for box size "' + box.size + '".');
+
+    var props = properties(box);
+    props['_yl_group'] = group;
+    items.push({ id: main, quantity: qty, properties: props });
+
+    box.extras.forEach(function (id) {
+      var extra = YL.getExtra(id);
+      if (!extra || !extra.price) return;
+      var vid = addonVariant('yl-extra-' + id);
+      if (!vid) return;
+      items.push({
+        id: vid, quantity: qty,
+        properties: { '_yl_group': group, '_yl_kind': 'extra', 'For box': YL.boxLabel(box) }
+      });
+    });
+
+    box.candies.forEach(function (c) {
+      var candy = YL.getCandy(c.id);
+      if (!candy || !candy.extra) return;
+      var vid = addonVariant('yl-premium-' + c.id);
+      if (!vid) return;
+      items.push({
+        id: vid, quantity: qty * c.qty,
+        properties: { '_yl_group': group, '_yl_kind': 'premium', 'For box': YL.boxLabel(box) }
+      });
+    });
+
+    return items;
+  }
+
+  function missingAddons(box) {
+    var missing = [];
+    box.extras.forEach(function (id) {
+      var e = YL.getExtra(id);
+      if (e && e.price && !addonVariant('yl-extra-' + id)) missing.push('yl-extra-' + id);
+    });
+    box.candies.forEach(function (c) {
+      var candy = YL.getCandy(c.id);
+      if (candy && candy.extra && !addonVariant('yl-premium-' + c.id)) missing.push('yl-premium-' + c.id);
+    });
+    return missing;
+  }
+
+  YL.cartAdapter = {
+    add: function (box, qty) {
+      var group = 'box-' + Date.now().toString(36);
+      var items;
+      try {
+        items = buildItems(box, qty || 1, group);
+      } catch (e) {
+        console.error('[Yummyland]', e.message);
+        YL.toast('This box cannot be added yet — the store is still being set up.');
+        return Promise.reject(e);
+      }
+
+      var gaps = missingAddons(box);
+      if (gaps.length) {
+        console.warn('[Yummyland] Missing add-on products, their price will not be charged:', gaps.join(', '));
+      }
+
+      var btns = YL.$$('[data-add-cart]');
+      btns.forEach(function (b) { b.disabled = true; });
+
+      return fetch(cartAdd, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ items: items })
+      })
+        .then(function (r) {
+          if (!r.ok) return r.json().then(function (j) { throw new Error(j.description || j.message || 'Cart error'); });
+          return r.json();
+        })
+        .then(function () {
+          YL.toast('Added to cart — ' + YL.boxLabel(box) + '.');
+          document.dispatchEvent(new CustomEvent('yummyland:added', { detail: { box: box } }));
+          if (CFG.goToCart !== false) {
+            setTimeout(function () { window.location.href = cartUrl; }, 700);
+          } else {
+            refreshCount();
+          }
+        })
+        .catch(function (e) {
+          console.error('[Yummyland] add to cart failed', e);
+          YL.toast('Sorry — could not add this box. Please try again.');
+        })
+        .then(function () {
+          btns.forEach(function (b) { b.disabled = false; });
+        });
+    }
+  };
+
+  function refreshCount() {
+    fetch('/cart.js', { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (cart) {
+        document.dispatchEvent(new CustomEvent('yummyland:cart', { detail: cart }));
+      })
+      .catch(function () { /* theme will refresh on its own */ });
+  }
+})(window.YL);

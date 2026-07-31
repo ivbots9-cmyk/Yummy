@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page not found — Yummyland Candy</title>
+<meta name="description" content="This page melted. Head back to the box builder and grab something sweeter.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<meta name="theme-color" content="#ff2e8b">
+<link rel="preload" href="assets/fonts/nunito.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/baloo2.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header id="site-header"></header>
+
+<section class="section" style="padding-top:56px">
+  <div class="wrap" style="max-width:640px;text-align:center">
+    <div id="art" style="max-width:420px;margin:0 auto"></div>
+    <span class="eyebrow">Error 404</span>
+    <h1 style="font-size:clamp(34px,5vw,54px);text-transform:uppercase;margin:10px 0 12px">
+      This page <span class="pink">melted</span></h1>
+    <p style="color:var(--ink-60);margin-bottom:24px">
+      We could not find what you were looking for — but we can find you some candy.</p>
+    <div class="hero__cta" style="justify-content:center">
+      <a class="btn btn--lg" href="index.html">Build your box</a>
+      <a class="btn btn--lg btn--ghost" href="boxes.html">Shop candy boxes</a>
+    </div>
+  </div>
+</section>
+
+<footer id="site-footer"></footer>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/art.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/pages.js"></script>
+<script>
+  YL.initChrome('');
+  document.getElementById('art').innerHTML =
+    YL.boxArt({ color: 'pink', fill: 0.2, seed: '404' });
+</script>
+</body>
+</html>
