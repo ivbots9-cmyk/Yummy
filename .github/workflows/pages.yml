@@ -4,7 +4,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, claude/yummyland-candy-box-builder-ywg0ej]
   workflow_dispatch:
 
 permissions:
