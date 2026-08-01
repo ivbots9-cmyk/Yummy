@@ -222,7 +222,6 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
   .logo__txt { font-size: 22px; }
   .hero__art .float-badge { width: 76px; height: 76px; font-size: 9.5px; top: 0; right: 0; }
   .section { padding: 52px 0; }
-  .card { padding: 18px 16px; }
 }
 
 /* ---------- builder ---------- */
@@ -255,8 +254,7 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 .steps__sep { flex: none; width: 26px; height: 2px; background: var(--line); border-radius: 2px; }
 @media (max-width: 780px) { .steps__sep { display: none; } }
 
-.builder__grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; }
-@media (max-width: 1080px) { .builder__grid { grid-template-columns: 1fr; } }
+.builder__flow { max-width: 900px; margin-inline: auto; }
 
 .card {
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius-l);
@@ -604,18 +602,12 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
    sideways. Then the layout is re-stacked phone-first.
    ========================================================= */
 
-.builder__grid > *, .cart-grid > *, .footer__grid > * { min-width: 0; }
+.builder__flow > *, .cart-grid > *, .footer__grid > * { min-width: 0; }
 
 /* live preview + total, pinned to the bottom on phones */
 .mbar { display: none; }
 
 @media (max-width: 1080px) {
-  /* the box preview belongs above the steps on a phone —
-     otherwise you build the box without ever seeing it */
-  .preview { position: static; order: -1; margin-bottom: 20px; }
-  .builder__grid { display: flex; flex-direction: column; }
-  .builder__grid > div:first-child { display: flex; flex-direction: column; }
-
   .mbar {
     display: flex; align-items: center; gap: 12px;
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
@@ -637,7 +629,16 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 }
 
 @media (max-width: 720px) {
+  /* phones are narrow: give the content back the side gutters and the
+     card padding that the desktop layout can afford */
+  .wrap { width: min(100% - 26px, var(--wrap)); }
+  .card { padding: 16px 13px; margin-bottom: 14px; }
+  .panel__body { padding: 16px 14px; }
+
   .section__head { margin-bottom: 26px; }
+  .announce { font-size: 11.5px; }
+  .announce__item { gap: 7px; }
+  .announce__item a { display: none; }
 
   /* steps: keep the swipe strip but make the chips thumb-sized */
   .steps { padding: 8px; border-radius: var(--radius); gap: 2px; }
@@ -858,9 +859,20 @@ body.modal-open { overflow: hidden; }
   color: #fff; font-size: 12.5px; font-weight: 800;
 }
 .announce__in {
-  display: flex; align-items: center; justify-content: center; gap: 14px;
-  min-height: 38px; padding: 8px 0; text-align: center; flex-wrap: wrap;
+  position: relative; display: grid; place-items: center;
+  min-height: 40px; padding: 8px 0; text-align: center;
 }
+/* every line sits in the same cell and only one is visible at a time */
+.announce__item {
+  grid-area: 1 / 1;
+  display: flex; align-items: center; justify-content: center; gap: 9px; flex-wrap: wrap;
+  opacity: 0; transform: translateY(8px); pointer-events: none;
+  transition: opacity .45s ease, transform .45s ease;
+}
+.announce__item.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.announce__item.is-out { opacity: 0; transform: translateY(-8px); }
+.announce__item svg { width: 17px; height: 17px; flex: none; }
+.announce b { font-weight: 900; }
 .announce a { text-decoration: underline; white-space: nowrap; }
 
 .trust {
@@ -908,3 +920,65 @@ body.modal-open { overflow: hidden; }
 .ship-goal p { font-size: 12.5px; color: var(--ink-60); margin: 0; }
 .ship-goal p b { color: var(--pink); }
 .ship-goal.is-done p b { color: var(--mint); }
+
+
+/* =========================================================
+   Floating box peek — the build so far, one tap away
+   ========================================================= */
+.peek-fab {
+  position: fixed; right: 22px; bottom: 22px; z-index: 70;
+  width: 74px; height: 74px; padding: 0; border: 3px solid #fff; border-radius: 50%;
+  background: linear-gradient(180deg, #fff6fa, #ffe0ee);
+  box-shadow: var(--shadow-l); overflow: hidden;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.peek-fab:hover { transform: scale(1.06); }
+.peek-fab.is-open { transform: scale(.94); }
+.peek-fab__art { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; }
+.peek-fab__art svg { width: 132%; max-width: none; transform: translateY(6%); }
+.peek-fab__badge {
+  position: absolute; top: -2px; right: -2px;
+  min-width: 26px; height: 26px; padding: 0 7px;
+  display: grid; place-items: center;
+  background: var(--pink); color: #fff; border: 2px solid #fff; border-radius: 999px;
+  font-size: 12px; font-weight: 900;
+}
+.peek-fab__badge.is-empty { background: var(--ink-40); }
+
+.peek {
+  position: fixed; right: 22px; bottom: 108px; z-index: 69;
+  width: min(370px, calc(100vw - 44px));
+  /* never grow up over the sticky header */
+  max-height: calc(100vh - var(--header-h) - 170px);
+  overflow: auto; border-radius: var(--radius-l);
+  opacity: 0; transform: translateY(14px) scale(.98); pointer-events: none;
+  transition: opacity .2s ease, transform .22s cubic-bezier(.2, .9, .3, 1.1);
+}
+.peek.is-open { opacity: 1; transform: none; pointer-events: auto; }
+.peek .panel { box-shadow: var(--shadow-l); }
+.peek__close { display: none; }
+
+@media (max-width: 720px) {
+  /* on a phone the drawer is a sheet and the bottom bar moves out of its way */
+  .peek-fab { right: 14px; bottom: 88px; width: 62px; height: 62px; }
+  .peek {
+    right: 0; left: 0; bottom: 0; width: 100%;
+    max-height: 82vh; border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    transform: translateY(100%);
+  }
+  .peek .panel { border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+  /* the round button would sit on top of the sheet, so swap it for a close */
+  body.peek-open .peek-fab { opacity: 0; pointer-events: none; }
+  .peek-fab { transition: transform .18s ease, opacity .2s ease; }
+  .peek__close {
+    display: grid; place-items: center;
+    position: sticky; top: 10px; left: 100%; z-index: 3;
+    width: 38px; height: 38px; margin: 10px 12px -38px 0;
+    border: 0; border-radius: 50%;
+    background: rgba(255, 255, 255, .94); color: var(--ink); box-shadow: var(--shadow-s);
+  }
+  .peek__close svg { width: 18px; height: 18px; }
+  body.peek-open { overflow: hidden; }
+  body.peek-open .mbar { transform: translateY(120%); }
+  .mbar { transition: transform .25s ease; }
+}

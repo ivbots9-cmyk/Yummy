@@ -471,8 +471,8 @@ window.YL = window.YL || {};
     if (!host) return;
     host.className = 'card inspo';
     host.innerHTML =
-      '<div class="card__head" style="margin-bottom:8px"><div><h2 style="font-size:17px">Need inspiration?</h2>' +
-      '<p>Auto-build with one of our favourite mixes.</p></div></div>' +
+      '<div class="card__head"><span class="card__num">&#9733;</span>' +
+      '<div><h2>In a hurry?</h2><p>Fill the box with one of our favourite mixes, then tweak it.</p></div></div>' +
       YL.PRESETS.map(function (p) {
         var sample = p.candies ? YL.getCandy(p.candies[0]) : YL.CANDIES[0];
         return '<div class="inspo__row">' + YL.candyDot(sample, 34) +
@@ -492,6 +492,54 @@ window.YL = window.YL || {};
     });
   }
 
+
+  /* ------------------------------------------------------------------ */
+  /* floating peek: the box so far, without scrolling anywhere           */
+  /* ------------------------------------------------------------------ */
+  function peekEls() {
+    return { fab: $('#peek-fab'), panel: $('#peek'), art: $('#peek-fab-art'), badge: $('#peek-fab-badge') };
+  }
+
+  YL.togglePeek = function (force) {
+    var e = peekEls();
+    if (!e.fab || !e.panel) return;
+    var open = force == null ? !e.panel.classList.contains('is-open') : force;
+    e.panel.hidden = false;
+    e.panel.classList.toggle('is-open', open);
+    e.fab.classList.toggle('is-open', open);
+    e.fab.setAttribute('aria-expanded', String(open));
+    document.body.classList.toggle('peek-open', open);
+  };
+
+  function initPeek() {
+    var e = peekEls();
+    if (!e.fab) return;
+    e.fab.hidden = false;
+    e.panel.hidden = false;
+    e.fab.addEventListener('click', function () { YL.togglePeek(); });
+    var close = $('#peek-close');
+    if (close) {
+      close.innerHTML = YL.icon('x');
+      close.addEventListener('click', function () { YL.togglePeek(false); });
+    }
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') YL.togglePeek(false);
+    });
+    document.addEventListener('click', function (ev) {
+      if (!e.panel.classList.contains('is-open')) return;
+      if (e.panel.contains(ev.target) || e.fab.contains(ev.target)) return;
+      YL.togglePeek(false);
+    });
+  }
+
+  function renderPeekButton() {
+    var e = peekEls();
+    if (!e.fab) return;
+    e.art.innerHTML = YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'fab' });
+    e.badge.textContent = used();
+    e.badge.classList.toggle('is-empty', used() === 0);
+  }
+
   /* ------------------------------------------------------------------ */
   /* add to cart                                                         */
   /* ------------------------------------------------------------------ */
@@ -503,6 +551,7 @@ window.YL = window.YL || {};
       return;
     }
     if (YL.trackAdd) YL.trackAdd(box);
+    YL.togglePeek(false);
     YL.addToCart(box, 1);
     YL.toast('Added to cart — ' + YL.boxLabel(box) + '.');
   }
@@ -521,6 +570,7 @@ window.YL = window.YL || {};
     renderExtras();
     renderReview();
     renderPanel();
+    renderPeekButton();
     markSteps();
   }
 
@@ -553,6 +603,7 @@ window.YL = window.YL || {};
     }
 
     document.body.classList.add('has-mbar');
+    initPeek();
     renderSteps();
     renderInspo();
     renderAll();

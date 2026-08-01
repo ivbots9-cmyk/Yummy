@@ -66,21 +66,27 @@
 <section class="builder" id="builder">
   <div class="wrap">
     <div class="steps" id="steps"></div>
-    <div class="builder__grid">
-      <div>
-        <div class="card" id="step-size"></div>
-        <div class="card" id="step-candy"></div>
-        <div class="card" id="step-vibe"></div>
-        <div class="card" id="step-extras"></div>
-        <div class="card" id="step-review"></div>
-      </div>
-      <aside class="preview">
-        <div class="panel" id="panel"></div>
-        <div class="card" id="inspo" style="margin-top:20px"></div>
-      </aside>
+    <div class="builder__flow">
+      <div class="card" id="step-size"></div>
+      <div class="card" id="step-candy"></div>
+      <div class="card" id="inspo"></div>
+      <div class="card" id="step-vibe"></div>
+      <div class="card" id="step-extras"></div>
+      <div class="card" id="step-review"></div>
     </div>
   </div>
 </section>
+
+<!-- ==================== FLOATING BOX PEEK ==================== -->
+<button class="peek-fab" id="peek-fab" hidden aria-expanded="false" aria-controls="peek">
+  <span class="peek-fab__art" id="peek-fab-art"></span>
+  <span class="peek-fab__badge" id="peek-fab-badge">0</span>
+  <span class="sr-only">Show the box you are building</span>
+</button>
+<aside class="peek" id="peek" hidden aria-label="Your box so far">
+  <button class="peek__close" id="peek-close" aria-label="Close preview"></button>
+  <div class="panel" id="panel"></div>
+</aside>
 
 <!-- ==================== HOW IT WORKS ==================== -->
 <section class="section section--tint" id="how">

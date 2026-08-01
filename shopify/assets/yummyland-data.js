@@ -638,11 +638,22 @@ window.YL = window.YL || {};
   /* ---------------------------------------------------------------
      Conversion content — all editable here, no markup changes needed
      --------------------------------------------------------------- */
-  YL.ANNOUNCE = {
-    text: 'Free shipping on orders over $50 · Packed fresh &amp; shipped the same day',
-    link: 'boxes.html',
-    linkText: 'Shop boxes'
-  };
+  /* Rotating announcement bar. These four are the lines that reliably move
+     the needle: a shipping threshold (lifts basket size), a dispatch cut-off
+     (kills hesitation), risk reversal, and a first-order code. Reorder or
+     trim freely — the bar cycles through whatever is in this array. */
+  YL.ANNOUNCE = [
+    { icon: 'truck', text: '<b>Free shipping</b> on orders over $50',
+      link: 'boxes.html', linkText: 'Shop boxes' },
+    { icon: 'clock', text: 'Order before <b>2pm</b> and it ships today',
+      link: 'index.html', linkText: 'Build yours' },
+    { icon: 'gift', text: 'Free <b>hand-written note</b> on every gift box',
+      link: 'gifts.html', linkText: 'Send a gift' },
+    { icon: 'sparkle', text: 'New here? <b>YUMMY5</b> takes $5 off your first box',
+      link: 'index.html', linkText: 'Start building' }
+  ];
+
+  YL.ANNOUNCE_INTERVAL = 4800;
 
   YL.TRUST = [
     { icon: 'truck', title: 'Free over $50', text: 'Flat $4.99 under that' },

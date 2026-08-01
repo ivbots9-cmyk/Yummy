@@ -133,15 +133,55 @@ window.YL = window.YL || {};
   YL.on('cart:change', function () { YL.refreshCartCount(); });
 
 
-  /* ---------- announcement bar ---------- */
+  /* ---------- announcement bar (rotates through YL.ANNOUNCE) ---------- */
   YL.renderAnnounce = function () {
-    var a = YL.ANNOUNCE;
-    if (!a || !a.text) return;
+    var items = YL.ANNOUNCE;
+    if (!items) return;
+    if (!Array.isArray(items)) items = [items];
+    items = items.filter(function (i) { return i && i.text; });
+    if (!items.length) return;
+
     var el = document.createElement('div');
     el.className = 'announce';
-    el.innerHTML = '<div class="wrap announce__in"><span>' + a.text + '</span>' +
-      (a.link ? '<a href="' + a.link + '">' + a.linkText + ' &rarr;</a>' : '') + '</div>';
+    el.innerHTML = '<div class="wrap announce__in">' +
+      items.map(function (it, i) {
+        return '<span class="announce__item' + (i === 0 ? ' is-on' : '') + '"' +
+          (i === 0 ? '' : ' aria-hidden="true"') + '>' +
+          (it.icon ? YL.icon(it.icon) : '') + '<span>' + it.text + '</span>' +
+          (it.link ? '<a href="' + it.link + '">' + it.linkText + ' &rarr;</a>' : '') +
+          '</span>';
+      }).join('') + '</div>';
     document.body.insertBefore(el, document.body.firstChild);
+
+    if (items.length < 2) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var slides = YL.$$('.announce__item', el);
+    var i = 0, timer = null;
+
+    function step() {
+      var prev = slides[i];
+      prev.classList.remove('is-on');
+      prev.classList.add('is-out');
+      prev.setAttribute('aria-hidden', 'true');
+      setTimeout(function () { prev.classList.remove('is-out'); }, 520);
+      i = (i + 1) % slides.length;
+      slides[i].classList.add('is-on');
+      slides[i].removeAttribute('aria-hidden');
+    }
+
+    function play() { if (!timer) timer = setInterval(step, YL.ANNOUNCE_INTERVAL || 5000); }
+    function pause() { clearInterval(timer); timer = null; }
+
+    play();
+    /* never swap the line out from under someone reading or clicking it */
+    el.addEventListener('mouseenter', pause);
+    el.addEventListener('mouseleave', play);
+    el.addEventListener('focusin', pause);
+    el.addEventListener('focusout', play);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) pause(); else play();
+    });
   };
 
   /* ---------- trust bar ---------- */
