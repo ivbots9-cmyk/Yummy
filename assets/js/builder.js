@@ -324,7 +324,7 @@ window.YL = window.YL || {};
 
     host.innerHTML =
       head(5, 'Step 5: Review your box', 'Everything look good? Then let us get packing.') +
-      '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px" class="review-grid">' +
+      '<div class="review-grid" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px">' +
       '<div>' + YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'review' }) + '</div>' +
       '<div>' +
       row('Box size', size.name + ' · ' + size.serves, 'step-size') +
@@ -415,12 +415,18 @@ window.YL = window.YL || {};
       '</div>' +
       '<div class="guarantee">' + YL.icon('shield') +
       '<span><b>100% happiness guarantee</b>Not happy? We will make it right.</span></div>' +
-      '</div>';
+      '</div>' +
+      /* phone-only bar so the total and the CTA are always in reach */
+      '<div class="mbar"><span class="mbar__info"><b>' + YL.money(p.total) + '</b>' +
+      '<span>' + used() + ' / ' + slots() + ' candies · ' + size.name + '</span></span>' +
+      '<button class="btn" data-add-cart>' + YL.icon('cart') + ' Add to cart</button></div>';
 
     $$('[data-drop]', host).forEach(function (b) {
       b.addEventListener('click', function () { removeCandy(b.dataset.drop, true); renderAll(); });
     });
-    $('[data-add-cart]', host).addEventListener('click', addToCart);
+    $$('[data-add-cart]', host).forEach(function (b) {
+      b.addEventListener('click', addToCart);
+    });
     $('[data-save]', host).addEventListener('click', function () {
       YL.saveBox(box);
       YL.toast('Box saved — find it any time on this device.');
@@ -515,6 +521,7 @@ window.YL = window.YL || {};
       if (pr) fillRandom(pr.candies);
     }
 
+    document.body.classList.add('has-mbar');
     renderSteps();
     renderInspo();
     renderAll();

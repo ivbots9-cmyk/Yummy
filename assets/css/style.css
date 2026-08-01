@@ -596,3 +596,115 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
   * { animation: none !important; transition: none !important; }
   html { scroll-behavior: auto; }
 }
+
+/* =========================================================
+   Mobile pass
+   Grid tracks must be allowed to shrink, otherwise a wide
+   child (an input, a long price row) pushes the whole page
+   sideways. Then the layout is re-stacked phone-first.
+   ========================================================= */
+
+.builder__grid > *, .cart-grid > *, .footer__grid > * { min-width: 0; }
+
+/* live preview + total, pinned to the bottom on phones */
+.mbar { display: none; }
+
+@media (max-width: 1080px) {
+  /* the box preview belongs above the steps on a phone —
+     otherwise you build the box without ever seeing it */
+  .preview { position: static; order: -1; margin-bottom: 20px; }
+  .builder__grid { display: flex; flex-direction: column; }
+  .builder__grid > div:first-child { display: flex; flex-direction: column; }
+
+  .mbar {
+    display: flex; align-items: center; gap: 12px;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, .97); backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line); box-shadow: 0 -6px 24px rgba(196, 20, 106, .1);
+  }
+  .mbar__info { line-height: 1.15; min-width: 0; overflow: hidden; }
+  .mbar__info span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .mbar__info b { display: block; font-family: var(--display); font-size: 20px; color: var(--pink); }
+  .mbar__info span { font-size: 11.5px; color: var(--ink-40); font-weight: 700; }
+  .mbar .btn { margin-left: auto; flex: none; padding: 13px 22px; }
+  /* only the builder page carries the bar, so only it needs the gap */
+  body.has-mbar { padding-bottom: 78px; }
+}
+
+@media (max-width: 860px) {
+  .review-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 720px) {
+  .section__head { margin-bottom: 26px; }
+
+  /* steps: keep the swipe strip but make the chips thumb-sized */
+  .steps { padding: 8px; border-radius: var(--radius); gap: 2px; }
+  .step-chip { padding: 7px 10px; gap: 8px; }
+  .step-chip__n { width: 26px; height: 26px; font-size: 13px; }
+  .step-chip__d { display: none; }
+
+  .card__head { gap: 10px; }
+  .card__head h2 { font-size: 17px; }
+  .card__head p { font-size: 12.5px; }
+  .card__num { width: 30px; height: 30px; font-size: 14px; }
+
+  .sizes { gap: 10px; }
+  .size { padding: 12px 8px 14px; }
+  .size .price { font-size: 17px; }
+
+  .candies { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .candy b { font-size: 12.5px; }
+  .filters { gap: 6px; }
+  .filter { padding: 7px 12px; font-size: 11px; }
+
+  .vibes { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .extras { grid-template-columns: 1fr; }
+
+  .panel__body { padding: 16px; }
+  .line--total b { font-size: 22px; }
+
+  /* cart: art on the left, actions on their own row */
+  .cart-item { grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 14px; }
+  .cart-item__side {
+    grid-column: 1 / -1; display: flex; flex-direction: row; align-items: center;
+    justify-content: space-between; gap: 12px; justify-items: stretch;
+    border-top: 1px solid var(--line); padding-top: 12px;
+  }
+  .cart-item h3 { font-size: 15px; }
+
+  .occasion { padding: 14px; }
+  .banner { padding: 24px 20px; border-radius: var(--radius-l); }
+  .review { padding: 18px; }
+  .page-head { padding: 34px 0 30px; }
+}
+
+@media (max-width: 620px) {
+  /* the five footer columns cannot fit — stack them */
+  .footer { padding: 40px 0 22px; }
+  .footer__grid { grid-template-columns: 1fr; gap: 26px; }
+  .footer__brand p { max-width: none; }
+  .subscribe { flex-wrap: wrap; }
+  .subscribe input { flex: 1 1 180px; }
+  .footer__bottom { flex-direction: column; gap: 10px; }
+  .footer__bottom nav { gap: 14px; }
+
+  .hero h1 { font-size: clamp(34px, 11vw, 46px); }
+  .hero p.lede { font-size: 16px; }
+  .hero__cta .btn { flex: 1 1 100%; }
+  .hero__usps { gap: 14px 22px; margin-top: 24px; }
+
+  .grid-cards { grid-template-columns: 1fr; }
+  .how { grid-template-columns: 1fr 1fr; }
+  .vibes { grid-template-columns: repeat(2, 1fr); }
+  .chips { gap: 5px; }
+  .chip { font-size: 11.5px; }
+}
+
+@media (max-width: 400px) {
+  .sizes { grid-template-columns: 1fr 1fr; }
+  .candies { gap: 8px; }
+  .btn { padding: 12px 20px; font-size: 13px; }
+  .btn--lg { padding: 15px 24px; font-size: 14px; }
+}
