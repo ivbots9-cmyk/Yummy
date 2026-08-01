@@ -44,7 +44,7 @@
 
 <section class="section">
   <div class="wrap">
-    <div class="filters" id="box-filters" style="justify-content:center;margin-bottom:26px"></div>
+    <div class="filters" id="occasion-filters" style="justify-content:center;margin-bottom:26px"></div>
     <div id="all-boxes"></div>
   </div>
 </section>
@@ -67,6 +67,7 @@
 <section class="section">
   <div class="wrap">
     <div class="section__head"><h2>Every candy we stock</h2><p>Mix and match any of these in your own box.</p></div>
+    <div class="filters" id="candy-filters" style="justify-content:center;margin-bottom:22px"></div>
     <div id="candy-wall"></div>
   </div>
 </section>
@@ -81,40 +82,73 @@
 <script src="assets/js/pages.js"></script>
 <script>
   YL.initChrome('boxes');
-  YL.renderPrebuilt('#all-boxes');
 
   document.getElementById('bulk-list').innerHTML =
     [['box', '10+ box orders'], ['truck', 'Recurring refills'],
      ['gift', 'Custom branding'], ['shield', 'Dedicated account manager']]
       .map(function (b) { return '<div>' + YL.icon(b[0]) + b[1] + '</div>'; }).join('');
 
-  /* candy wall with category filtering */
+  /* ---- ready-made boxes, filtered by occasion ---- */
+  var OCCASIONS = [
+    { id: 'all', name: 'All boxes' },
+    { id: 'gift', name: 'Gifts' },
+    { id: 'birthday', name: 'Birthdays' },
+    { id: 'party', name: 'Parties' },
+    { id: 'office', name: 'Office' },
+    { id: 'movie', name: 'Movie night' }
+  ];
+  var occasion = 'all';
+  var occHost = document.getElementById('occasion-filters');
+
+  function drawOccasions() {
+    occHost.innerHTML = OCCASIONS.map(function (o) {
+      return '<button class="filter' + (o.id === occasion ? ' is-on' : '') + '" data-o="' + o.id + '">' + o.name + '</button>';
+    }).join('');
+    YL.$$('[data-o]', occHost).forEach(function (b) {
+      b.addEventListener('click', function () { occasion = b.dataset.o; drawOccasions(); drawBoxes(); });
+    });
+  }
+
+  function drawBoxes() {
+    var list = YL.PREBUILT.filter(function (pb) {
+      return occasion === 'all' || (pb.vibe || 'me') === occasion;
+    });
+    YL.renderPrebuilt('#all-boxes', null, list);
+  }
+
+  /* ---- the candy wall keeps its own category filters, right above it ---- */
   var wall = document.getElementById('candy-wall');
-  var filters = document.getElementById('box-filters');
+  var candyHost = document.getElementById('candy-filters');
   var active = 'all';
 
   function drawFilters() {
-    filters.innerHTML = YL.CATEGORIES.map(function (c) {
+    candyHost.innerHTML = YL.CATEGORIES.map(function (c) {
       return '<button class="filter' + (c.id === active ? ' is-on' : '') + '" data-f="' + c.id + '">' + c.name + '</button>';
     }).join('');
-    YL.$$('[data-f]', filters).forEach(function (b) {
+    YL.$$('[data-f]', candyHost).forEach(function (b) {
       b.addEventListener('click', function () { active = b.dataset.f; drawFilters(); drawWall(); });
     });
   }
 
   function drawWall() {
     var list = YL.CANDIES.filter(function (c) { return active === 'all' || c.cats.indexOf(active) > -1; });
+    if (!list.length) {
+      wall.innerHTML = '<p class="center" style="color:var(--ink-40)">No candy in this category yet.</p>';
+      return;
+    }
     wall.innerHTML = '<div class="candies">' + list.map(function (c) {
       return '<div class="candy">' +
         (c.tag === 'premium' ? '<span class="candy__tag">Premium</span>' :
           (c.tag ? '<span class="candy__tag candy__tag--mint">' + c.tag + '</span>' : '')) +
         '<div class="candy__art">' + YL.candyTile(c) + '</div>' +
         '<b>' + c.name + '</b><small>' + c.flavor + '</small>' +
-        '<a class="candy__add" href="index.html#step-candy">' + YL.icon('plus') + ' Add in builder' +
+        '<a class="candy__add" href="index.html#step-candy">' + YL.icon('plus') + ' Add' +
         (c.extra ? ' · +' + YL.money(c.extra) : '') + '</a></div>';
     }).join('') + '</div>';
   }
 
+  drawOccasions();
+  drawBoxes();
   drawFilters();
   drawWall();
 </script>

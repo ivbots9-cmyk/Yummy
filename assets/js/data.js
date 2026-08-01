@@ -259,37 +259,49 @@ window.YL = window.YL || {};
   YL.PREBUILT = [
     {
       id: 'sour-challenge', name: 'Sour Challenge Box', tag: 'Sour',
-      desc: 'For sour candy lovers and brave hearts.', size: 'medium', color: 'mint',
+      desc: 'For sour candy lovers and brave hearts.',
+      goodFor: ['Sour lovers', 'Dares & challenges', 'Teens'],
+      about: 'Seven of our most face-scrunching sours in one box. Start with the peach rings, work up to the belts, and see who taps out first.', size: 'medium', color: 'mint',
       candies: ['sour-belts', 'sour-patch-mix', 'sour-worms', 'sour-twists', 'peach-rings', 'cola-bottles', 'watermelon-slices'],
       extras: ['stickers'], vibe: 'me'
     },
     {
       id: 'movie-night', name: 'Movie Night Box', tag: 'Film Night',
-      desc: 'The ultimate sweet & salty mix for movie nights.', size: 'large', color: 'purple',
+      desc: 'The ultimate sweet & salty mix for movie nights.',
+      goodFor: ['Movie nights', 'Sharing', 'Sweet & salty fans'],
+      about: 'Built for the couch: something salty, something chocolatey and plenty to pass around while the credits roll.', size: 'large', color: 'purple',
       candies: ['choc-peanuts', 'choc-pretzels', 'gummy-bears', 'rainbow-bites', 'caramel-bites', 'marshmallow-clouds', 'cola-bottles', 'jelly-beans', 'rainbow-taffy', 'sour-belts'],
       extras: ['scoop'], vibe: 'movie'
     },
     {
       id: 'chocolate-lovers', name: 'Chocolate Lovers Box', tag: 'Rich',
-      desc: 'For chocolate and sweet lovers.', size: 'medium', color: 'gold',
+      desc: 'For chocolate and sweet lovers.',
+      goodFor: ['Gifting', 'Chocolate fans', 'Thank-yous'],
+      about: 'All the premium chocolate picks in one box — almonds, pretzels, peanuts and cocoa truffles, finished with premium gift wrap.', size: 'medium', color: 'gold',
       candies: ['choc-almonds', 'choc-peanuts', 'choc-pretzels', 'choc-truffles', 'caramel-bites', 'marshmallow-clouds', 'rainbow-taffy'],
       extras: ['wrap'], vibe: 'gift'
     },
     {
       id: 'office-refill', name: 'Office Candy Refill', tag: 'Office Fave',
-      desc: 'Keep the office snack station full.', size: 'party', color: 'blue',
+      desc: 'Keep the office snack station full.',
+      goodFor: ['Offices', 'Break rooms', 'Big teams'],
+      about: 'Fifteen crowd-pleasers chosen so nobody in the office is left out. Reorder it monthly and the snack station never runs dry.', size: 'party', color: 'blue',
       candies: ['gummy-bears', 'rainbow-bites', 'jelly-beans', 'sour-patch-mix', 'choc-peanuts', 'caramel-bites', 'cola-bottles', 'marshmallow-clouds', 'peach-rings', 'gummy-worms', 'rainbow-taffy', 'sour-belts', 'watermelon-slices', 'gummy-sharks', 'sour-worms'],
       extras: [], vibe: 'office'
     },
     {
       id: 'birthday', name: 'Birthday Gift Box', tag: 'Perfect Gift',
-      desc: 'Make their day extra sweet with a custom surprise.', size: 'medium', color: 'pink',
+      desc: 'Make their day extra sweet with a custom surprise.',
+      goodFor: ['Birthdays', 'Kids & teens', 'Surprise gifts'],
+      about: 'A bright, fruity mix with a hand-written note, stickers and premium wrap — it arrives looking like a present, not a parcel.', size: 'medium', color: 'pink',
       candies: ['gummy-bears', 'rainbow-bites', 'gummy-hearts', 'rainbow-taffy', 'marshmallow-clouds', 'freeze-rainbow', 'watermelon-slices'],
       extras: ['note', 'stickers', 'wrap'], vibe: 'birthday'
     },
     {
       id: 'party-box', name: 'Party Box', tag: 'Crowd Pleaser',
-      desc: 'Perfect for parties and celebrations.', size: 'party', color: 'pink',
+      desc: 'Perfect for parties and celebrations.',
+      goodFor: ['Parties', 'Celebrations', 'Big groups'],
+      about: 'Our biggest box with fifteen different candies, so a room full of people all find something they like.', size: 'party', color: 'pink',
       candies: ['gummy-bears', 'gummy-worms', 'sour-belts', 'rainbow-bites', 'jelly-beans', 'watermelon-slices', 'peach-rings', 'sour-patch-mix', 'cola-bottles', 'gummy-sharks', 'marshmallow-clouds', 'rainbow-taffy', 'caramel-bites', 'sour-twists', 'gummy-hearts'],
       extras: ['scoop', 'stickers'], vibe: 'party'
     }
