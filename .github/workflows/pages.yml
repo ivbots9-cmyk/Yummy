@@ -1,8 +1,11 @@
 # Publishes the static site to GitHub Pages on every push.
 #
-# `enablement: true` makes the workflow turn Pages on by itself the first time
-# it runs, so there is nothing to click in Settings beforehand. It needs the
-# repository to be public (or the account to have Pages on private repos).
+# ONE-TIME SETUP, and it cannot be done from a workflow:
+#   Settings -> Pages -> Build and deployment -> Source: "GitHub Actions"
+#
+# The workflow token is allowed to deploy to Pages but not to create the Pages
+# site itself (the API answers "Resource not accessible by integration"), so
+# `enablement: true` does not help — the switch has to be flipped by the owner.
 name: Deploy to GitHub Pages
 
 on:
@@ -29,8 +32,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       # Publish only the site itself — the Shopify package, tooling and
       # workflows have no business being served to visitors.

@@ -78,8 +78,11 @@ python3 -m http.server 8000    # затем http://localhost:8000
 
 Конфиги уже лежат в репозитории, сборка не нужна ни в одном варианте:
 
-- **GitHub Pages** — `.github/workflows/pages.yml`. Включить один раз:
-  Settings → Pages → Source: **GitHub Actions**. Дальше деплой на каждый push в `main`.
+- **GitHub Pages** — `.github/workflows/pages.yml`. **Обязательный ручной шаг:**
+  Settings → Pages → Build and deployment → Source: **GitHub Actions**.
+  Из workflow это не включить — токен Actions умеет деплоить в Pages, но не создавать
+  сам Pages-сайт (API отвечает `Resource not accessible by integration`).
+  После переключения деплой идёт на каждый push.
 - **Netlify** — `netlify.toml`. Либо перетащить папку на app.netlify.com/drop, либо подключить репозиторий.
 - **Vercel** — `vercel.json`, `vercel --prod` или импорт репозитория.
 - **Любой хостинг / S3** — просто скопировать файлы, это статика.
