@@ -10,7 +10,7 @@ window.YL = window.YL || {};
   'use strict';
 
   var $ = YL.$, $$ = YL.$$;
-  var box, filter = 'all', showAll = false;
+  var box, filter = 'all', showAll = false, diets = [];
 
   var STEPS = [
     { id: 'step-size', t: 'Choose size', d: 'Pick the perfect box' },
@@ -155,6 +155,7 @@ window.YL = window.YL || {};
       b.addEventListener('click', function () {
         var before = used();
         setSize(b.dataset.size);
+        if (YL.trackStep) YL.trackStep('size', { size: b.dataset.size });
         if (used() < before) YL.toast('Trimmed to fit your new box size.');
         renderAll();
       });
@@ -168,9 +169,13 @@ window.YL = window.YL || {};
     var host = $('#step-candy');
     if (!host) return;
     var list = YL.CANDIES.filter(function (c) {
-      return filter === 'all' || c.cats.indexOf(filter) > -1;
+      if (filter !== 'all' && c.cats.indexOf(filter) < 0) return false;
+      for (var i = 0; i < diets.length; i++) {
+        if ((c.diet || []).indexOf(diets[i]) < 0) return false;
+      }
+      return true;
     });
-    var visible = showAll ? list : list.slice(0, 12);
+    var visible = showAll ? list : list.slice(0, 16);
     var full = left() <= 0;
 
     host.innerHTML =
@@ -179,20 +184,42 @@ window.YL = window.YL || {};
       '<div class="filters">' + YL.CATEGORIES.map(function (c) {
         return '<button class="filter' + (c.id === filter ? ' is-on' : '') + '" data-filter="' + c.id + '">' + c.name + '</button>';
       }).join('') + '</div>' +
+      '<div class="filters filters--diet">' +
+      '<span class="filters__label">Dietary</span>' +
+      YL.DIETS.map(function (d) {
+        return '<button class="filter filter--diet' + (diets.indexOf(d.id) > -1 ? ' is-on' : '') +
+          '" data-diet="' + d.id + '">' + YL.icon(d.icon) + d.name + '</button>';
+      }).join('') +
+      (diets.length ? '<button class="link-btn" data-diet-clear>Clear</button>' : '') +
+      '</div>' +
       '<div class="candies">' + visible.map(function (c) { return candyCard(c, full); }).join('') + '</div>' +
-      (list.length > 12 ? '<div class="more-row"><button class="btn btn--soft" data-toggle-more>' +
-        (showAll ? 'Show fewer candies' : 'Show more candies (' + (list.length - 12) + ')') + '</button></div>' : '') +
-      (list.length === 0 ? '<p class="center" style="color:var(--ink-40)">No candy in this category yet.</p>' : '');
+      (list.length > 16 ? '<div class="more-row"><button class="btn btn--soft" data-toggle-more>' +
+        (showAll ? 'Show fewer candies' : 'Show more candies (' + (list.length - 16) + ')') + '</button></div>' : '') +
+      (list.length === 0 ? '<p class="center" style="color:var(--ink-40)">Nothing matches those filters — try clearing one.</p>' : '');
 
     $$('[data-filter]', host).forEach(function (b) {
       b.addEventListener('click', function () { filter = b.dataset.filter; showAll = false; renderCandy(); });
     });
+    $$('[data-diet]', host).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var id = b.dataset.diet, i = diets.indexOf(id);
+        if (i > -1) diets.splice(i, 1); else diets.push(id);
+        showAll = false;
+        renderCandy();
+      });
+    });
+    var clr = $('[data-diet-clear]', host);
+    if (clr) clr.addEventListener('click', function () { diets = []; renderCandy(); });
     var more = $('[data-toggle-more]', host);
     if (more) more.addEventListener('click', function () { showAll = !showAll; renderCandy(); });
 
     $$('[data-add]', host).forEach(function (b) {
       b.addEventListener('click', function () {
-        if (addCandy(b.dataset.add)) { renderAll(); flash(b.dataset.add); }
+        if (addCandy(b.dataset.add)) {
+          renderAll();
+          flash(b.dataset.add);
+          if (YL.trackStep) YL.trackStep('candy', { candy: b.dataset.add });
+        }
       });
     });
     $$('[data-inc]', host).forEach(function (b) {
@@ -208,6 +235,9 @@ window.YL = window.YL || {};
     var tag = c.tag === 'premium'
       ? '<span class="candy__tag">Premium</span>'
       : (c.tag ? '<span class="candy__tag candy__tag--mint">' + c.tag + '</span>' : '');
+    /* only the diets people actively shop for get a badge */
+    var diet = (c.diet || []).filter(function (d) { return d === 'vegan' || d === 'sugarfree'; })
+      .map(function (d) { return '<span class="candy__diet">' + (d === 'vegan' ? 'Vegan' : 'No sugar') + '</span>'; }).join('');
     var control = q > 0
       ? '<div class="qty"><button data-dec="' + c.id + '" aria-label="Remove one ' + YL.esc(c.name) + '">' + YL.icon('minus') + '</button>' +
         '<span>' + q + '</span>' +
@@ -215,7 +245,7 @@ window.YL = window.YL || {};
       : '<button class="candy__add" data-add="' + c.id + '">' + YL.icon('plus') + ' Add' +
         (c.extra ? ' · +' + YL.money(c.extra) : '') + '</button>';
     return '<div class="candy' + (q ? ' is-on' : '') + (full && !q ? ' is-full' : '') + '" data-candy="' + c.id + '">' +
-      tag + '<div class="candy__art">' + YL.candyTile(c) + '</div>' +
+      tag + '<div class="candy__art">' + YL.candyTile(c) + diet + '</div>' +
       '<b>' + c.name + '</b><small>' + c.flavor + '</small>' + control + '</div>';
   }
 
@@ -473,6 +503,7 @@ window.YL = window.YL || {};
       if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
       return;
     }
+    if (YL.trackAdd) YL.trackAdd(box);
     YL.addToCart(box, 1);
     YL.toast('Added to cart — ' + YL.boxLabel(box) + '.');
   }

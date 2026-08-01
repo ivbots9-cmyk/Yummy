@@ -71,10 +71,7 @@ window.YL = window.YL || {};
       lineRow('Shipping', t.shipping ? YL.money(t.shipping) : 'Free') +
       '<div class="line line--total"><span>Total</span><b>' + YL.money(t.total) + '</b></div>' +
       '</div>' +
-      (t.freeShippingGap > 0
-        ? '<p style="font-size:12.5px;color:var(--ink-60);margin:10px 0 0">Add <b>' + YL.money(t.freeShippingGap) +
-          '</b> more for free shipping.</p>'
-        : '<p style="font-size:12.5px;color:var(--mint);font-weight:800;margin:10px 0 0">You unlocked free shipping!</p>') +
+      shipGoal(t) +
       '<div class="panel__cta"><button class="btn btn--lg" data-checkout>' + YL.icon('shield') + ' Checkout</button></div>' +
       '<div class="guarantee">' + YL.icon('heart') +
       '<span><b>Packed fresh with love</b>Every box is packed the day it ships.</span></div>' +
@@ -83,6 +80,19 @@ window.YL = window.YL || {};
       'Demo store — checkout is simulated, no payment is taken.</p>';
 
     bind();
+  }
+
+  /* how close the cart is to free shipping — the single most reliable
+     nudge for a bigger order */
+  function shipGoal(t) {
+    var goal = YL.SHIPPING.freeOver;
+    var reached = t.freeShippingGap <= 0;
+    var pct = Math.max(0, Math.min(100, ((goal - t.freeShippingGap) / goal) * 100));
+    return '<div class="ship-goal' + (reached ? ' is-done' : '') + '">' +
+      '<p>' + (reached
+        ? 'Nice — <b>free shipping unlocked</b>.'
+        : 'You are <b>' + YL.money(t.freeShippingGap) + '</b> away from free shipping.') + '</p>' +
+      '<span class="ship-goal__bar"><i style="width:' + pct + '%"></i></span></div>';
   }
 
   function lineRow(label, value) {
@@ -127,6 +137,14 @@ window.YL = window.YL || {};
     if (checkout) checkout.addEventListener('click', function () {
       var t = YL.cartTotals(promo);
       var n = YL.cartCount();
+      if (YL.track) {
+        YL.track('begin_checkout', { value: t.total, coupon: promo || undefined });
+        YL.track('purchase', {
+          transaction_id: 'demo-' + Date.now(), value: t.total,
+          shipping: t.shipping, coupon: promo || undefined,
+          items: YL.getCart().map(function (i) { return YL.boxToItem(i.box); })
+        });
+      }
       YL.clearCart();
       promo = '';
       render();

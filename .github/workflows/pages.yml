@@ -38,7 +38,7 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p _site
-          cp -r index.html boxes.html cart.html about.html faq.html 404.html \
+          cp -r index.html boxes.html gifts.html cart.html about.html faq.html 404.html \
                 robots.txt sitemap.xml assets _site/
           ls -la _site
 

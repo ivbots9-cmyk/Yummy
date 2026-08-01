@@ -55,7 +55,9 @@ window.YL = window.YL || {};
   };
 
   function addPrebuilt(pb) {
-    YL.addToCart(YL.prebuiltBox(pb), 1);
+    var box = YL.prebuiltBox(pb);
+    if (YL.trackAdd) YL.trackAdd(box);
+    YL.addToCart(box, 1);
     YL.toast(pb.name + ' added to cart.');
   }
 
@@ -131,6 +133,7 @@ window.YL = window.YL || {};
 
   YL.openBoxModal = function (pb) {
     if (!pb) return;
+    if (YL.trackViewBox) YL.trackViewBox(pb);
     var m = ensureModal();
     lastFocus = document.activeElement;
 
@@ -208,6 +211,81 @@ window.YL = window.YL || {};
       var close = m.querySelector('.modal__close');
       if (close) close.focus();
     });
+  };
+
+
+  /* ---------- social video wall ---------- */
+  YL.renderSocial = function (sel, limit) {
+    var host = $(sel);
+    if (!host) return;
+    var list = limit ? YL.SOCIAL.slice(0, limit) : YL.SOCIAL;
+
+    host.innerHTML = '<div class="social">' + list.map(function (v) {
+      var pb = YL.getPrebuilt(v.box);
+      var art = pb
+        ? YL.boxArt({ color: v.color || pb.color, recipe: YL.prebuiltRecipe(pb), fill: 1, seed: 'v' + v.id })
+        : YL.boxArt({ color: v.color || 'pink', recipe: YL.mixedRecipe(), fill: 1, seed: 'v' + v.id });
+      return '<button class="vcard" data-video="' + v.id + '" aria-label="Play: ' + YL.esc(v.caption) + '">' +
+        '<span class="vcard__art">' + art + '</span>' +
+        '<span class="vcard__shade"></span>' +
+        '<span class="vcard__top">' + YL.icon(v.platform === 'instagram' ? 'instagram' : 'tiktok') +
+        YL.esc(v.handle) + '<span class="vcard__views">' + YL.esc(v.views) + '</span></span>' +
+        '<span class="vcard__play">' + playIcon() + '</span>' +
+        '<span class="vcard__cap">' + YL.esc(v.caption) +
+        (pb ? '<b>' + YL.esc(pb.name) + '</b>' : '') + '</span>' +
+        '</button>';
+    }).join('') + '</div>';
+
+    YL.$$('[data-video]', host).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = YL.SOCIAL.filter(function (x) { return x.id === b.dataset.video; })[0];
+        openVideo(v);
+      });
+    });
+  };
+
+  function playIcon() {
+    return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
+  }
+
+  function openVideo(v) {
+    if (!v) return;
+    var m = ensureModal();
+    lastFocus = document.activeElement;
+    var pb = YL.getPrebuilt(v.box);
+
+    m.innerHTML = '<div class="modal__box" role="document" style="background:transparent;box-shadow:none;overflow:visible;width:auto">' +
+      '<button class="modal__close" data-close aria-label="Close">' + YL.icon('x') + '</button>' +
+      '<div class="vplayer">' +
+      (v.src
+        ? '<video src="' + YL.esc(v.src) + '" controls autoplay playsinline></video>'
+        : '<div style="background:#fff;border-radius:var(--radius-l);overflow:hidden">' +
+          (pb ? YL.boxArt({ color: v.color || pb.color, recipe: YL.prebuiltRecipe(pb), fill: 1, seed: 'p' + v.id }) : '') +
+          '<p style="padding:16px 18px;margin:0;font-size:14px;color:var(--ink-60)">' +
+          '<b style="color:var(--ink)">' + YL.esc(v.handle) + '</b><br>' + YL.esc(v.caption) + '</p></div>') +
+      '<p class="vplayer__note">' +
+      (v.href ? 'Watch it on ' + (v.platform === 'instagram' ? 'Instagram' : 'TikTok') +
+        ': <a href="' + YL.esc(v.href) + '" target="_blank" rel="noopener">open the post</a>'
+        : 'Video coming soon — tag us and yours could land here.') +
+      (pb ? ' &nbsp;·&nbsp; <a href="' + YL.PATHS.builder + '?box=' + pb.id + '">Build this box</a>' : '') +
+      '</p></div></div>';
+
+    document.body.classList.add('modal-open');
+    requestAnimationFrame(function () {
+      m.classList.add('is-open');
+      var c = m.querySelector('.modal__close');
+      if (c) c.focus();
+    });
+  }
+
+  /* ---------- headline proof strip ---------- */
+  YL.renderProof = function (sel) {
+    var host = $(sel);
+    if (!host) return;
+    var p = YL.PROOF;
+    host.innerHTML = '<div class="proof"><span class="proof__stars">★★★★★</span>' +
+      '<span><b>' + p.rating + '/5</b> from <b>' + p.reviews.toLocaleString('en-US') + '</b> reviews</span>' +
+      '<span aria-hidden="true">·</span><span><b>' + p.boxesPacked + '</b> ' + p.line + '</span></div>';
   };
 
   /* ---------- occasions ---------- */

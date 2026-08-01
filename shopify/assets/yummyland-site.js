@@ -10,6 +10,7 @@ window.YL = window.YL || {};
   var NAV = [
     { href: 'index.html', label: 'Build Your Box', key: 'build' },
     { href: 'boxes.html', label: 'Candy Boxes', key: 'boxes' },
+    { href: 'gifts.html', label: 'Gifts', key: 'gifts' },
     { href: 'about.html#office', label: 'Office & Events', key: 'office' },
     { href: 'faq.html', label: 'FAQ', key: 'faq' },
     { href: 'about.html', label: 'About', key: 'about' }
@@ -79,7 +80,7 @@ window.YL = window.YL || {};
 
       col('Shop', [
         ['index.html', 'Build Your Box'], ['boxes.html', 'Candy Boxes'],
-        ['boxes.html#bulk', 'Bulk Candy'], ['boxes.html', 'Gift Cards']
+        ['gifts.html', 'Candy Gifts'], ['boxes.html#bulk', 'Bulk Candy']
       ]) +
       col('Help', [
         ['faq.html', 'FAQ'], ['faq.html#shipping', 'Shipping & Delivery'],
@@ -132,9 +133,81 @@ window.YL = window.YL || {};
 
   YL.on('cart:change', function () { YL.refreshCartCount(); });
 
+
+  /* ---------- announcement bar ---------- */
+  YL.renderAnnounce = function () {
+    var a = YL.ANNOUNCE;
+    if (!a || !a.text) return;
+    var el = document.createElement('div');
+    el.className = 'announce';
+    el.innerHTML = '<div class="wrap announce__in"><span>' + a.text + '</span>' +
+      (a.link ? '<a href="' + a.link + '">' + a.linkText + ' &rarr;</a>' : '') + '</div>';
+    document.body.insertBefore(el, document.body.firstChild);
+  };
+
+  /* ---------- trust bar ---------- */
+  YL.renderTrust = function (sel) {
+    var host = YL.$(sel);
+    if (!host) return;
+    host.innerHTML = '<div class="trust">' + YL.TRUST.map(function (t) {
+      return '<div class="trust__item">' + YL.icon(t.icon) +
+        '<span><b>' + t.title + '</b>' + t.text + '</span></div>';
+    }).join('') + '</div>';
+  };
+
+  /* ---------- delayed email offer ---------- */
+  var OFFER_KEY = 'yl.offer.seen';
+
+  YL.initEmailOffer = function () {
+    var o = YL.EMAIL_OFFER;
+    if (!o || !o.enabled) return;
+    try { if (localStorage.getItem(OFFER_KEY)) return; } catch (e) { return; }
+
+    var timer = setTimeout(show, o.delayMs || 15000);
+    /* leaving for the tab bar is the other honest moment to ask */
+    document.addEventListener('mouseleave', function onLeave(e) {
+      if (e.clientY <= 0) { clearTimeout(timer); document.removeEventListener('mouseleave', onLeave); show(); }
+    });
+
+    function seen() { try { localStorage.setItem(OFFER_KEY, '1'); } catch (e) { /* private mode */ } }
+
+    function show() {
+      if (document.querySelector('.offer')) return;
+      if (document.body.classList.contains('modal-open')) return;
+      var el = document.createElement('div');
+      el.className = 'offer';
+      el.innerHTML = '<div class="offer__box" role="dialog" aria-label="' + YL.esc(o.title) + '">' +
+        '<button class="modal__close" data-off aria-label="Close">' + YL.icon('x') + '</button>' +
+        '<div class="offer__art">' + YL.boxArt({ color: 'pink', recipe: YL.mixedRecipe(), fill: 1, seed: 'offer' }) + '</div>' +
+        '<h3>' + o.title + '</h3><p>' + o.text + '</p>' +
+        '<form class="offer__form"><input type="email" required placeholder="you@email.com" aria-label="Email">' +
+        '<button class="btn" type="submit">' + o.button + '</button></form>' +
+        '<button class="link-btn" data-off style="margin-top:12px">No thanks, I&rsquo;ll pay full price</button>' +
+        '</div>';
+      document.body.appendChild(el);
+      requestAnimationFrame(function () { el.classList.add('is-on'); });
+
+      el.addEventListener('click', function (e) {
+        if (e.target === el || e.target.closest('[data-off]')) { seen(); el.remove(); }
+      });
+      el.querySelector('form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        seen();
+        el.querySelector('.offer__box').innerHTML =
+          '<div class="offer__art">' + YL.boxArt({ color: 'mint', recipe: YL.mixedRecipe(), fill: 1, seed: 'offer2' }) + '</div>' +
+          '<h3>You&rsquo;re in!</h3><p>Use code <b class="pink">' + o.code + '</b> at checkout for $5 off your first box.</p>' +
+          '<a class="btn btn--lg" href="' + YL.PATHS.builder + '">Start building</a>';
+        YL.emit('offer:signup', { code: o.code });
+        setTimeout(function () { el.classList.remove('is-on'); setTimeout(function () { el.remove(); }, 300); }, 6000);
+      });
+    }
+  };
+
   /* ---------- shared page bootstrap ---------- */
   YL.initChrome = function (active) {
+    YL.renderAnnounce();
     YL.renderHeader(active);
     YL.renderFooter();
+    YL.initEmailOffer();
   };
 })(window.YL);

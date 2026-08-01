@@ -30,6 +30,7 @@ const JS = {
   'site.js': 'yummyland-site.js',
   'pages.js': 'yummyland-pages.js',
   'builder.js': 'yummyland-builder.js',
+  'analytics.js': 'yummyland-analytics.js',
   'shopify-cart.js': 'yummyland-shopify-cart.js'
 };
 Object.keys(JS).forEach((src) => {

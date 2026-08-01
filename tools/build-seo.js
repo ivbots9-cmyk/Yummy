@@ -106,6 +106,7 @@ const faqPage = {
 const PAGES = {
   'index.html': [org, website, builderProduct],
   'boxes.html': [org, boxList],
+  'gifts.html': [org, boxList],
   'faq.html': [org, faqPage],
   'about.html': [org],
   'cart.html': [org]
@@ -134,6 +135,10 @@ Object.keys(PAGES).forEach((file) => {
 const urls = [
   { loc: '/', priority: '1.0', freq: 'weekly' },
   { loc: '/boxes.html', priority: '0.9', freq: 'weekly' },
+  { loc: '/gifts.html', priority: '0.9', freq: 'weekly' },
+  { loc: '/gifts.html?for=birthday', priority: '0.7', freq: 'monthly' },
+  { loc: '/gifts.html?for=holiday', priority: '0.7', freq: 'monthly' },
+  { loc: '/gifts.html?for=office', priority: '0.7', freq: 'monthly' },
   { loc: '/about.html', priority: '0.6', freq: 'monthly' },
   { loc: '/faq.html', priority: '0.6', freq: 'monthly' }
 ].concat(YL.PREBUILT.map((pb) => ({ loc: '/index.html?box=' + pb.id, priority: '0.7', freq: 'monthly' })));

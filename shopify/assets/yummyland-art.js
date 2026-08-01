@@ -115,6 +115,40 @@ window.YL = window.YL || {};
     },
     heart: function (c) {
       return '<path d="M0 9 C-11 2 -10 -6 -4.6 -8 C-1.6 -9 0 -6.6 0 -5 C0 -6.6 1.6 -9 4.6 -8 C10 -6 11 2 0 9 Z" fill="' + c.a + '"/>';
+    },
+    /* --- shapes for the wider assortment --- */
+    swirl: function (c) {
+      return '<circle cx="0" cy="0" r="9.5" fill="' + c.a + '"/>' +
+        '<path d="M0 -9.5 A9.5 9.5 0 0 1 0 9.5 A6.5 6.5 0 0 1 0 -3.5 A3 3 0 0 0 0 2.5" fill="none" stroke="' +
+        (c.b || '#fff') + '" stroke-width="3.2" stroke-linecap="round"/>';
+    },
+    bar: function (c) {
+      return '<rect x="-11" y="-7" width="22" height="14" rx="2.5" fill="' + c.a + '"/>' +
+        '<path d="M-3.7 -7v14M3.7 -7v14M-11 0h22" stroke="#000" opacity=".2" stroke-width="1.4"/>' +
+        '<rect x="-11" y="-7" width="22" height="4" rx="2" fill="#fff" opacity=".14"/>';
+    },
+    straw: function (c) {
+      return '<rect x="-13" y="-3.4" width="26" height="6.8" rx="3.4" fill="' + c.a + '"/>' +
+        '<rect x="-13" y="-3.4" width="26" height="2.4" rx="1.2" fill="#fff" opacity=".35"/>';
+    },
+    coil: function (c) {
+      return '<circle cx="0" cy="0" r="9.5" fill="' + c.a + '"/>' +
+        '<circle cx="0" cy="0" r="6" fill="none" stroke="' + (c.b || '#fff') + '" stroke-width="2.6"/>' +
+        '<circle cx="0" cy="0" r="2" fill="' + (c.b || '#fff') + '"/>';
+    },
+    crystal: function (c) {
+      return '<path d="M0 -10 L6 -3 L4 8 L-4 8 L-6 -3 Z" fill="' + c.a + '" opacity=".92"/>' +
+        '<path d="M0 -10 L6 -3 L0 -1 Z" fill="#fff" opacity=".4"/>';
+    },
+    cup: function (c) {
+      return '<path d="M-9 -6 h18 l-2.4 12 c-.3 1.6-1.6 2.6-3.2 2.6 h-6.8 c-1.6 0-2.9-1-3.2-2.6 Z" fill="' + c.a + '"/>' +
+        '<ellipse cx="0" cy="-6" rx="9" ry="3" fill="' + (c.b || '#c98b45') + '"/>';
+    },
+    wrapped: function (c) {
+      return '<path d="M-13 -4 l4.5 4 -4.5 4 z" fill="' + (c.b || c.a) + '"/>' +
+        '<path d="M13 -4 l-4.5 4 4.5 4 z" fill="' + (c.b || c.a) + '"/>' +
+        '<circle cx="0" cy="0" r="8" fill="' + c.a + '"/>' +
+        '<ellipse cx="-2.6" cy="-2.8" rx="2.8" ry="1.8" fill="#fff" opacity=".4"/>';
     }
   };
 
