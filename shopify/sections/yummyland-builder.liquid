@@ -87,7 +87,7 @@
     ],
     addons: [
       {%- for p in addon_collection.products -%}
-        { "handle": {{ p.handle | json }}, "id": {{ p.variants.first.id }}, "price": {{ p.variants.first.price }} }
+        { "handle": {{ p.handle | json }}, "sku": {{ p.variants.first.sku | json }}, "id": {{ p.variants.first.id }}, "price": {{ p.variants.first.price }} }
         {%- unless forloop.last -%},{%- endunless -%}
       {%- endfor -%}
     ]

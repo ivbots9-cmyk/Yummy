@@ -50,15 +50,25 @@ window.YL = window.YL || {};
     return map;
   })();
 
+  /* Add-ons are found by SKU first (YL-EXTRA-STICKERS), then by handle,
+     so the merchant is free to rename the products. */
   var ADDON_MAP = (function () {
     if (CFG.addons && !Array.isArray(CFG.addons)) return CFG.addons;
     var map = {};
-    (CFG.addons || []).forEach(function (a) { map[a.handle] = a.id; });
+    (CFG.addons || []).forEach(function (a) {
+      if (a.handle) map[String(a.handle).toLowerCase()] = a.id;
+      if (a.sku) map[String(a.sku).toLowerCase()] = a.id;
+    });
     return map;
   })();
 
   function sizeVariant(sizeId) { return SIZE_MAP[sizeId] || null; }
-  function addonVariant(handle) { return ADDON_MAP[handle] || null; }
+
+  function addonVariant(key) {
+    /* key looks like yl-extra-stickers or yl-premium-choc-almonds,
+       which is exactly the lower-cased SKU of the add-on product */
+    return ADDON_MAP[key] || null;
+  }
 
   /* human-readable contents shown on the cart, checkout and packing slip */
   function properties(box) {

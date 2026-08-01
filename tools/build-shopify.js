@@ -175,7 +175,7 @@ YL.CANDIES.filter((c) => c.extra > 0).forEach((c) => {
     Type: 'Box add-on',
     Tags: 'yummyland, yl-addon, yl-premium',
     'Option1 Name': 'Title', 'Option1 Value': 'Default Title',
-    'Variant SKU': 'YL-PREM-' + c.id.toUpperCase(),
+    'Variant SKU': 'YL-PREMIUM-' + c.id.toUpperCase(),
     'Variant Price': c.extra.toFixed(2),
     'Variant Requires Shipping': 'FALSE'
   })));
