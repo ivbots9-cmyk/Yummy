@@ -2,3 +2,9 @@
 Thumbs.db
 node_modules/
 *.log
+
+# Candy photos pulled off the Shopify CDN by tools/fetch-photos.js.
+# Fetched during the Pages build, so there is no reason to carry ~5 MB of
+# binaries in git. Run the script locally if you want them offline;
+# `node tools/fetch-photos.js --restore` undoes it, data.js included.
+assets/img/candy/

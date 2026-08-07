@@ -197,7 +197,7 @@ window.YL = window.YL || {};
     opts = opts || {};
     var w = opts.w || 150, h = opts.h || 104;
     if (candy.img && !opts.vector) {
-      return '<img class="candy__photo" src="' + esc(photoUrl(candy.img, opts.px || 420)) + '" ' +
+      return '<img class="candy__photo" src="' + esc(photoUrl(candy, opts.px || 420)) + '" ' +
         'alt="' + esc(candy.name) + '" loading="lazy" decoding="async" ' +
         'onerror="YL.photoFallback(this)" data-candy-id="' + esc(candy.id) + '" ' +
         'style="background:' + (candy.bg || '#fff2f8') + '">';
@@ -212,19 +212,30 @@ window.YL = window.YL || {};
       }) + '</svg>';
   };
 
-  /* Shopify's CDN resizes on the fly, which keeps the cards light. Any
-     other host just gets the URL back untouched. */
-  function photoUrl(url, px) {
+  /* A local copy wins when tools/fetch-photos.js has put one there.
+     Otherwise it is the Shopify CDN, which resizes on the fly — asking
+     for the width we actually render keeps the cards light. Any other
+     host gets its URL back untouched. */
+  function photoUrl(candy, px) {
+    if (candy.photo && YL.PHOTO_BASE) return YL.PHOTO_BASE + candy.photo;
+    var url = candy.img;
     if (!/cdn\.shopify\.com/.test(url)) return url;
     return url + (url.indexOf('?') > -1 ? '&' : '?') + 'width=' + px;
   }
   YL.photoUrl = photoUrl;
 
-  /* A photo that will not load (CDN down, image deleted, offline) falls
-     back to the generated pile, so a card is never an empty grey box. */
+  /* A photo that will not load falls back one step at a time: a missing
+     local copy retries the CDN, and only a candy with no working photo
+     at all drops to the generated pile. A card is never an empty box. */
   YL.photoFallback = function (img) {
     var candy = YL.getCandy && YL.getCandy(img.getAttribute('data-candy-id'));
     if (!candy || !img.parentNode) return;
+    if (!img.getAttribute('data-retried') && candy.photo && candy.img &&
+        img.getAttribute('src').indexOf('cdn.shopify.com') < 0) {
+      img.setAttribute('data-retried', '1');
+      img.src = candy.img;
+      return;
+    }
     var plain = {}, k;
     for (k in candy) if (Object.prototype.hasOwnProperty.call(candy, k)) plain[k] = candy[k];
     plain.img = null;
@@ -237,7 +248,7 @@ window.YL = window.YL || {};
   YL.candyDot = function (candy, size) {
     var s = size || 40;
     if (candy.img) {
-      return '<img class="candy-dot" src="' + esc(photoUrl(candy.img, 120)) + '" alt="" loading="lazy" ' +
+      return '<img class="candy-dot" src="' + esc(photoUrl(candy, 120)) + '" alt="" loading="lazy" ' +
         'onerror="YL.photoFallback(this)" data-candy-id="' + esc(candy.id) + '" ' +
         'width="' + s + '" height="' + s + '" style="background:' + (candy.bg || '#fff2f8') + '">';
     }

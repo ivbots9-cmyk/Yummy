@@ -33,6 +33,16 @@ jobs:
 
       - uses: actions/configure-pages@v5
 
+      # Pull the candy photos off the Shopify CDN and into the build, so the
+      # published site serves them itself. Deliberately not fatal: if the CDN
+      # is unreachable the candies keep their cdn.shopify.com urls and the
+      # site still works — it just has an external dependency that day.
+      - name: Fetch candy photos
+        continue-on-error: true
+        run: |
+          node tools/fetch-photos.js
+          node tools/fetch-photos.js --check
+
       # Publish only the site itself — the Shopify package, tooling and
       # workflows have no business being served to visitors.
       - name: Assemble site
@@ -40,6 +50,7 @@ jobs:
           mkdir -p _site
           cp -r index.html boxes.html gifts.html cart.html about.html faq.html 404.html \
                 robots.txt sitemap.xml assets _site/
+          du -sh _site/assets/img/candy 2>/dev/null || echo "photos: serving from the Shopify CDN"
           ls -la _site
 
       - uses: actions/upload-pages-artifact@v3

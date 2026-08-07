@@ -26,6 +26,14 @@ window.YL = window.YL || {};
      Set by the adapter script, not here. */
   YL.cartAdapter = YL.cartAdapter || null;
 
+  /* Where candy photos come from.
+     Every candy carries `img` — its Shopify CDN url — and, once
+     `node tools/fetch-photos.js` has run, a `photo` filename too.
+     With PHOTO_BASE set, the local copy wins and the site has no
+     external dependencies; the Shopify build sets it to '' so the
+     theme keeps serving the same files off the Shopify CDN. */
+  YL.PHOTO_BASE = YL.PHOTO_BASE == null ? '' : YL.PHOTO_BASE;   /* Shopify build: CDN photos */
+
   /* Store settings used by the price summary. */
   YL.CURRENCY = 'USD';
 })(window.YL);
