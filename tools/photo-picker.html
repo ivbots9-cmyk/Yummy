@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yummyland — pick the bulk photo for each candy</title>
+<style>
+  :root { --pink: #ff2e8b; --line: #f0e2e9; --ink: #2b1e26; --ink-40: #8a7b83; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px; background: #fff8fb; color: var(--ink);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  .intro { max-width: 760px; color: var(--ink-40); margin: 0 0 18px; }
+  .bar { position: sticky; top: 0; z-index: 5; background: #fff; border: 2px solid var(--pink);
+         border-radius: 14px; padding: 12px 16px; margin-bottom: 22px;
+         display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+         box-shadow: 0 6px 20px rgba(255,46,139,.12); }
+  button { font: inherit; font-weight: 700; border-radius: 999px; padding: 9px 18px;
+           border: 2px solid var(--pink); background: var(--pink); color: #fff; cursor: pointer; }
+  button.ghost { background: #fff; color: var(--pink); }
+  .count { margin-left: auto; font-weight: 700; color: var(--ink-40); }
+  .row { background: #fff; border: 1px solid var(--line); border-radius: 14px;
+         padding: 14px 16px; margin-bottom: 14px; }
+  .row h2 { font-size: 16px; margin: 0 0 2px; }
+  .row p { margin: 0 0 10px; font-size: 13px; color: var(--ink-40); }
+  .shots { display: flex; gap: 10px; flex-wrap: wrap; }
+  .shot { border: 3px solid transparent; border-radius: 12px; padding: 0; overflow: hidden;
+          background: #f7eef3; cursor: pointer; line-height: 0; position: relative; }
+  .shot img { width: 150px; height: 150px; object-fit: cover; display: block; }
+  .shot.on { border-color: var(--pink); }
+  .shot .n { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,.6); color: #fff;
+             border-radius: 999px; font-size: 11px; padding: 1px 7px; line-height: 1.6; }
+  .shot.on .n { background: var(--pink); }
+  .only { font-size: 12.5px; color: var(--ink-40); }
+  textarea { width: 100%; height: 220px; font: 12px/1.5 ui-monospace, Menlo, monospace;
+             border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .out { display: none; margin-top: 20px; }
+  .out.on { display: block; }
+</style>
+</head>
+<body>
+
+<h1>Pick the bulk photo</h1>
+<p class="intro">
+  Every photo Shopify holds for each candy, in order. Click the one that shows the
+  <b>loose candy</b> rather than the retail packet — that is what belongs on a
+  pick-and-mix card. The highlighted one is what the site uses today, so you only
+  need to touch the ones that are wrong. When you are done press
+  <b>Export choices</b> and save the result as <code>tools/photo-choices.json</code>,
+  then run <code>node tools/apply-photo-choices.js</code>.
+</p>
+
+<div class="bar">
+  <button id="export">Export choices</button>
+  <button class="ghost" id="reset">Reset to current</button>
+  <span class="count" id="count"></span>
+</div>
+
+<div id="list"></div>
+
+<div class="out" id="out">
+  <p><b>Save this as <code>tools/photo-choices.json</code></b>, then run
+     <code>node tools/apply-photo-choices.js</code>.</p>
+  <textarea id="json" readonly></textarea>
+</div>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/art.js"></script>
+<script src="../assets/js/data.js"></script>
+<script src="photo-options.js"></script>
+<script>
+  var KEY = 'yl.photo.picks';
+  var picks = {};
+  try { picks = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { picks = {}; }
+
+  var list = document.getElementById('list');
+  var candies = YL.CANDIES.filter(function (c) { return YL.PHOTO_OPTIONS[c.id]; });
+
+  function chosen(c) {
+    return picks[c.id] || YL.PHOTO_OPTIONS[c.id][0];
+  }
+
+  function render() {
+    list.innerHTML = candies.map(function (c) {
+      var urls = YL.PHOTO_OPTIONS[c.id];
+      var pick = chosen(c);
+      return '<div class="row"><h2>' + c.name + '</h2>' +
+        '<p>' + c.flavor + ' · ' + urls.length + ' photo' + (urls.length > 1 ? 's' : '') +
+        (urls.length === 1 ? ' <span class="only">— only one on file, nothing to swap</span>' : '') +
+        '</p><div class="shots">' +
+        urls.map(function (u, i) {
+          return '<button class="shot' + (u === pick ? ' on' : '') + '" data-id="' + c.id +
+            '" data-url="' + u + '"><span class="n">' + (i + 1) + '</span>' +
+            '<img loading="lazy" src="' + u + '?width=300" alt=""></button>';
+        }).join('') + '</div></div>';
+    }).join('');
+    var changed = candies.filter(function (c) { return picks[c.id] && picks[c.id] !== YL.PHOTO_OPTIONS[c.id][0]; }).length;
+    document.getElementById('count').textContent = changed + ' of ' + candies.length + ' changed';
+  }
+
+  list.addEventListener('click', function (e) {
+    var b = e.target.closest('.shot');
+    if (!b) return;
+    picks[b.dataset.id] = b.dataset.url;
+    localStorage.setItem(KEY, JSON.stringify(picks));
+    render();
+  });
+
+  document.getElementById('reset').addEventListener('click', function () {
+    picks = {};
+    localStorage.removeItem(KEY);
+    render();
+    document.getElementById('out').classList.remove('on');
+  });
+
+  document.getElementById('export').addEventListener('click', function () {
+    var out = {};
+    candies.forEach(function (c) {
+      var p = chosen(c);
+      if (p !== YL.PHOTO_OPTIONS[c.id][0]) out[c.id] = p;
+    });
+    document.getElementById('json').value = JSON.stringify(out, null, 2);
+    document.getElementById('out').classList.add('on');
+    document.getElementById('json').select();
+  });
+
+  render();
+</script>
+</body>
+</html>

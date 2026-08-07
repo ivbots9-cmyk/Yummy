@@ -276,7 +276,7 @@ window.YL = window.YL || {};
       pieces: 22,
       tag: 'sells out',
       about: 'Nothing but the pink ones — about 90 strawberry chews to the pound. The single most requested pick we stock.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/8fd292e3b1c14a03bc9b2197c4fba7ff_tplv-fhlh96nyum-origin-jpeg.jpg',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Starburst-Pink-Strawberry-Chewy-Candy-1-LB-Approx-90-Pieces-Bulk-Bag-Pink-Individually-Wrapped-Candy-Perfect-Parties-Candy-Buffets-Pink-Party-Favors_bd113bcc-2707-4cd6-96b3-f51853448e.webp',
       bg: '#fff0f6',
       recipe: [
         { shape: 'taffy', colors: { a: '#ff5d8f', b: '#ffd9ea' } }, { shape: 'taffy', colors: { a: '#ff7fa8', b: '#ffe4ef' } }

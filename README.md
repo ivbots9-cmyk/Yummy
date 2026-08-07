@@ -135,6 +135,9 @@ assets/js/shopify-cart.js              адаптер корзины Shopify (в
 shopify/                               готовый пакет для темы Shopify — см. shopify/README-SHOPIFY.md
 tools/build-seo.js                     JSON-LD + sitemap.xml + robots.txt из данных каталога
 tools/fetch-photos.js                  качает фото конфет с Shopify CDN в assets/img/candy/
+tools/stamp-assets.js                  проставляет ?v=<хеш> на css/js, чтобы браузер не смешивал версии
+tools/photo-picker.html                выбор «россыпь, а не пачка» для каждой конфеты
+tools/apply-photo-choices.js           применяет выбор из tools/photo-choices.json к data.js
 tools/build-shopify.js                 сборка shopify/assets и products.csv из исходников
 ```
 
@@ -254,6 +257,25 @@ node tools/fetch-photos.js --restore  # удалить локальные коп
 `photo:`. `img:` при этом не трогается, поэтому откат всегда возможен, а Shopify-сборка
 продолжает брать фото с CDN (`tools/build-shopify.js` выставляет `YL.PHOTO_BASE = ''`).
 Сами картинки в git не коммитятся — они в `.gitignore`, их тянет билд.
+
+### Какое фото у конфеты
+
+Shopify держит по несколько фото на товар, и первое — не всегда то, что нужно:
+у части позиций это пачка, а не сама конфета россыпью. На карточке в конструкторе
+правильнее показывать конфету.
+
+Все варианты выгружены в `tools/photo-options.js` (52 конфеты, 257 фото; это файл
+для инструмента, на сайт он не идёт). Выбор делается глазами:
+
+1. Открыть **`tools/photo-picker.html`** в браузере — все фото каждой конфеты в ряд,
+   текущее подсвечено.
+2. Кликнуть то, где конфета россыпью. Трогать нужно только неправильные.
+3. **Export choices** → сохранить как `tools/photo-choices.json`.
+4. `node tools/apply-photo-choices.js` — перепишет `img:` в `data.js`.
+5. `node tools/fetch-photos.js --restore && node tools/fetch-photos.js` — перекачает.
+
+У шести позиций (Sour Power straws / mini belts / bursts, pickle belts, Smarties mini
+rolls, Double Lollies) в Shopify всего одно фото — менять там не на что.
 
 Порядок выбора картинки в `YL.photoUrl`: локальная копия → CDN → сгенерированная
 SVG-россыпь. Если локальный файл пропал, `YL.photoFallback` сначала пробует CDN
