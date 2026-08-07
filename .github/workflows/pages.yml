@@ -43,6 +43,12 @@ jobs:
           node tools/fetch-photos.js
           node tools/fetch-photos.js --check
 
+      # Hash the css/js urls. A browser must never end up holding a cached
+      # copy of one script beside a fresh copy of another — that mismatch
+      # fails silently and takes whole sections of the page down with it.
+      - name: Stamp asset versions
+        run: node tools/stamp-assets.js
+
       # Publish only the site itself — the Shopify package, tooling and
       # workflows have no business being served to visitors.
       - name: Assemble site

@@ -242,11 +242,27 @@ window.YL = window.YL || {};
     }
   };
 
-  /* ---------- shared page bootstrap ---------- */
+  /* ---------- shared page bootstrap ----------
+     Page bootstraps are a flat list of independent render calls. Left
+     bare, the first one that throws takes every section below it with
+     it — a broken hero blanks the whole marketing page while the
+     builder above keeps working, which is confusing and invisible.
+     Each call goes through YL.boot so a failure costs one block and
+     says so in the console. */
+  YL.boot = function (label, fn) {
+    try {
+      fn();
+    } catch (e) {
+      if (window.console && console.error) {
+        console.error('[Yummyland] "' + label + '" failed to render:', e);
+      }
+    }
+  };
+
   YL.initChrome = function (active) {
-    YL.renderAnnounce();
-    YL.renderHeader(active);
-    YL.renderFooter();
-    YL.initEmailOffer();
+    YL.boot('announce bar', function () { YL.renderAnnounce(); });
+    YL.boot('header', function () { YL.renderHeader(active); });
+    YL.boot('footer', function () { YL.renderFooter(); });
+    YL.boot('email offer', function () { YL.initEmailOffer(); });
   };
 })(window.YL);
