@@ -9,22 +9,23 @@ window.YL = window.YL || {};
   'use strict';
 
   var $ = YL.$, $$ = YL.$$;
-  var box, filter = 'all', showAll = false, diets = [];
+  var box, filter = 'all', showAll = false, traits = [];
 
   var STEPS = [
-    { id: 'step-size', t: 'Choose size', d: 'Pick the perfect box' },
-    { id: 'step-candy', t: 'Pick candy', d: 'Choose your favorites' },
+    { id: 'step-size', t: 'Choose weight', d: '1 lb to 5 lb' },
+    { id: 'step-candy', t: 'Scoop it full', d: '4 oz per scoop' },
     { id: 'step-vibe', t: 'Choose vibe', d: 'Set the mood' },
     { id: 'step-extras', t: 'Add extras', d: 'Notes & goodies' },
     { id: 'step-review', t: 'Review', d: 'Check out your box' }
   ];
 
   /* ------------------------------------------------------------------ */
-  /* state helpers                                                       */
+  /* state helpers — capacity is counted in 4 oz scoops                  */
   /* ------------------------------------------------------------------ */
-  function slots() { return YL.getSize(box.size).slots; }
-  function used() { return YL.boxSlotsUsed(box); }
+  function slots() { return YL.boxCapacity(box); }
+  function used() { return YL.boxScoopsUsed(box); }
   function left() { return slots() - used(); }
+  function oz(scoops) { return YL.weightLabel(scoops * YL.PRICING.scoopOz); }
   function qtyOf(id) {
     for (var i = 0; i < box.candies.length; i++) if (box.candies[i].id === id) return box.candies[i].qty;
     return 0;
@@ -35,7 +36,7 @@ window.YL = window.YL || {};
 
   function addCandy(id, silent) {
     if (left() <= 0) {
-      if (!silent) YL.toast('Box is full — remove a candy or size up.');
+      if (!silent) YL.toast('That is a full ' + oz(slots()) + ' — drop a scoop or size up.');
       return false;
     }
     var found = false;
@@ -54,8 +55,9 @@ window.YL = window.YL || {};
     persist();
   }
 
-  function setSize(id) {
-    box.size = id;
+  /* Shrinking the box (or dropping the extra-scoop add-on) trims the
+     last scoops off the end rather than silently overfilling. */
+  function trimToFit() {
     var over = used() - slots();
     while (over > 0 && box.candies.length) {
       var last = box.candies[box.candies.length - 1];
@@ -64,6 +66,11 @@ window.YL = window.YL || {};
       over -= take;
       if (last.qty === 0) box.candies.pop();
     }
+  }
+
+  function setSize(id) {
+    box.size = id;
+    trimToFit();
     persist();
   }
 
@@ -135,20 +142,21 @@ window.YL = window.YL || {};
     if (!host) return;
     var pct = slots() ? Math.min(100, (used() / slots()) * 100) : 0;
     host.innerHTML =
-      head(1, 'Step 1: Choose your box size', 'How much candy do you need?') +
+      head(1, 'Step 1: Choose your weight', 'Boxes are sold by weight and packed to the gram. Bigger box, lower price per pound.') +
       '<div class="sizes">' + YL.SIZES.map(function (s) {
         return '<button class="size' + (s.id === box.size ? ' is-on' : '') + '" data-size="' + s.id + '" ' +
           'aria-pressed="' + (s.id === box.size) + '">' +
           '<span class="tick">' + YL.icon('check') + '</span>' +
           YL.boxIcon(0.5 + YL.SIZES.indexOf(s) * 0.16) +
-          '<b>' + s.name + '</b><span>' + s.serves + '</span>' +
-          '<span>Up to ' + s.slots + ' candies</span>' +
-          '<span class="price">' + YL.money(s.price) + '</span></button>';
+          '<b>' + s.name + '</b><span class="size__wt">' + YL.weightLabel(s.oz) + ' of candy</span>' +
+          '<span>' + s.scoops + ' scoops · ' + s.serves + '</span>' +
+          '<span class="price">' + YL.money(s.price) + '</span>' +
+          '<span class="size__unit">' + YL.money(s.price / (s.oz / 16)) + ' / lb</span></button>';
       }).join('') + '</div>' +
       '<div class="capacity">' +
       '<b>' + YL.getSize(box.size).name + '</b>' +
       '<span class="meter"><i style="width:' + pct + '%"></i></span>' +
-      '<span class="count">' + used() + ' / ' + slots() + ' candies</span></div>';
+      '<span class="count">' + oz(used()) + ' / ' + oz(slots()) + '</span></div>';
 
     $$('[data-size]', host).forEach(function (b) {
       b.addEventListener('click', function () {
@@ -169,8 +177,8 @@ window.YL = window.YL || {};
     if (!host) return;
     var list = YL.CANDIES.filter(function (c) {
       if (filter !== 'all' && c.cats.indexOf(filter) < 0) return false;
-      for (var i = 0; i < diets.length; i++) {
-        if ((c.diet || []).indexOf(diets[i]) < 0) return false;
+      for (var i = 0; i < traits.length; i++) {
+        if ((c.traits || []).indexOf(traits[i]) < 0) return false;
       }
       return true;
     });
@@ -178,37 +186,41 @@ window.YL = window.YL || {};
     var full = left() <= 0;
 
     host.innerHTML =
-      head(2, 'Step 2: Pick your candies', 'Tap to add — premium picks add a little extra.',
-        '<span class="badge">' + used() + ' / ' + slots() + ' picked</span>') +
+      head(2, 'Step 2: Scoop it full',
+        'Every tap adds one 4 oz scoop. Tap the same candy twice for a double scoop.',
+        '<span class="badge">' + oz(used()) + ' / ' + oz(slots()) + '</span>') +
       '<div class="filters">' + YL.CATEGORIES.map(function (c) {
         return '<button class="filter' + (c.id === filter ? ' is-on' : '') + '" data-filter="' + c.id + '">' + c.name + '</button>';
       }).join('') + '</div>' +
       '<div class="filters filters--diet">' +
-      '<span class="filters__label">Dietary</span>' +
-      YL.DIETS.map(function (d) {
-        return '<button class="filter filter--diet' + (diets.indexOf(d.id) > -1 ? ' is-on' : '') +
-          '" data-diet="' + d.id + '">' + YL.icon(d.icon) + d.name + '</button>';
+      '<span class="filters__label">Good to know</span>' +
+      YL.TRAITS.map(function (d) {
+        return '<button class="filter filter--diet' + (traits.indexOf(d.id) > -1 ? ' is-on' : '') +
+          '" data-trait="' + d.id + '">' + YL.icon(d.icon) + d.name + '</button>';
       }).join('') +
-      (diets.length ? '<button class="link-btn" data-diet-clear>Clear</button>' : '') +
+      (traits.length ? '<button class="link-btn" data-trait-clear>Clear</button>' : '') +
       '</div>' +
       '<div class="candies">' + visible.map(function (c) { return candyCard(c, full); }).join('') + '</div>' +
       (list.length > 16 ? '<div class="more-row"><button class="btn btn--soft" data-toggle-more>' +
         (showAll ? 'Show fewer candies' : 'Show more candies (' + (list.length - 16) + ')') + '</button></div>' : '') +
-      (list.length === 0 ? '<p class="center" style="color:var(--ink-40)">Nothing matches those filters — try clearing one.</p>' : '');
+      (list.length === 0 ? '<p class="center" style="color:var(--ink-40)">Nothing matches those filters — try clearing one.</p>' : '') +
+      '<p class="candies__note">' + YL.icon('note') +
+      ' Allergens change with the recipe, so we point you at the pack rather than guessing. ' +
+      'Tell us what to leave out in step 4 and we read it before we scoop.</p>';
 
     $$('[data-filter]', host).forEach(function (b) {
       b.addEventListener('click', function () { filter = b.dataset.filter; showAll = false; renderCandy(); });
     });
-    $$('[data-diet]', host).forEach(function (b) {
+    $$('[data-trait]', host).forEach(function (b) {
       b.addEventListener('click', function () {
-        var id = b.dataset.diet, i = diets.indexOf(id);
-        if (i > -1) diets.splice(i, 1); else diets.push(id);
+        var id = b.dataset.trait, i = traits.indexOf(id);
+        if (i > -1) traits.splice(i, 1); else traits.push(id);
         showAll = false;
         renderCandy();
       });
     });
-    var clr = $('[data-diet-clear]', host);
-    if (clr) clr.addEventListener('click', function () { diets = []; renderCandy(); });
+    var clr = $('[data-trait-clear]', host);
+    if (clr) clr.addEventListener('click', function () { traits = []; renderCandy(); });
     var more = $('[data-toggle-more]', host);
     if (more) more.addEventListener('click', function () { showAll = !showAll; renderCandy(); });
 
@@ -234,18 +246,19 @@ window.YL = window.YL || {};
     var tag = c.tag === 'premium'
       ? '<span class="candy__tag">Premium</span>'
       : (c.tag ? '<span class="candy__tag candy__tag--mint">' + c.tag + '</span>' : '');
-    /* only the diets people actively shop for get a badge */
-    var diet = (c.diet || []).filter(function (d) { return d === 'vegan' || d === 'sugarfree'; })
-      .map(function (d) { return '<span class="candy__diet">' + (d === 'vegan' ? 'Vegan' : 'No sugar') + '</span>'; }).join('');
+    /* how much of it you actually get, which is the whole point of a scoop */
+    var scoop = '<span class="candy__scoop">' + YL.PRICING.scoopOz + ' oz scoop' +
+      (c.pieces ? ' · ~' + c.pieces + ' pcs' : '') + '</span>';
     var control = q > 0
-      ? '<div class="qty"><button data-dec="' + c.id + '" aria-label="Remove one ' + YL.esc(c.name) + '">' + YL.icon('minus') + '</button>' +
-        '<span>' + q + '</span>' +
-        '<button data-inc="' + c.id + '" aria-label="Add one more ' + YL.esc(c.name) + '">' + YL.icon('plus') + '</button></div>'
-      : '<button class="candy__add" data-add="' + c.id + '">' + YL.icon('plus') + ' Add' +
+      ? '<div class="qty"><button data-dec="' + c.id + '" aria-label="Remove one scoop of ' + YL.esc(c.name) + '">' + YL.icon('minus') + '</button>' +
+        '<span>' + q + ' × ' + YL.PRICING.scoopOz + ' oz</span>' +
+        '<button data-inc="' + c.id + '" aria-label="Add another scoop of ' + YL.esc(c.name) + '">' + YL.icon('plus') + '</button></div>'
+      : '<button class="candy__add" data-add="' + c.id + '">' + YL.icon('plus') + ' Add scoop' +
         (c.extra ? ' · +' + YL.money(c.extra) : '') + '</button>';
     return '<div class="candy' + (q ? ' is-on' : '') + (full && !q ? ' is-full' : '') + '" data-candy="' + c.id + '">' +
-      tag + '<div class="candy__art">' + YL.candyTile(c) + diet + '</div>' +
-      '<b>' + c.name + '</b><small>' + c.flavor + '</small>' + control + '</div>';
+      tag + '<div class="candy__art">' + YL.candyTile(c) + scoop + '</div>' +
+      '<b>' + c.name + '</b><small>' + c.flavor + '</small>' +
+      (c.about ? '<p class="candy__about">' + c.about + '</p>' : '') + control + '</div>';
   }
 
   function flash(id) {
@@ -296,6 +309,10 @@ window.YL = window.YL || {};
           '<span><b>' + e.name + '</b><small>' + e.desc + '</small>' +
           '<span class="cost">' + (e.price ? '+' + YL.money(e.price) : 'Free') + '</span></span></button>';
       }).join('') + '</div>' +
+      (hasExtra('scoop')
+        ? '<p class="extras__note">' + YL.icon('check') + ' Your box now holds <b>' + oz(slots()) +
+          '</b> — go back to step 2 and scoop the extra 4 oz.</p>'
+        : '') +
 
       (hasExtra('theme')
         ? '<div class="swatches" data-swatches><span style="font-size:12.5px;font-weight:800">Box color:</span>' +
@@ -320,6 +337,13 @@ window.YL = window.YL || {};
         var id = b.dataset.extra;
         if (hasExtra(id)) box.extras = box.extras.filter(function (x) { return x !== id; });
         else box.extras.push(id);
+        var e = YL.getExtra(id);
+        if (e && e.addsScoop) {
+          trimToFit();                       /* dropping it shrinks the box */
+          YL.toast(hasExtra(id)
+            ? 'Room for one more scoop — you can now pack ' + oz(slots()) + '.'
+            : 'Back to ' + oz(slots()) + '.');
+        }
         persist();
         renderAll();
       });
@@ -357,17 +381,19 @@ window.YL = window.YL || {};
       '<div class="review-grid" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px">' +
       '<div>' + YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'review' }) + '</div>' +
       '<div>' +
-      row('Box size', size.name + ' · ' + size.serves, 'step-size') +
+      row('Box size', size.name + ' · ' + YL.weightLabel(size.oz) + ' · ' + size.serves, 'step-size') +
+      row('Fill weight', oz(used()) + ' of ' + oz(slots()) +
+        (left() > 0 ? ' <span class="warn">— ' + oz(left()) + ' still empty</span>' : ' — packed full'), 'step-candy') +
       row('Candies', used() ? box.candies.map(function (c) {
-        return YL.getCandy(c.id).name + (c.qty > 1 ? ' ×' + c.qty : '');
-      }).join(', ') : 'Nothing picked yet', 'step-candy') +
+        return YL.getCandy(c.id).name + ' (' + oz(c.qty) + ')';
+      }).join(', ') : 'Nothing scooped yet', 'step-candy') +
       row('Vibe', vibe ? vibe.name : '—', 'step-vibe') +
       row('Extras', extras.length ? extras.join(', ') : 'None', 'step-extras') +
       (box.note ? row('Gift note', '“' + YL.esc(box.note) + '”', 'step-extras') : '') +
       (box.prefs ? row('Preferences', YL.esc(box.prefs), 'step-extras') : '') +
       '<div class="lines">' +
-      line('Box price', YL.money(p.base)) +
-      line('Premium candy', p.premium ? YL.money(p.premium) : '$0.00') +
+      line('Box price (' + YL.weightLabel(size.oz) + ')', YL.money(p.base)) +
+      line('Premium scoops', p.premium ? YL.money(p.premium) : '$0.00') +
       line('Extras', p.extras ? YL.money(p.extras) : '$0.00') +
       '<div class="line line--total"><span>Estimated total</span><b>' + YL.money(p.total) + '</b></div>' +
       '</div>' +
@@ -413,26 +439,26 @@ window.YL = window.YL || {};
 
     var chips = box.candies.map(function (c) {
       var candy = YL.getCandy(c.id);
-      return '<span class="chip">' + YL.candyDot(candy, 22) + ' ' + candy.name + (c.qty > 1 ? ' ×' + c.qty : '') +
+      return '<span class="chip">' + YL.candyDot(candy, 22) + ' ' + candy.name + ' · ' + oz(c.qty) +
         '<button class="x" data-drop="' + c.id + '" aria-label="Remove ' + YL.esc(candy.name) + '">' + YL.icon('x') + '</button></span>';
     }).join('');
     var openSlots = left();
     if (openSlots > 0) {
-      chips += '<span class="chip chip--slot">+ ' + openSlots + ' slot' + (openSlots > 1 ? 's' : '') + ' free</span>';
+      chips += '<span class="chip chip--slot">+ ' + oz(openSlots) + ' still free</span>';
     }
 
     host.innerHTML =
       '<div class="panel__head"><h3>Your box preview</h3>' +
-      '<span class="badge">' + size.name.replace(' Box', '') + '</span></div>' +
+      '<span class="badge">' + YL.weightLabel(size.oz) + '</span></div>' +
       '<div class="panel__stage">' + YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'panel' }) + '</div>' +
       '<div class="panel__body">' +
-      '<div class="capacity" style="margin:0 0 14px"><b>' + used() + ' / ' + slots() + '</b>' +
+      '<div class="capacity" style="margin:0 0 14px"><b>' + oz(used()) + ' / ' + oz(slots()) + '</b>' +
       '<span class="meter"><i style="width:' + pct + '%"></i></span>' +
-      '<span class="count">' + (openSlots > 0 ? openSlots + ' to go' : 'Full!') + '</span></div>' +
+      '<span class="count">' + (openSlots > 0 ? oz(openSlots) + ' to go' : 'Packed full!') + '</span></div>' +
       '<div class="chips">' + chips + '</div>' +
       '<div class="lines">' +
-      line('Box (' + size.name + ')', YL.money(p.base)) +
-      line('Premium candy', p.premium ? YL.money(p.premium) : '$0.00') +
+      line('Box (' + YL.weightLabel(size.oz) + ')', YL.money(p.base)) +
+      line('Premium scoops', p.premium ? YL.money(p.premium) : '$0.00') +
       line('Extras' + (box.extras.length ? ' (' + box.extras.length + ')' : ''), p.extras ? YL.money(p.extras) : '$0.00') +
       (theme && hasExtra('theme') ? line('Box color', theme.name) : '') +
       '<div class="line line--total"><span>Total</span><b>' + YL.money(p.total) + '</b></div>' +
@@ -448,7 +474,7 @@ window.YL = window.YL || {};
       '</div>' +
       /* phone-only bar so the total and the CTA are always in reach */
       '<div class="mbar"><span class="mbar__info"><b>' + YL.money(p.total) + '</b>' +
-      '<span>' + used() + ' / ' + slots() + ' candies · ' + size.name + '</span></span>' +
+      '<span>' + oz(used()) + ' / ' + oz(slots()) + ' packed</span></span>' +
       '<button class="btn" data-add-cart>' + YL.icon('cart') + ' Add to cart</button></div>';
 
     $$('[data-drop]', host).forEach(function (b) {
@@ -472,7 +498,7 @@ window.YL = window.YL || {};
     host.className = 'card inspo';
     host.innerHTML =
       '<div class="card__head"><span class="card__num">&#9733;</span>' +
-      '<div><h2>In a hurry?</h2><p>Fill the box with one of our favourite mixes, then tweak it.</p></div></div>' +
+      '<div><h2>In a hurry?</h2><p>Scoop the box full from one of our favourite mixes, then tweak it.</p></div></div>' +
       YL.PRESETS.map(function (p) {
         var sample = p.candies ? YL.getCandy(p.candies[0]) : YL.CANDIES[0];
         return '<div class="inspo__row">' + YL.candyDot(sample, 34) +
@@ -545,7 +571,7 @@ window.YL = window.YL || {};
   /* ------------------------------------------------------------------ */
   function addToCart() {
     if (used() === 0) {
-      YL.toast('Pick at least one candy first!');
+      YL.toast('Scoop at least one candy in first!');
       var el = document.getElementById('step-candy');
       if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
       return;

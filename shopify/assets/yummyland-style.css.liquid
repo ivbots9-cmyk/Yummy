@@ -232,6 +232,9 @@
 .yummyland .card__head p { margin: 2px 0 0; font-size: 13.5px; color: var(--ink-40); }
 .yummyland .card__head .opt { font-size: 11px; color: var(--ink-40); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .yummyland .card__aside { margin-left: auto; text-align: right; }
+.yummyland .card__aside .badge { white-space: nowrap; }
+@media (max-width: 560px) {.yummyland .card__head { flex-wrap: wrap; }
+.yummyland .card__aside { margin-left: 0; width: 100%; text-align: left; padding-left: 44px; }}
 .yummyland .sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 @media (max-width: 700px) {.yummyland .sizes { grid-template-columns: repeat(2, 1fr); }}
 .yummyland .size {
@@ -268,7 +271,7 @@
 }
 .yummyland .filter:hover { border-color: var(--pink); color: var(--pink); }
 .yummyland .filter.is-on { background: var(--pink); border-color: var(--pink); color: #fff; }
-.yummyland .candies { display: grid; grid-template-columns: repeat(auto-fill, minmax(146px, 1fr)); gap: 14px; }
+.yummyland .candies { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; }
 .yummyland .candy {
   position: relative; border: 2px solid var(--line); border-radius: var(--radius); background: #fff;
   padding: 10px 10px 12px; text-align: center; transition: border-color .16s, transform .16s, box-shadow .16s;
@@ -299,7 +302,7 @@
   font-weight: 900; line-height: 1; display: grid; place-items: center; transition: .15s;
 }
 .yummyland .qty button:hover { background: var(--pink); color: #fff; }
-.yummyland .qty span { font-family: var(--display); font-weight: 800; min-width: 20px; }
+.yummyland .qty span { font-family: var(--display); font-weight: 800; min-width: 20px; white-space: nowrap; font-size: 13px; }
 .yummyland .candy.is-full .candy__add { opacity: .4; pointer-events: none; }
 .yummyland .more-row { display: flex; justify-content: center; margin-top: 18px; }
 .yummyland .vibes { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 12px; }
@@ -645,13 +648,50 @@
 .yummyland .filter--diet { display: inline-flex; align-items: center; gap: 6px; }
 .yummyland .filter--diet svg { width: 14px; height: 14px; }
 .yummyland .candy__art { position: relative; }
-.yummyland .candy__diet {
-  position: absolute; left: 6px; bottom: 6px;
-  background: rgba(255, 255, 255, .94); color: var(--mint);
-  border-radius: 999px; padding: 2px 8px;
-  font-size: 9px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase;
+.yummyland .candy__photo {
+  display: block; width: 100%; aspect-ratio: 150 / 104;
+  object-fit: cover; border-radius: 12px;
 }
-.yummyland .candy__diet + .candy__diet { left: auto; right: 6px; color: var(--grape); }
+.yummyland .candy-dot { border-radius: 12px; object-fit: cover; flex: none; }
+.yummyland .candy__scoop {
+  position: absolute; left: 6px; bottom: 6px;
+  background: rgba(255, 255, 255, .94); color: var(--pink-700);
+  border-radius: 999px; padding: 3px 9px;
+  font-size: 9px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+}
+.yummyland .candy__about {
+  margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--ink-60);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.yummyland .candies__note {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin: 18px 0 0; padding: 12px 14px; border-radius: var(--radius);
+  background: var(--pink-50); font-size: 12.5px; line-height: 1.5; color: var(--ink-60);
+}
+.yummyland .candies__note svg { flex: none; width: 16px; height: 16px; color: var(--pink); margin-top: 1px; }
+.yummyland .extras__note {
+  display: flex; align-items: center; gap: 8px;
+  margin: 14px 0 0; padding: 11px 14px; border-radius: var(--radius);
+  background: #eafaf4; font-size: 12.5px; color: var(--ink-60);
+}
+.yummyland .extras__note svg { flex: none; width: 16px; height: 16px; color: var(--mint); }
+.yummyland .size .size__wt { font-size: 12.5px; font-weight: 800; color: var(--ink); margin-top: 4px; }
+.yummyland .size .size__unit {
+  margin-top: 2px; font-size: 11px; font-weight: 800; color: var(--ink-40);
+  letter-spacing: .04em;
+}
+.yummyland .size.is-on .size__unit { color: var(--pink); }
+.yummyland .pcard__weight {
+  display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
+  margin-top: 7px; padding: 3px 9px; border-radius: 999px;
+  background: var(--pink-50); color: var(--pink-700);
+  font-size: 10.5px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase;
+}
+.yummyland .pcard__weight svg { width: 13px; height: 13px; }
+.yummyland .pcard__body p { margin-top: 8px; }
+.yummyland .modal__inside span small { color: var(--ink-40); font-weight: 700; }
+.yummyland .warn { color: var(--pink); font-weight: 800; }
 .yummyland .social { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
 .yummyland .vcard {
   position: relative; border-radius: var(--radius-l); overflow: hidden;

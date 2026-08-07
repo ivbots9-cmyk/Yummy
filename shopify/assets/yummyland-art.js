@@ -189,10 +189,19 @@ window.YL = window.YL || {};
     return out.join('');
   }
 
-  /* ---------- candy tile used on catalogue cards ---------- */
+  /* ---------- candy tile used on catalogue cards ----------
+     Real product photos win when a candy has one (they are the actual
+     Shopify product images); the generated pile is the fallback, and
+     still does all the work inside the box preview. */
   YL.candyTile = function (candy, opts) {
     opts = opts || {};
     var w = opts.w || 150, h = opts.h || 104;
+    if (candy.img && !opts.vector) {
+      return '<img class="candy__photo" src="' + esc(photoUrl(candy.img, opts.px || 420)) + '" ' +
+        'alt="' + esc(candy.name) + '" loading="lazy" decoding="async" ' +
+        'onerror="YL.photoFallback(this)" data-candy-id="' + esc(candy.id) + '" ' +
+        'style="background:' + (candy.bg || '#fff2f8') + '">';
+    }
     var recipe = candy.recipe || [{ shape: 'bean', colors: { a: '#ff5ea8' } }];
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" role="img" aria-label="' + esc(candy.name) + '">' +
       '<rect width="' + w + '" height="' + h + '" fill="' + (candy.bg || '#fff2f8') + '"/>' +
@@ -203,9 +212,35 @@ window.YL = window.YL || {};
       }) + '</svg>';
   };
 
+  /* Shopify's CDN resizes on the fly, which keeps the cards light. Any
+     other host just gets the URL back untouched. */
+  function photoUrl(url, px) {
+    if (!/cdn\.shopify\.com/.test(url)) return url;
+    return url + (url.indexOf('?') > -1 ? '&' : '?') + 'width=' + px;
+  }
+  YL.photoUrl = photoUrl;
+
+  /* A photo that will not load (CDN down, image deleted, offline) falls
+     back to the generated pile, so a card is never an empty grey box. */
+  YL.photoFallback = function (img) {
+    var candy = YL.getCandy && YL.getCandy(img.getAttribute('data-candy-id'));
+    if (!candy || !img.parentNode) return;
+    var plain = {}, k;
+    for (k in candy) if (Object.prototype.hasOwnProperty.call(candy, k)) plain[k] = candy[k];
+    plain.img = null;
+    img.outerHTML = img.className.indexOf('candy-dot') > -1
+      ? YL.candyDot(plain, parseInt(img.getAttribute('width'), 10) || 40)
+      : YL.candyTile(candy, { vector: true });
+  };
+
   /* ---------- little round swatch (used in lists) ---------- */
   YL.candyDot = function (candy, size) {
     var s = size || 40;
+    if (candy.img) {
+      return '<img class="candy-dot" src="' + esc(photoUrl(candy.img, 120)) + '" alt="" loading="lazy" ' +
+        'onerror="YL.photoFallback(this)" data-candy-id="' + esc(candy.id) + '" ' +
+        'width="' + s + '" height="' + s + '" style="background:' + (candy.bg || '#fff2f8') + '">';
+    }
     var rec = (candy.recipe || [{ shape: 'bean', colors: { a: '#ff5ea8' } }]);
     return '<svg viewBox="0 0 40 40" width="' + s + '" height="' + s + '" aria-hidden="true">' +
       '<rect width="40" height="40" rx="12" fill="' + (candy.bg || '#fff2f8') + '"/>' +

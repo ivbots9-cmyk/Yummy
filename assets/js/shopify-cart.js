@@ -73,11 +73,14 @@ window.YL = window.YL || {};
   function properties(box) {
     var size = YL.getSize(box.size);
     var vibe = YL.VIBES.filter(function (v) { return v.id === box.vibe; })[0];
+    /* The packing team works off these, so weights have to be explicit. */
     var props = {
-      'Box size': size.name + ' (up to ' + size.slots + ' candies)',
+      'Box size': size.name + ' — ' + YL.weightLabel(size.oz) + ' (' + size.scoops + ' × 4 oz scoops)',
+      'Fill weight': YL.boxFillLabel(box),
       'Candy': box.candies.map(function (c) {
         var candy = YL.getCandy(c.id);
-        return candy ? candy.name + (c.qty > 1 ? ' x' + c.qty : '') : c.id;
+        var w = ' — ' + YL.weightLabel(c.qty * YL.PRICING.scoopOz);
+        return candy ? candy.name + w : c.id + w;
       }).join(', ')
     };
     if (vibe) props['Vibe'] = vibe.name;

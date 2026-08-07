@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Yummyland Candy — Build Your Own Candy Box</title>
-<meta name="description" content="Build your own candy box at Yummyland: pick your size, choose your favourite gummies, sour candy, chocolate and freeze dried treats, add extras and we pack it fresh.">
+<meta name="description" content="Build your own candy box at Yummyland: pick 1 lb to 5 lb, scoop it full from 50+ bulk candies — gummies, sours, fruit chews, lollipops and retro — and we weigh and ship it the same day.">
 <meta property="og:title" content="Yummyland Candy — Build Your Own Candy Box">
-<meta property="og:description" content="Your candy. Your way. Pick a size, fill it with your favourites and we pack it fresh.">
+<meta property="og:description" content="Your candy, by the pound. Pick 1–5 lb, scoop it full from 50+ bulk candies, and we weigh it before we seal it.">
 <meta property="og:type" content="website">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
@@ -23,7 +23,7 @@
 <link rel="preload" href="assets/fonts/baloo2.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/style.css">
 <!-- JSONLD:START -->
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://yummylandcandy.com/#org","name":"Yummyland Candy","url":"https://yummylandcandy.com/","logo":"https://yummylandcandy.com/assets/img/apple-touch-icon.png","image":"https://yummylandcandy.com/assets/img/og.png","description":"Custom candy boxes built by the customer, packed fresh and shipped across the USA.","email":"hello@yummylandcandy.com","telephone":"+1-833-986-6526","address":{"@type":"PostalAddress","addressLocality":"Los Angeles","addressRegion":"CA","addressCountry":"US"},"sameAs":["https://instagram.com/yummylandcandy","https://tiktok.com/@yummylandcandy","https://facebook.com/yummylandcandy"]},{"@type":"WebSite","@id":"https://yummylandcandy.com/#website","url":"https://yummylandcandy.com/","name":"Yummyland Candy","publisher":{"@id":"https://yummylandcandy.com/#org"}},{"@type":"Product","name":"Build Your Own Candy Box","description":"Choose your box size, pick from 40 candies, add a vibe and extras — packed fresh and shipped to your door.","image":["https://yummylandcandy.com/assets/img/og.png"],"brand":{"@type":"Brand","name":"Yummyland Candy"},"offers":{"@type":"AggregateOffer","priceCurrency":"USD","lowPrice":"24.99","highPrice":"69.99","offerCount":4,"availability":"https://schema.org/InStock","url":"https://yummylandcandy.com/"}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://yummylandcandy.com/#org","name":"Yummyland Candy","url":"https://yummylandcandy.com/","logo":"https://yummylandcandy.com/assets/img/apple-touch-icon.png","image":"https://yummylandcandy.com/assets/img/og.png","description":"Custom candy boxes built by the customer, packed fresh and shipped across the USA.","email":"hello@yummylandcandy.com","telephone":"+1-833-986-6526","address":{"@type":"PostalAddress","addressLocality":"Los Angeles","addressRegion":"CA","addressCountry":"US"},"sameAs":["https://instagram.com/yummylandcandy","https://tiktok.com/@yummylandcandy","https://facebook.com/yummylandcandy"]},{"@type":"WebSite","@id":"https://yummylandcandy.com/#website","url":"https://yummylandcandy.com/","name":"Yummyland Candy","publisher":{"@id":"https://yummylandcandy.com/#org"}},{"@type":"Product","name":"Build Your Own Candy Box","description":"Choose your box size, pick from 52 candies, add a vibe and extras — packed fresh and shipped to your door.","image":["https://yummylandcandy.com/assets/img/og.png"],"brand":{"@type":"Brand","name":"Yummyland Candy"},"offers":{"@type":"AggregateOffer","priceCurrency":"USD","lowPrice":"22.99","highPrice":"79.99","offerCount":4,"availability":"https://schema.org/InStock","url":"https://yummylandcandy.com/"}}]}</script>
 <!-- JSONLD:END -->
 </head>
 <body>
@@ -34,10 +34,11 @@
 <section class="hero">
   <div class="wrap hero__in">
     <div>
-      <span class="badge">Packed fresh · Shipped nationwide</span>
+      <span class="badge">Sold by weight · Scooped &amp; shipped same day</span>
       <h1 style="margin-top:14px">Build your<span>own box.</span></h1>
-      <p class="lede">Choose your size, pick your favourite gummies, sour candy, chocolate and freeze dried treats,
-        add fun extras — and we&rsquo;ll pack it fresh just for you.</p>
+      <p class="lede">Pick a weight from <b>1 lb to 5 lb</b>, then scoop it full from 50+ bulk candies —
+        gummies, sours, fruit chews, lollipops, hard candy and retro. Every scoop is 4 oz,
+        and we weigh the box before we seal it.</p>
       <div class="hero__cta">
         <a class="btn btn--lg" href="#builder">Start building</a>
         <a class="btn btn--lg btn--ghost" href="boxes.html">Shop ready-made boxes</a>
@@ -94,7 +95,7 @@
     <div class="section__head">
       <span class="eyebrow">Sweet and simple</span>
       <h2>How it works</h2>
-      <p>From your screen to your door in five happy steps.</p>
+      <p>Pick a weight, scoop it full, we put it on the scale and send it.</p>
     </div>
     <div id="how-list"></div>
   </div>
@@ -106,7 +107,7 @@
     <div class="section__head">
       <span class="eyebrow">Not sure where to start?</span>
       <h2>Popular box ideas</h2>
-      <p>Customer favourites you can send as-is — or open in the builder and make them yours.</p>
+      <p>Filled to weight and ready to send as-is — or open one in the builder and swap any scoop.</p>
     </div>
     <div id="popular-boxes"></div>
     <div class="center" style="margin-top:28px"><a class="btn btn--ghost btn--lg" href="boxes.html">View all boxes</a></div>
@@ -184,8 +185,8 @@
   document.getElementById('hero-box').innerHTML =
     YL.boxArt({ color: 'pink', recipe: YL.mixedRecipe(), fill: 1, seed: 'hero' });
 
-  [['heart', 'Fresh &amp; delicious', 'Packed fresh to order'],
-   ['candy', 'Made your way', 'You choose everything'],
+  [['box', 'Sold by weight', '1 lb, 2 lb, 3 lb or 5 lb'],
+   ['candy', '50+ bulk candies', 'Scoop any mix you like'],
    ['truck', 'Shipped fast', 'Free over $50, USA-wide']]
     .forEach(function (u, i) {
       document.getElementById('usp-' + (i + 1)).innerHTML =

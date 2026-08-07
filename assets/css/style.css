@@ -269,6 +269,12 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 .card__head p { margin: 2px 0 0; font-size: 13.5px; color: var(--ink-40); }
 .card__head .opt { font-size: 11px; color: var(--ink-40); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .card__aside { margin-left: auto; text-align: right; }
+.card__aside .badge { white-space: nowrap; }
+/* the running weight is too long to sit beside a title on a phone */
+@media (max-width: 560px) {
+  .card__head { flex-wrap: wrap; }
+  .card__aside { margin-left: 0; width: 100%; text-align: left; padding-left: 44px; }
+}
 
 /* size picker */
 .sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
@@ -312,7 +318,7 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 .filter.is-on { background: var(--pink); border-color: var(--pink); color: #fff; }
 
 /* candy grid */
-.candies { display: grid; grid-template-columns: repeat(auto-fill, minmax(146px, 1fr)); gap: 14px; }
+.candies { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; }
 .candy {
   position: relative; border: 2px solid var(--line); border-radius: var(--radius); background: #fff;
   padding: 10px 10px 12px; text-align: center; transition: border-color .16s, transform .16s, box-shadow .16s;
@@ -343,7 +349,7 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
   font-weight: 900; line-height: 1; display: grid; place-items: center; transition: .15s;
 }
 .qty button:hover { background: var(--pink); color: #fff; }
-.qty span { font-family: var(--display); font-weight: 800; min-width: 20px; }
+.qty span { font-family: var(--display); font-weight: 800; min-width: 20px; white-space: nowrap; font-size: 13px; }
 .candy.is-full .candy__add { opacity: .4; pointer-events: none; }
 
 .more-row { display: flex; justify-content: center; margin-top: 18px; }
@@ -785,13 +791,61 @@ body.modal-open { overflow: hidden; }
 .filter--diet { display: inline-flex; align-items: center; gap: 6px; }
 .filter--diet svg { width: 14px; height: 14px; }
 .candy__art { position: relative; }
-.candy__diet {
-  position: absolute; left: 6px; bottom: 6px;
-  background: rgba(255, 255, 255, .94); color: var(--mint);
-  border-radius: 999px; padding: 2px 8px;
-  font-size: 9px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase;
+
+/* =========================================================
+   Weight model — scoops, real product photos, per-lb pricing
+   ========================================================= */
+/* real Shopify product photo on a candy card; the generated SVG pile
+   is the fallback and keeps the same box so nothing shifts */
+.candy__photo {
+  display: block; width: 100%; aspect-ratio: 150 / 104;
+  object-fit: cover; border-radius: 12px;
 }
-.candy__diet + .candy__diet { left: auto; right: 6px; color: var(--grape); }
+.candy-dot { border-radius: 12px; object-fit: cover; flex: none; }
+
+.candy__scoop {
+  position: absolute; left: 6px; bottom: 6px;
+  background: rgba(255, 255, 255, .94); color: var(--pink-700);
+  border-radius: 999px; padding: 3px 9px;
+  font-size: 9px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+}
+.candy__about {
+  margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--ink-60);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.candies__note {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin: 18px 0 0; padding: 12px 14px; border-radius: var(--radius);
+  background: var(--pink-50); font-size: 12.5px; line-height: 1.5; color: var(--ink-60);
+}
+.candies__note svg { flex: none; width: 16px; height: 16px; color: var(--pink); margin-top: 1px; }
+.extras__note {
+  display: flex; align-items: center; gap: 8px;
+  margin: 14px 0 0; padding: 11px 14px; border-radius: var(--radius);
+  background: #eafaf4; font-size: 12.5px; color: var(--ink-60);
+}
+.extras__note svg { flex: none; width: 16px; height: 16px; color: var(--mint); }
+
+/* size cards now lead with weight and close with a price per pound */
+.size .size__wt { font-size: 12.5px; font-weight: 800; color: var(--ink); margin-top: 4px; }
+.size .size__unit {
+  margin-top: 2px; font-size: 11px; font-weight: 800; color: var(--ink-40);
+  letter-spacing: .04em;
+}
+.size.is-on .size__unit { color: var(--pink); }
+
+.pcard__weight {
+  display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
+  margin-top: 7px; padding: 3px 9px; border-radius: 999px;
+  background: var(--pink-50); color: var(--pink-700);
+  font-size: 10.5px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase;
+}
+.pcard__weight svg { width: 13px; height: 13px; }
+.pcard__body p { margin-top: 8px; }
+
+.modal__inside span small { color: var(--ink-40); font-weight: 700; }
+.warn { color: var(--pink); font-weight: 800; }
 
 /* =========================================================
    Social video wall

@@ -25,9 +25,24 @@ window.YL = window.YL || {};
     return { size: 'medium', candies: [], extras: [], color: 'pink', vibe: 'me', note: '', prefs: '' };
   };
 
-  YL.boxSlotsUsed = function (box) {
+  /* ---------- weight ----------
+     Capacity is measured in 4 oz scoops. A box holds its size's scoops,
+     plus one more if the "Extra 4 oz Scoop" add-on is on. */
+  YL.boxScoopsUsed = function (box) {
     return box.candies.reduce(function (n, c) { return n + c.qty; }, 0);
   };
+
+  YL.boxCapacity = function (box) {
+    var n = YL.getSize(box.size).scoops;
+    box.extras.forEach(function (id) {
+      var e = YL.getExtra(id);
+      if (e && e.addsScoop) n += 1;
+    });
+    return n;
+  };
+
+  YL.boxOzUsed = function (box) { return YL.boxScoopsUsed(box) * YL.PRICING.scoopOz; };
+  YL.boxOzCapacity = function (box) { return YL.boxCapacity(box) * YL.PRICING.scoopOz; };
 
   YL.boxPrice = function (box) {
     var size = YL.getSize(box.size);
@@ -60,6 +75,11 @@ window.YL = window.YL || {};
       }
     });
     return out;
+  };
+
+  /* "2 lb · Sour Power Rainbow Straws ×2, Peach Rings…" for carts and receipts */
+  YL.boxFillLabel = function (box) {
+    return YL.weightLabel(YL.boxOzUsed(box)) + ' of ' + YL.weightLabel(YL.boxOzCapacity(box));
   };
 
   YL.boxLabel = function (box) {

@@ -10,7 +10,8 @@ window.YL = window.YL || {};
 
   /* a generic mixed-candy recipe for decorative artwork */
   YL.mixedRecipe = function (ids) {
-    var list = ids || ['gummy-bears', 'sour-belts', 'rainbow-bites', 'choc-peanuts', 'peach-rings', 'gummy-worms', 'watermelon-slices', 'marshmallow-clouds'];
+    var list = ids || ['peach-rings', 'sour-belts', 'gummy-berries', 'fruit-chews-assorted',
+      'gummy-sharks', 'dum-dums', 'jolly-assorted', 'squashies'];
     var out = [];
     list.forEach(function (id) {
       var c = YL.getCandy(id);
@@ -28,10 +29,21 @@ window.YL = window.YL || {};
     return out;
   };
 
+  /* A ready-made box lists one id per 4 oz scoop, so a repeated id means
+     a double scoop. Collapse that into the {id, qty} the builder uses. */
+  YL.prebuiltScoops = function (pb) {
+    var out = [], seen = {};
+    pb.candies.forEach(function (id) {
+      if (seen[id] == null) { seen[id] = out.length; out.push({ id: id, qty: 0 }); }
+      out[seen[id]].qty++;
+    });
+    return out;
+  };
+
   YL.prebuiltPrice = function (pb) {
     return YL.boxPrice({
       size: pb.size,
-      candies: pb.candies.map(function (id) { return { id: id, qty: 1 }; }),
+      candies: YL.prebuiltScoops(pb),
       extras: pb.extras || []
     }).total;
   };
@@ -49,7 +61,7 @@ window.YL = window.YL || {};
   YL.prebuiltBox = function (pb) {
     return {
       size: pb.size,
-      candies: pb.candies.map(function (id) { return { id: id, qty: 1 }; }),
+      candies: YL.prebuiltScoops(pb),
       extras: (pb.extras || []).slice(),
       color: pb.color, vibe: pb.vibe || 'me', note: '', prefs: '', title: pb.name
     };
@@ -78,7 +90,9 @@ window.YL = window.YL || {};
         'role="button" aria-label="See what is inside the ' + YL.esc(pb.name) + '">' +
         '<div class="pcard__art"><span class="pcard__tag">' + pb.tag + '</span>' +
         YL.boxArt({ color: pb.color, recipe: YL.prebuiltRecipe(pb), fill: 1, seed: pb.id }) + '</div>' +
-        '<div class="pcard__body"><h3>' + pb.name + '</h3><p>' + pb.desc + '</p>' +
+        '<div class="pcard__body"><h3>' + pb.name + '</h3>' +
+        '<span class="pcard__weight">' + YL.icon('box') + YL.weightLabel(YL.getSize(pb.size).oz) + ' of candy</span>' +
+        '<p>' + pb.desc + '</p>' +
         '<div class="pcard__price"><small>from </small>' + YL.money(YL.prebuiltPrice(pb)) + '</div>' +
         '<div style="display:grid;gap:8px">' +
         '<button class="btn btn--block" data-open="' + pb.id + '">See what&rsquo;s inside</button>' +
@@ -145,8 +159,9 @@ window.YL = window.YL || {};
       var e = YL.getExtra(id);
       return e ? e.name + (e.price ? ' (+' + YL.money(e.price) + ')' : ' (free)') : id;
     });
-    var premium = pb.candies.filter(function (id) {
-      var c = YL.getCandy(id);
+    var scoops = YL.prebuiltScoops(pb);
+    var premium = scoops.filter(function (s) {
+      var c = YL.getCandy(s.id);
       return c && c.extra;
     }).length;
 
@@ -163,18 +178,19 @@ window.YL = window.YL || {};
       '<p class="modal__lede">' + (pb.about || pb.desc) + '</p>' +
 
       '<div class="modal__meta">' +
-      '<span class="tag">' + size.name + '</span>' +
+      '<span class="tag">' + YL.weightLabel(size.oz) + ' of candy</span>' +
       '<span class="tag">' + size.serves + '</span>' +
-      '<span class="tag">' + pb.candies.length + ' candies</span>' +
+      '<span class="tag">' + scoops.length + ' candies · ' + size.scoops + ' scoops</span>' +
       (premium ? '<span class="tag">' + premium + ' premium pick' + (premium > 1 ? 's' : '') + '</span>' : '') +
       '</div>' +
 
       '<h3>What&rsquo;s inside</h3>' +
-      '<div class="modal__inside">' + pb.candies.map(function (id) {
-        var c = YL.getCandy(id);
+      '<div class="modal__inside">' + scoops.map(function (s) {
+        var c = YL.getCandy(s.id);
         if (!c) return '';
         return '<div>' + YL.candyDot(c, 30) + '<span>' + c.name +
-          (c.extra ? ' <small style="color:var(--pink)">+' + YL.money(c.extra) + '</small>' : '') +
+          ' <small>' + YL.weightLabel(s.qty * YL.PRICING.scoopOz) + '</small>' +
+          (c.extra ? ' <small style="color:var(--pink)">+' + YL.money(c.extra * s.qty) + '</small>' : '') +
           '</span></div>';
       }).join('') + '</div>' +
 
@@ -185,8 +201,8 @@ window.YL = window.YL || {};
         pb.goodFor.map(function (n) { return '<span class="chip">' + n + '</span>'; }).join('') + '</div>' : '') +
 
       '<div class="lines">' +
-      '<div class="line"><span>Box (' + size.name + ')</span><b>' + YL.money(price.base) + '</b></div>' +
-      '<div class="line"><span>Premium candy</span><b>' + (price.premium ? YL.money(price.premium) : '$0.00') + '</b></div>' +
+      '<div class="line"><span>Box (' + YL.weightLabel(size.oz) + ')</span><b>' + YL.money(price.base) + '</b></div>' +
+      '<div class="line"><span>Premium scoops</span><b>' + (price.premium ? YL.money(price.premium) : '$0.00') + '</b></div>' +
       '<div class="line"><span>Extras</span><b>' + (price.extras ? YL.money(price.extras) : '$0.00') + '</b></div>' +
       '<div class="line line--total"><span>Total</span><b>' + YL.money(price.total) + '</b></div>' +
       '</div>' +

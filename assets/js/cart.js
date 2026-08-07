@@ -15,7 +15,7 @@ window.YL = window.YL || {};
     var recipe = YL.boxRecipe(box);
     var extras = box.extras.map(function (id) { return YL.getExtra(id).name; });
     var candyNames = box.candies.map(function (c) {
-      return YL.getCandy(c.id).name + (c.qty > 1 ? ' ×' + c.qty : '');
+      return YL.getCandy(c.id).name + ' · ' + YL.weightLabel(c.qty * YL.PRICING.scoopOz);
     });
 
     return '<article class="cart-item">' +
@@ -23,7 +23,7 @@ window.YL = window.YL || {};
       YL.boxArt({ color: box.color, recipe: recipe.length ? recipe : null, fill: 1, seed: item.id }) + '</div>' +
       '<div><h3>' + YL.esc(YL.boxLabel(box)) + '</h3>' +
       '<div class="meta">' + size.name + ' · ' + size.serves + ' · ' +
-      YL.boxSlotsUsed(box) + ' of ' + size.slots + ' slots filled</div>' +
+      YL.boxFillLabel(box) + ' packed</div>' +
       '<div class="tags">' + candyNames.map(function (n) { return '<span class="tag">' + YL.esc(n) + '</span>'; }).join('') +
       extras.map(function (n) { return '<span class="tag">＋ ' + YL.esc(n) + '</span>'; }).join('') + '</div>' +
       (box.note ? '<div class="meta" style="margin-top:8px">Gift note: “' + YL.esc(box.note) + '”</div>' : '') +

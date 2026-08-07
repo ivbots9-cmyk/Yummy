@@ -146,8 +146,9 @@ YL.SIZES.forEach((s, i) => {
     Type: i === 0 ? 'Candy box' : '',
     Tags: i === 0 ? 'yummyland, box-builder' : '',
     'Option1 Name': 'Size',
-    'Option1 Value': s.name + ' — ' + s.serves + ', up to ' + s.slots + ' candies',
+    'Option1 Value': s.name + ' — ' + YL.weightLabel(s.oz) + ', ' + s.scoops + ' scoops, ' + s.serves,
     'Variant SKU': 'YL-BOX-' + s.id.toUpperCase(),
+    'Variant Grams': Math.round(s.oz * 28.3495),
     'Variant Price': s.price.toFixed(2)
   })));
 });
@@ -167,12 +168,14 @@ YL.EXTRAS.filter((e) => e.price > 0).forEach((e) => {
   })));
 });
 
-/* 3. premium candy upcharges */
+/* 3. premium scoop upcharges — one per 4 oz scoop of a candy whose
+      bulk price per pound sits above YL.PRICING.baseLb */
 YL.CANDIES.filter((c) => c.extra > 0).forEach((c) => {
   rows.push(row(Object.assign({}, base, {
     Handle: 'yl-premium-' + c.id,
-    Title: c.name + ' (premium candy upgrade)',
-    'Body (HTML)': '<p>' + c.flavor + '. Upgrade charge for one premium candy slot.</p>',
+    Title: c.name + ' (premium scoop upgrade)',
+    'Body (HTML)': '<p>' + c.flavor + '. Surcharge for one 4 oz scoop — ' +
+      c.name + ' sells for $' + c.perLb.toFixed(2) + '/lb in bulk.</p>',
     Type: 'Box add-on',
     Tags: 'yummyland, yl-addon, yl-premium',
     'Option1 Name': 'Title', 'Option1 Value': 'Default Title',
