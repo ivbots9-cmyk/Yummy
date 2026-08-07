@@ -151,11 +151,19 @@ python3 -m http.server 8000    # затем http://localhost:8000
 
 Конфиги уже лежат в репозитории, сборка не нужна ни в одном варианте:
 
-- **GitHub Pages** — `.github/workflows/pages.yml`. **Обязательный ручной шаг:**
-  Settings → Pages → Build and deployment → Source: **GitHub Actions**.
-  Из workflow это не включить — токен Actions умеет деплоить в Pages, но не создавать
-  сам Pages-сайт (API отвечает `Resource not accessible by integration`).
-  После переключения деплой идёт на каждый push.
+- **GitHub Pages** — `.github/workflows/pages.yml`. Два условия, оба переключаются
+  только руками в настройках, из workflow — никак:
+  1. **Репозиторий должен быть public** (или у владельца GitHub Pro/Team — на бесплатном
+     тарифе Pages для приватных репозиториев не работает). Как только репозиторий
+     переводят в private, Pages выключается: `has_pages` становится `false`, и деплой
+     падает на шаге `configure-pages` с `Get Pages site failed … Not Found`.
+     Все следующие шаги при этом помечаются skipped — это не поломка сборки.
+  2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+     Токен Actions умеет деплоить в Pages, но не создавать сам Pages-сайт
+     (API отвечает `Resource not accessible by integration`).
+
+  После этого деплой идёт на каждый push. Если репозиторий должен остаться приватным —
+  проще взять Netlify или Vercel ниже, им приватность не мешает.
 - **Netlify** — `netlify.toml`. Либо перетащить папку на app.netlify.com/drop, либо подключить репозиторий.
 - **Vercel** — `vercel.json`, `vercel --prod` или импорт репозитория.
 - **Любой хостинг / S3** — просто скопировать файлы, это статика.
