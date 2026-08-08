@@ -12,7 +12,7 @@ window.YL = window.YL || {};
   var box, filter = 'all', showAll = false, traits = [];
 
   var STEPS = [
-    { id: 'step-size', t: 'Choose weight', d: '1 lb to 5 lb' },
+    { id: 'step-size', t: 'Choose box', d: 'Small to party size' },
     { id: 'step-candy', t: 'Scoop it full', d: '4 oz per scoop' },
     { id: 'step-vibe', t: 'Choose vibe', d: 'Set the mood' },
     { id: 'step-extras', t: 'Add extras', d: 'Notes & goodies' },
@@ -141,20 +141,24 @@ window.YL = window.YL || {};
     var host = $('#step-size');
     if (!host) return;
     var pct = slots() ? Math.min(100, (used() / slots()) * 100) : 0;
+    var size = YL.getSize(box.size);
+    /* The size cards answer one question — how big and how much. The
+       weight belongs on the meter below, where it reads as "this is how
+       much candy you get" rather than as a price per pound. */
     host.innerHTML =
-      head(1, 'Step 1: Choose your weight', 'Boxes are sold by weight and packed to the gram. Bigger box, lower price per pound.') +
+      head(1, 'Step 1: Choose your box', 'Pick the size, then scoop it full.') +
       '<div class="sizes">' + YL.SIZES.map(function (s) {
         return '<button class="size' + (s.id === box.size ? ' is-on' : '') + '" data-size="' + s.id + '" ' +
           'aria-pressed="' + (s.id === box.size) + '">' +
           '<span class="tick">' + YL.icon('check') + '</span>' +
           YL.boxIcon(0.5 + YL.SIZES.indexOf(s) * 0.16) +
-          '<b>' + s.name + '</b><span class="size__wt">' + YL.weightLabel(s.oz) + ' of candy</span>' +
-          '<span>' + s.scoops + ' scoops · ' + s.serves + '</span>' +
-          '<span class="price">' + YL.money(s.price) + '</span>' +
-          '<span class="size__unit">' + YL.money(s.price / (s.oz / 16)) + ' / lb</span></button>';
+          '<b>' + s.name + '</b>' +
+          '<span class="size__scoops">' + s.scoops + ' scoops</span>' +
+          '<span>' + s.serves + '</span>' +
+          '<span class="price">' + YL.money(s.price) + '</span></button>';
       }).join('') + '</div>' +
       '<div class="capacity">' +
-      '<b>' + YL.getSize(box.size).name + '</b>' +
+      '<b>' + size.name + ' · ' + YL.weightLabel(size.oz) + ' of candy</b>' +
       '<span class="meter"><i style="width:' + pct + '%"></i></span>' +
       '<span class="count">' + oz(used()) + ' / ' + oz(slots()) + '</span></div>';
 

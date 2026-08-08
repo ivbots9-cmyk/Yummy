@@ -28,7 +28,7 @@ window.YL = window.YL || {};
 
      Pricing. `baseLb` below is the blended bulk shelf price per pound
      across the standard range (median $10.99/lb, mean $11.43/lb over
-     the 52 candies in this file), so it is a deliberately conservative
+     the 41 candies in this file), so it is a deliberately conservative
      stand-in for cost: the real landed cost per pound is lower than
      what the same candy sells for loose on the shop shelf.
 
@@ -86,8 +86,6 @@ window.YL = window.YL || {};
     { id: 'sour', name: 'Sour' },
     { id: 'chewy', name: 'Chews & Taffy' },
     { id: 'hard', name: 'Hard Candy' },
-    { id: 'lollipops', name: 'Lollipops' },
-    { id: 'chocolate', name: 'Chocolate & Caramel' },
     { id: 'retro', name: 'Retro' },
     { id: 'nuts', name: 'Nutty' },
     { id: 'world', name: 'World & Spicy' }
@@ -97,7 +95,6 @@ window.YL = window.YL || {};
      plain fact about the pack — not allergen or dietary claims, which
      belong on the manufacturer's label and in the FAQ. */
   YL.TRAITS = [
-    { id: 'loose', name: 'Loose & scoopable', icon: 'candy' },
     { id: 'wrapped', name: 'Individually wrapped', icon: 'wrap' },
     { id: 'single', name: 'Single flavour', icon: 'heart' },
     { id: 'mix', name: 'Assorted mix', icon: 'sparkle' }
@@ -113,7 +110,7 @@ window.YL = window.YL || {};
   YL.CANDIES = [
     {
       id: 'peach-rings', name: 'Gummi Peach Rings', flavor: 'Sweet peach, sugar coated',
-      cats: ['gummies', 'sour'], traits: ['loose', 'single'],
+      cats: ['gummies', 'sour'], traits: ['single'],
       perLb: 9.99, handle: 'gummi-peach-rings',
       tag: 'top pick',
       about: 'Soft peach rings in a light sour-sugar coat — our single best-selling scoop.',
@@ -125,56 +122,8 @@ window.YL = window.YL || {};
       ]
     },
     {
-      id: 'blue-raspberry-rings', name: 'Blue Raspberry Rings', flavor: 'Bold blue raspberry',
-      cats: ['gummies', 'sour'], traits: ['loose', 'single'],
-      perLb: 9.99, handle: 'gummi-blue-raspberry-rings',
-      about: 'The blue-raspberry answer to the peach ring. Chewy, tangy, and it turns your tongue blue.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/2594844-ezgif.com-webp-to-jpg-converter.jpg',
-      bg: '#eef6ff',
-      recipe: [
-        { shape: 'ring', colors: { a: '#4bb9ff' }, sour: true }, { shape: 'ring', colors: { a: '#7fd0ff' }, sour: true },
-        { shape: 'ring', colors: { a: '#2f8fe0' }, sour: true }
-      ]
-    },
-    {
-      id: 'gummy-sharks', name: 'Blue Raspberry Gummy Sharks', flavor: 'Fruity & fun',
-      cats: ['gummies'], traits: ['loose', 'single'],
-      perLb: 9.99, handle: 'blue-gummi-sharks',
-      about: 'Soft shark-shaped gummies with a white belly and a big blue-raspberry hit. Kids pick these first.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/medium_1024x1024_28f675f8-8df7-4338-b357-e9bcf72ce661.webp',
-      bg: '#eef8ff',
-      recipe: [
-        { shape: 'shark', colors: { a: '#5ec8ff', b: '#ffffff' } }, { shape: 'shark', colors: { a: '#7fd8ff', b: '#ffe9f3' } }
-      ]
-    },
-    {
-      id: 'gummy-berries', name: 'Mixed Gummi Berries', flavor: 'Assorted berry',
-      cats: ['gummies'], traits: ['loose', 'mix'],
-      perLb: 9.99, handle: 'mixed-gummi-berries',
-      about: 'Berry-shaped gummies in raspberry, blackberry and strawberry — a soft, chewy crowd-pleaser.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/61nqKx8C8jL.jpg',
-      bg: '#fff0f6',
-      recipe: [
-        { shape: 'bean', colors: { a: '#ff2e8b' } }, { shape: 'bean', colors: { a: '#a76bff' } },
-        { shape: 'bean', colors: { a: '#ff4757' } }, { shape: 'bean', colors: { a: '#3fb8ff' } }
-      ]
-    },
-    {
-      id: 'squashies', name: 'Squashies Foam Gummies', flavor: 'Soft foam, mixed fruit',
-      cats: ['gummies'], traits: ['loose', 'mix'],
-      perLb: 3.99, handle: 'smarties-squashies-mixed-fruit-foam-marshmallows-gummies-candy',
-      tag: 'best value',
-      about: 'Squishy marshmallow-soft foam gummies from Smarties. Light, bouncy and gentle on teeth.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/IMG000.jpg',
-      bg: '#fff5fa',
-      recipe: [
-        { shape: 'marsh', colors: { a: '#ffd7e8' } }, { shape: 'marsh', colors: { a: '#fff2d0' } },
-        { shape: 'marsh', colors: { a: '#d8f3ff' } }
-      ]
-    },
-    {
       id: 'sour-straws', name: 'Sour Power Rainbow Straws', flavor: 'Sour & chewy',
-      cats: ['sour'], traits: ['loose', 'mix'],
+      cats: ['sour'], traits: ['mix'],
       perLb: 9.20, handle: 'sour-power-quattro-rainbow-candy-straws-2-5-lb-bulk-tub-soft-chewy-sour-rainbow-straws-assorted-fruit-flavored-candy-for-parties-candy-buffets-sharing',
       tag: 'top pick',
       about: 'Four fruit flavours of soft sour straws in a tangy sugar coat. The most-filmed candy we sell.',
@@ -186,8 +135,69 @@ window.YL = window.YL || {};
       ]
     },
     {
+      id: 'gummy-sharks', name: 'Blue Raspberry Gummy Sharks', flavor: 'Fruity & fun',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'blue-gummi-sharks',
+      tag: 'top pick',
+      about: 'Soft shark-shaped gummies with a white belly and a big blue-raspberry hit. Kids pick these first.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/medium_1024x1024_28f675f8-8df7-4338-b357-e9bcf72ce661.webp',
+      bg: '#eef8ff',
+      recipe: [
+        { shape: 'shark', colors: { a: '#5ec8ff', b: '#ffffff' } }, { shape: 'shark', colors: { a: '#7fd8ff', b: '#ffe9f3' } }
+      ]
+    },
+    {
+      id: 'pink-strawberry-chews', name: 'All Pink Strawberry Chews', flavor: 'Strawberry only',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 14.99, handle: 'all-pink-strawberry-chewy-candy-1-lb-approx-90-pieces-bulk-bag-pink-individually-wrapped-candy-perfect-for-parties-events-candy-buffets-pink-party-favors-birthdays-weddings-baby-shower-candy-pack-by-yummyland-16-oz',
+      tag: 'top pick',
+      pieces: 22,
+      about: 'Nothing but the pink ones — about 90 strawberry chews to the pound. The single most requested pick we stock.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Starburst-Pink-Strawberry-Chewy-Candy-1-LB-Approx-90-Pieces-Bulk-Bag-Pink-Individually-Wrapped-Candy-Perfect-Parties-Candy-Buffets-Pink-Party-Favors_bd113bcc-2707-4cd6-96b3-f51853448e.webp',
+      bg: '#fff0f6',
+      recipe: [
+        { shape: 'taffy', colors: { a: '#ff5d8f', b: '#ffd9ea' } }, { shape: 'taffy', colors: { a: '#ff7fa8', b: '#ffe4ef' } }
+      ]
+    },
+    {
+      id: 'blue-raspberry-rings', name: 'Blue Raspberry Rings', flavor: 'Bold blue raspberry',
+      cats: ['gummies', 'sour'], traits: ['single'],
+      perLb: 9.99, handle: 'gummi-blue-raspberry-rings',
+      about: 'The blue-raspberry answer to the peach ring. Chewy, tangy, and it turns your tongue blue.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/2594844-ezgif.com-webp-to-jpg-converter.jpg',
+      bg: '#eef6ff',
+      recipe: [
+        { shape: 'ring', colors: { a: '#4bb9ff' }, sour: true }, { shape: 'ring', colors: { a: '#7fd0ff' }, sour: true },
+        { shape: 'ring', colors: { a: '#2f8fe0' }, sour: true }
+      ]
+    },
+    {
+      id: 'gummy-berries', name: 'Mixed Gummi Berries', flavor: 'Assorted berry',
+      cats: ['gummies'], traits: ['mix'],
+      perLb: 9.99, handle: 'mixed-gummi-berries',
+      about: 'Berry-shaped gummies in raspberry, blackberry and strawberry — a soft, chewy crowd-pleaser.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/61nqKx8C8jL.jpg',
+      bg: '#fff0f6',
+      recipe: [
+        { shape: 'bean', colors: { a: '#ff2e8b' } }, { shape: 'bean', colors: { a: '#a76bff' } },
+        { shape: 'bean', colors: { a: '#ff4757' } }, { shape: 'bean', colors: { a: '#3fb8ff' } }
+      ]
+    },
+    {
+      id: 'squashies', name: 'Squashies Foam Gummies', flavor: 'Soft foam, mixed fruit',
+      cats: ['gummies'], traits: ['mix'],
+      perLb: 3.99, handle: 'smarties-squashies-mixed-fruit-foam-marshmallows-gummies-candy',
+      about: 'Squishy marshmallow-soft foam gummies from Smarties. Light, bouncy and gentle on teeth.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/IMG000.jpg',
+      bg: '#fff5fa',
+      recipe: [
+        { shape: 'marsh', colors: { a: '#ffd7e8' } }, { shape: 'marsh', colors: { a: '#fff2d0' } },
+        { shape: 'marsh', colors: { a: '#d8f3ff' } }
+      ]
+    },
+    {
       id: 'sour-belts', name: 'Sour Power Rainbow Belts', flavor: 'Sour & tangy',
-      cats: ['sour'], traits: ['loose', 'mix'],
+      cats: ['sour'], traits: ['mix'],
       perLb: 8.80, handle: 'sour-power-quattro-rainbow-candy-belts-2-5-lb-bulk-tub',
       about: 'Wide rainbow belts, sour-sugar dusted. Rip them, stack them, or just eat the whole strip.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Sour-Power-Quattro-150-Count-42-3-Ounce_c87510f2-7358-4e1f-8411-6c11bdec8e8f.94b1481dcc27bd480602a6620014fe0e.avif',
@@ -199,7 +209,7 @@ window.YL = window.YL || {};
     },
     {
       id: 'sour-mini-belts', name: 'Sour Power Mini Belts', flavor: 'Sour, bite size',
-      cats: ['sour'], traits: ['loose', 'mix'],
+      cats: ['sour'], traits: ['mix'],
       perLb: 11.99, handle: 'sour-power®-snax®-mini-belt-quattro-19-8lb',
       about: 'The same Quattro rainbow flavours cut short — easier to portion into a box and to share.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/103502_1_1.png',
@@ -210,7 +220,7 @@ window.YL = window.YL || {};
     },
     {
       id: 'sour-bursts', name: 'Sour Power Bursts', flavor: 'Sour, filled centres',
-      cats: ['sour', 'gummies'], traits: ['loose', 'mix'],
+      cats: ['sour', 'gummies'], traits: ['mix'],
       perLb: 11.99, handle: 'sour-power®-bursts®-6-6lb',
       about: 'Chewy sour bites with a soft filled centre. Four assorted flavours in every scoop.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/104129_1.avif',
@@ -222,9 +232,8 @@ window.YL = window.YL || {};
     },
     {
       id: 'pickle-belts', name: 'Sour Pickle Belts', flavor: 'Sour dill, seriously',
-      cats: ['sour'], traits: ['loose', 'single'],
+      cats: ['sour'], traits: ['single'],
       perLb: 11.99, handle: 'sour-power-pickle-candy-belts-bulk-bag-soft-chewy-sour-pickle-flavored-candy-strips-sweet-tangy-novelty-candy-for-parties-candy-buffets-sharing',
-      tag: 'viral',
       about: 'Yes, pickle. Sour dill candy belts that people buy as a dare and then finish the bag.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/818gZvFsXxL._SL1500.jpg',
       bg: '#f3fbe9',
@@ -244,41 +253,15 @@ window.YL = window.YL || {};
       ]
     },
     {
-      id: 'airheads-sour', name: 'Airheads Sour Bars', flavor: 'Sour taffy bars',
-      cats: ['sour', 'chewy'], traits: ['wrapped', 'mix'],
-      perLb: 8.00, handle: 'airheads-sour-bars-variety-bulk-box-assorted-flavors-individually-wrapped-full-size-60-count',
-      about: 'Full-size sour Airheads bars in assorted flavours, individually wrapped.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71puLWj05hL._SL1500.jpg',
-      bg: '#f5fff7',
-      recipe: [
-        { shape: 'bar', colors: { a: '#7fd0ff' } }, { shape: 'bar', colors: { a: '#ff8fb8' } },
-        { shape: 'bar', colors: { a: '#b6e86a' } }
-      ]
-    },
-    {
       id: 'fruit-chews-assorted', name: 'Original Fruit Chews', flavor: 'Assorted fruit',
       cats: ['chewy'], traits: ['wrapped', 'mix'],
       perLb: 9.99, handle: 'starburst-original-assorted-fruit-chews-candy',
-      tag: 'top pick',
       about: 'The square fruit chews everyone knows — strawberry, cherry, orange and lemon, individually wrapped.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/IMG000_19_1.jpg',
       bg: '#fff5ec',
       recipe: [
         { shape: 'taffy', colors: { a: '#ff4757', b: '#ffd9ea' } }, { shape: 'taffy', colors: { a: '#ff9f2e', b: '#fff0c2' } },
         { shape: 'taffy', colors: { a: '#ffd23f', b: '#fff6cf' } }, { shape: 'taffy', colors: { a: '#ff6fb0', b: '#ffd9ea' } }
-      ]
-    },
-    {
-      id: 'pink-strawberry-chews', name: 'All Pink Strawberry Chews', flavor: 'Strawberry only',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 14.99, handle: 'all-pink-strawberry-chewy-candy-1-lb-approx-90-pieces-bulk-bag-pink-individually-wrapped-candy-perfect-for-parties-events-candy-buffets-pink-party-favors-birthdays-weddings-baby-shower-candy-pack-by-yummyland-16-oz',
-      pieces: 22,
-      tag: 'sells out',
-      about: 'Nothing but the pink ones — about 90 strawberry chews to the pound. The single most requested pick we stock.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Starburst-Pink-Strawberry-Chewy-Candy-1-LB-Approx-90-Pieces-Bulk-Bag-Pink-Individually-Wrapped-Candy-Perfect-Parties-Candy-Buffets-Pink-Party-Favors_bd113bcc-2707-4cd6-96b3-f51853448e.webp',
-      bg: '#fff0f6',
-      recipe: [
-        { shape: 'taffy', colors: { a: '#ff5d8f', b: '#ffd9ea' } }, { shape: 'taffy', colors: { a: '#ff7fa8', b: '#ffe4ef' } }
       ]
     },
     {
@@ -315,20 +298,8 @@ window.YL = window.YL || {};
       ]
     },
     {
-      id: 'airheads', name: 'Airheads Bars', flavor: 'Stretchy taffy bars',
-      cats: ['chewy'], traits: ['wrapped', 'mix'],
-      perLb: 6.80, handle: 'airheads-chewy-candy-bars-assorted-flavors-nut-free-regular-size-33-oz-60-count-box',
-      about: 'Regular-size Airheads in assorted flavours. Labelled nut free by the manufacturer.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71b06w0nYBL._SX679.jpg',
-      bg: '#f4f9ff',
-      recipe: [
-        { shape: 'bar', colors: { a: '#7fd0ff' } }, { shape: 'bar', colors: { a: '#ff8fb8' } },
-        { shape: 'bar', colors: { a: '#ffd23f' } }, { shape: 'bar', colors: { a: '#b6e86a' } }
-      ]
-    },
-    {
       id: 'hot-tamales', name: 'Hot Tamales', flavor: 'Hot cinnamon',
-      cats: ['chewy', 'spicy', 'world'], traits: ['loose', 'single'],
+      cats: ['chewy', 'spicy', 'world'], traits: ['single'],
       perLb: 8.53, handle: 'hot-tamales-cinnamon-chewy-candy-3-pack-10-oz-each-spicy-red-cinnamon-candy-bulk-bags',
       about: 'Chewy cinnamon hearts with real heat. The grown-up pick in a box full of fruit.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71Tpa2fXERL._SL1500.jpg',
@@ -340,9 +311,8 @@ window.YL = window.YL || {};
     },
     {
       id: 'mike-ike-cotton-candy', name: 'Cotton Candy Chews', flavor: 'Cotton candy',
-      cats: ['chewy'], traits: ['loose', 'single'],
+      cats: ['chewy'], traits: ['single'],
       perLb: 15.98, handle: 'mike-and-ike-cotton-candy-limited-edition-chewy-candy-10-oz-resealable-bag',
-      tag: 'limited',
       about: 'Limited-edition Mike and Ike in cotton candy flavour — pink and blue, tastes like the fairground.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/4cb7c7ba-b966-4258-aa4a-5616c4cdef82_2000x_6e2eb951-e540-4ef1-a8d1-089a0119c65b.webp',
       bg: '#fdf2ff',
@@ -353,9 +323,8 @@ window.YL = window.YL || {};
     },
     {
       id: 'mike-ike-root-beer', name: 'Root Beer Chews', flavor: 'Root beer float',
-      cats: ['chewy', 'retro'], traits: ['loose', 'single'],
+      cats: ['chewy', 'retro'], traits: ['single'],
       perLb: 15.98, handle: 'mike-and-ike-root-beer-limited-edition-10-oz-chewy-candy-resealable-bag',
-      tag: 'limited',
       about: 'Limited-edition root beer chews. Old-fashioned soda-fountain flavour in a modern chew.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/BXY2WLZS3JTAIE6REETRGP24_1757642434.webp',
       bg: '#f8f2ec',
@@ -368,7 +337,6 @@ window.YL = window.YL || {};
       id: 'frooties-assorted', name: 'Frooties Assorted', flavor: '10 fruit flavours',
       cats: ['chewy'], traits: ['wrapped', 'mix'],
       perLb: 10.99, handle: 'tootsie-frooties-assorted-fruit-chewy-candy-10-flavors',
-      tag: 'top pick',
       about: 'Ten Tootsie Frooties flavours in one scoop, each piece individually wrapped. Great value per pound.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/1_fdf35b62-37bc-4a35-974e-7441d1b43784.jpg',
       bg: '#fff6ef',
@@ -455,22 +423,9 @@ window.YL = window.YL || {};
       ]
     },
     {
-      id: 'tootsie-juniors', name: 'Tootsie Roll Juniors', flavor: 'Chocolate chew',
-      cats: ['chocolate', 'chewy', 'retro'], traits: ['wrapped', 'single'],
-      perLb: 11.99, handle: 'tootsie-roll-juniors-long-chocolate-candy-individually-wrapped-chewy-taffy-candy',
-      about: 'The long chocolate chew that has been in candy bowls since 1896. Individually wrapped.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/222.jpg',
-      bg: '#f6efe7',
-      recipe: [
-        { shape: 'bar', colors: { a: '#5a3620' } }, { shape: 'bar', colors: { a: '#7b4a2d' } },
-        { shape: 'square', colors: { a: '#4e2c18' } }
-      ]
-    },
-    {
       id: 'jolly-assorted', name: 'Jolly Rancher Assorted', flavor: '5 fruit flavours',
       cats: ['hard'], traits: ['wrapped', 'mix'],
       perLb: 7.99, handle: 'jolly-rancher-assorted-hard-candy',
-      tag: 'best value',
       about: 'Cherry, watermelon, green apple, blue raspberry and grape. The cheapest pound in the shop and it never sits still.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/91HWGWO064L._SL1500.jpg',
       bg: '#fff6f2',
@@ -537,7 +492,7 @@ window.YL = window.YL || {};
     },
     {
       id: 'wintergreen-mints', name: 'Wint-O-Green Mints', flavor: 'Cool wintergreen',
-      cats: ['hard', 'classic'], traits: ['wrapped', 'single'],
+      cats: ['hard'], traits: ['wrapped', 'single'],
       perLb: 9.99, handle: 'wint-o-green-mints-2-lb-bulk-bag-approx-265-pieces-fresh-wintergreen-hard-candy-individually-wrapped',
       pieces: 33,
       about: 'About 265 mints to the pound. They spark in the dark if you bite them in a mirror — genuinely.',
@@ -582,85 +537,8 @@ window.YL = window.YL || {};
       ]
     },
     {
-      id: 'dum-dums', name: 'Dum-Dums Original Mix', flavor: 'Assorted, plus Mystery',
-      cats: ['lollipops', 'retro'], traits: ['wrapped', 'mix'],
-      perLb: 12.99, handle: 'dum-dums-original-mix-lollipops-1-lb-80-pops-bulk-bag-individually-wrapped-assorted-flavors-gluten-free-hard-candy-packed-by-yummyland',
-      pieces: 20,
-      tag: 'top pick',
-      about: 'About 80 pops to the pound, including the Mystery Flavour. The safest thing to put in a kids’ box.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91QoYr7zxpL._SL1500.jpg',
-      bg: '#fff4f9',
-      recipe: [
-        { shape: 'swirl', colors: { a: '#ff6fb0', b: '#fff' } }, { shape: 'swirl', colors: { a: '#3fb8ff', b: '#fff' } },
-        { shape: 'swirl', colors: { a: '#a8e05f', b: '#fff' } }, { shape: 'swirl', colors: { a: '#ffd23f', b: '#fff' } }
-      ]
-    },
-    {
-      id: 'tootsie-pops', name: 'Tootsie Pops Assorted', flavor: 'Chocolate centre',
-      cats: ['lollipops', 'chocolate', 'retro'], traits: ['wrapped', 'mix'],
-      perLb: 8.99, handle: 'assorted-tootsie-pops-approx-45-count-original-size-tootsie-roll-pops-suckers-2-lbs',
-      pieces: 6,
-      about: 'Original-size Tootsie Pops, roughly 45 to the 2 lb bag. Hard shell, chocolate middle.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/91jMWOg8TPL._SL1500.jpg',
-      bg: '#f8f0ea',
-      recipe: [
-        { shape: 'swirl', colors: { a: '#ff4757', b: '#5a3620' } }, { shape: 'swirl', colors: { a: '#a76bff', b: '#5a3620' } },
-        { shape: 'swirl', colors: { a: '#ff9f2e', b: '#5a3620' } }
-      ]
-    },
-    {
-      id: 'raspberry-tootsie-pops', name: 'Red Raspberry Tootsie Pops', flavor: 'Raspberry only',
-      cats: ['lollipops', 'retro'], traits: ['wrapped', 'single'],
-      perLb: 7.50, handle: 'red-raspberry-tootsie-pops-2-pounds',
-      pieces: 6,
-      about: 'Single-flavour raspberry Tootsie Pops. Best per-pound price of any lollipop we carry.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/6.jpg',
-      bg: '#fff0f5',
-      recipe: [
-        { shape: 'swirl', colors: { a: '#ff2e6b', b: '#5a3620' } }, { shape: 'swirl', colors: { a: '#ff5d8f', b: '#5a3620' } }
-      ]
-    },
-    {
-      id: 'choc-tootsie-pops', name: 'Chocolate Tootsie Pops', flavor: 'Chocolate on chocolate',
-      cats: ['lollipops', 'chocolate'], traits: ['wrapped', 'single'],
-      perLb: 14.99, handle: 'chocolate-tootsie-pops-2-pounds',
-      pieces: 6,
-      about: 'Chocolate shell over a chocolate centre. The rarest Tootsie Pop and the one people hunt for.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/5_2_117dc797-f112-4895-af70-643d9615e6be.jpg',
-      bg: '#f4ece6',
-      recipe: [
-        { shape: 'swirl', colors: { a: '#5a3620', b: '#3a2214' } }, { shape: 'swirl', colors: { a: '#7b4a2d', b: '#4e2c18' } }
-      ]
-    },
-    {
-      id: 'double-lollies', name: 'Smarties Double Lollies', flavor: 'Two heads, one stick',
-      cats: ['lollipops', 'retro'], traits: ['loose', 'mix'],
-      perLb: 8.28, handle: 'smarties-double-lollies-unwrapped-candy-jar-200-count-56-oz-assorted-fruit-flavored-lollipop-candy-bulk-candy-for-parties-candy-buffets-events',
-      pieces: 14,
-      about: '200 double-headed Smarties lollies in the jar. Tangy, tiny and hard to eat just one.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/61hQWVQfs1L._SL1500.jpg',
-      bg: '#fff6fb',
-      recipe: [
-        { shape: 'swirl', colors: { a: '#ffd6e8', b: '#ff6fb0' } }, { shape: 'swirl', colors: { a: '#d9ecff', b: '#3fb8ff' } },
-        { shape: 'swirl', colors: { a: '#e4d5ff', b: '#a76bff' } }
-      ]
-    },
-    {
-      id: 'taffy-pops', name: 'Top Pops Taffy Pops', flavor: '4 fruit flavours',
-      cats: ['lollipops', 'chewy'], traits: ['wrapped', 'mix'],
-      perLb: 8.99, handle: 'top-pops-taffy-pops-48-pack-4-delicious-assorted-fruit-flavor-lollipops-candy',
-      pieces: 12,
-      about: 'Chewy taffy on a stick — starts like a lollipop, ends like a chew. 48 to the pound.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91PMmmYtwxL._SL1500.jpg',
-      bg: '#fff8f0',
-      recipe: [
-        { shape: 'swirl', colors: { a: '#ff9f2e', b: '#fff' } }, { shape: 'swirl', colors: { a: '#ff5d8f', b: '#fff' } },
-        { shape: 'swirl', colors: { a: '#4cd964', b: '#fff' } }
-      ]
-    },
-    {
       id: 'caramel-cubes', name: 'Vanilla Caramel Cubes', flavor: 'Buttery & soft',
-      cats: ['chocolate', 'classic'], traits: ['wrapped', 'single'],
+      cats: ['chewy', 'retro'], traits: ['wrapped', 'single'],
       perLb: 8.99, handle: 'caramel-cubes-candy-bulk-bag-individually-wrapped-vanilla-caramel-squares-old-fashioned-candy',
       about: 'Soft vanilla caramels, individually wrapped. The quiet workhorse of a gift box.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81zqz8D8qbL.jpg',
@@ -668,19 +546,6 @@ window.YL = window.YL || {};
       recipe: [
         { shape: 'cube', colors: { a: '#c98b45' } }, { shape: 'cube', colors: { a: '#b8783a' } },
         { shape: 'cube', colors: { a: '#d9a05f' } }
-      ]
-    },
-    {
-      id: 'long-boys', name: 'Long Boys Caramel Bars', flavor: 'Chewy caramel bar',
-      cats: ['chocolate', 'retro'], traits: ['wrapped', 'single'],
-      perLb: 12.99, handle: 'long-boys-original-original-caramel-candy-bars-48-count-box-classic-chewy-caramel-treats-individually-wrapped-retro-candy-for-parties-concessions-snack-displays',
-      pieces: 12,
-      about: '48 long chewy caramel bars to the pound. An old-school five-and-dime candy that survived.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/IMG_6348_1.webp',
-      bg: '#f9f1e6',
-      recipe: [
-        { shape: 'bar', colors: { a: '#c98b45' } }, { shape: 'bar', colors: { a: '#a9663a' } },
-        { shape: 'bar', colors: { a: '#e0b076' } }
       ]
     },
     {
@@ -713,26 +578,12 @@ window.YL = window.YL || {};
       cats: ['world', 'spicy', 'gummies'], traits: ['wrapped', 'single'],
       perLb: 9.49, handle: 'picafresa-strawberry-gummy-coated-with-chili-and-sugar-225-pcs',
       pieces: 28,
-      tag: 'viral',
       about: 'Mexican strawberry gummies in a chamoy-chili sugar coat. Sweet, then sour, then hot. 225 wrapped pieces.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/c69763f7-6a6e-4bab-a52d-0d5d84f10123.b8e9f78bf1f73002403ef37f643d608f.avif',
       bg: '#fff2f0',
       recipe: [
         { shape: 'bean', colors: { a: '#e8452c' }, sour: true }, { shape: 'bean', colors: { a: '#ff5d73' }, sour: true },
         { shape: 'bean', colors: { a: '#c9241f' }, sour: true }
-      ]
-    },
-    {
-      id: 'dubai-chocolate', name: 'Dubai Chocolate Pralines', flavor: 'Pistachio & kataifi',
-      cats: ['chocolate', 'world', 'premium', 'nuts'], traits: ['wrapped', 'mix'],
-      perLb: 24.99, handle: 'nutty-fruity-dubai-chocolate-pralines-16-oz',
-      tag: 'premium',
-      about: 'The Dubai chocolate everyone films: pistachio and crisp kataifi inside a chocolate praline. Contains pistachios.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/6c3f8c11-ac23-4ee7-915e-ca3da7863293.3cfe2a82aee15a8b7a509fdf18f765ae.avif',
-      bg: '#f4ece6',
-      recipe: [
-        { shape: 'square', colors: { a: '#4e2c18' } }, { shape: 'square', colors: { a: '#7b4a2d' } },
-        { shape: 'ball', colors: { a: '#a8c45a' } }, { shape: 'square', colors: { a: '#5a3620' } }
       ]
     }
   ];
@@ -768,14 +619,14 @@ window.YL = window.YL || {};
   /* One-click starting points. Each list is a pool — the auto-builder
      scoops from it until the box hits its fill weight. */
   YL.PRESETS = [
+    { id: 'gummy-lover', name: 'Gummy Lover', desc: 'Rings, sharks and berries',
+      candies: ['peach-rings', 'blue-raspberry-rings', 'gummy-sharks', 'gummy-berries', 'squashies', 'sour-bursts', 'picafresa', 'sour-straws'] },
     { id: 'sour-lover', name: 'Sour Lover', desc: 'Straws, belts and the pickle dare',
-      candies: ['sour-straws', 'sour-belts', 'sour-bursts', 'pickle-belts', 'peach-rings', 'smarties-sour', 'sour-mini-belts', 'airheads-sour'] },
-    { id: 'sweet-fruity', name: 'Sweet & Fruity', desc: 'Gummies and fruit chews only',
-      candies: ['peach-rings', 'gummy-berries', 'gummy-sharks', 'blue-raspberry-rings', 'frooties-assorted', 'fruit-chews-assorted', 'frootie-watermelon', 'frootie-mango'] },
+      candies: ['sour-straws', 'sour-belts', 'sour-mini-belts', 'pickle-belts', 'sour-bursts', 'smarties-sour', 'peach-rings', 'blue-raspberry-rings'] },
+    { id: 'sweet-fruity', name: 'Sweet & Fruity', desc: 'Chews and fruit flavours',
+      candies: ['fruit-chews-assorted', 'frooties-assorted', 'pink-strawberry-chews', 'frootie-watermelon', 'frootie-mango', 'cherry-chews', 'lemon-chews', 'orange-chews'] },
     { id: 'retro-run', name: 'Retro Run', desc: 'The old candy-store counter',
-      candies: ['root-beer-barrels', 'long-boys', 'chick-o-stick', 'bit-o-honey', 'tootsie-juniors', 'smarties-mini', 'dum-dums', 'wintergreen-mints'] },
-    { id: 'party-mix', name: 'Party Mix', desc: 'A bit of everything, nothing weird',
-      candies: ['peach-rings', 'sour-straws', 'jolly-assorted', 'frooties-assorted', 'dum-dums', 'gummy-berries', 'fruit-chews-assorted', 'taffy-pops'] },
+      candies: ['root-beer-barrels', 'chick-o-stick', 'bit-o-honey', 'caramel-cubes', 'smarties-mini', 'smarties-tropical', 'wintergreen-mints', 'mike-ike-root-beer'] },
     { id: 'random', name: 'Random Mix', desc: 'Let us surprise you', candies: null }
   ];
 
@@ -783,6 +634,15 @@ window.YL = window.YL || {};
      one is filled to exactly its size in 4 oz scoops — a repeated id
      is a second scoop of the same candy. */
   YL.PREBUILT = [
+    {
+      id: 'gummy-box', name: 'Gummy Lovers Box', tag: 'Gummies',
+      desc: 'Two pounds of nothing but gummies.',
+      goodFor: ['Gummy fans', 'Kids & teens', 'Content & sharing'],
+      about: 'Peach rings, blue raspberry rings, sharks, berries and soft foam gummies. No hard candy, no chews — just the squishy stuff, and it is the box people film.',
+      season: null, size: 'medium', color: 'pink',
+      candies: ['peach-rings', 'peach-rings', 'blue-raspberry-rings', 'gummy-sharks', 'gummy-sharks', 'gummy-berries', 'squashies', 'sour-bursts'],
+      extras: ['stickers'], vibe: 'me'
+    },
     {
       id: 'sour-challenge', name: 'Sour Challenge Box', tag: 'Sour',
       desc: 'For sour candy lovers and brave hearts.',
@@ -794,21 +654,12 @@ window.YL = window.YL || {};
     },
     {
       id: 'movie-night', name: 'Movie Night Box', tag: 'Film Night',
-      desc: 'Three pounds of sweet, chewy and slow-burning.',
+      desc: 'Three pounds of chewy, fruity and slow-burning.',
       goodFor: ['Movie nights', 'Sharing', 'Long films'],
-      about: 'Built for the couch: lollipops and hard candy that last a whole film, chews to pass around, and caramel for the credits.',
+      about: 'Built for the couch: hard candy that lasts a whole film, gummies to pick at, and chews to pass around while the credits roll.',
       season: null, size: 'large', color: 'purple',
-      candies: ['tootsie-pops', 'tootsie-pops', 'caramel-cubes', 'caramel-cubes', 'frooties-assorted', 'frooties-assorted', 'peach-rings', 'gummy-berries', 'jolly-assorted', 'dum-dums', 'sour-straws', 'tootsie-juniors'],
+      candies: ['peach-rings', 'peach-rings', 'gummy-berries', 'gummy-berries', 'frooties-assorted', 'frooties-assorted', 'jolly-assorted', 'jolly-assorted', 'caramel-cubes', 'sour-straws', 'fruit-chews-assorted', 'gummy-sharks'],
       extras: ['scoop'], vibe: 'movie'
-    },
-    {
-      id: 'chocolate-lovers', name: 'Chocolate & Caramel Box', tag: 'Rich',
-      desc: 'Two pounds of chocolate, caramel and toffee.',
-      goodFor: ['Gifting', 'Chocolate fans', 'Thank-yous'],
-      about: 'Tootsie Roll Juniors, soft vanilla caramels, Long Boys and a scoop of Dubai pistachio pralines, finished with premium gift wrap.',
-      season: null, size: 'medium', color: 'gold',
-      candies: ['tootsie-juniors', 'tootsie-juniors', 'caramel-cubes', 'caramel-cubes', 'long-boys', 'choc-tootsie-pops', 'tootsie-pops', 'dubai-chocolate'],
-      extras: ['wrap'], vibe: 'gift'
     },
     {
       id: 'office-refill', name: 'Office Candy Refill', tag: 'Office Fave',
@@ -816,7 +667,7 @@ window.YL = window.YL || {};
       goodFor: ['Offices', 'Break rooms', 'Big teams'],
       about: 'Ten crowd-pleasers, two scoops each, weighted towards wrapped pieces so the bowl stays hygienic. Reorder it monthly and the snack station never runs dry.',
       season: null, size: 'party', color: 'blue',
-      candies: ['jolly-assorted', 'jolly-assorted', 'frooties-assorted', 'frooties-assorted', 'dum-dums', 'dum-dums', 'peach-rings', 'peach-rings', 'fruit-chews-assorted', 'fruit-chews-assorted', 'wintergreen-mints', 'wintergreen-mints', 'caramel-cubes', 'caramel-cubes', 'sour-straws', 'sour-straws', 'smarties-mini', 'smarties-mini', 'taffy-pops', 'taffy-pops'],
+      candies: ['jolly-assorted', 'jolly-assorted', 'frooties-assorted', 'frooties-assorted', 'fruit-chews-assorted', 'fruit-chews-assorted', 'peach-rings', 'peach-rings', 'wintergreen-mints', 'wintergreen-mints', 'caramel-cubes', 'caramel-cubes', 'sour-straws', 'sour-straws', 'smarties-mini', 'smarties-mini', 'gummy-berries', 'gummy-berries', 'smarties-tropical', 'smarties-tropical'],
       extras: [], vibe: 'office'
     },
     {
@@ -825,7 +676,7 @@ window.YL = window.YL || {};
       goodFor: ['Birthdays', 'Kids & teens', 'Surprise gifts'],
       about: 'A fruity, colourful mix with stickers, premium wrap and a card — it arrives looking like a present, not a parcel.',
       size: 'medium', color: 'pink', season: null,
-      candies: ['peach-rings', 'peach-rings', 'gummy-sharks', 'sour-straws', 'frootie-watermelon', 'dum-dums', 'fruit-chews-assorted', 'gummy-berries'],
+      candies: ['peach-rings', 'peach-rings', 'gummy-sharks', 'sour-straws', 'frootie-watermelon', 'gummy-berries', 'fruit-chews-assorted', 'squashies'],
       extras: ['note', 'stickers', 'wrap'], vibe: 'birthday'
     },
     {
@@ -834,7 +685,7 @@ window.YL = window.YL || {};
       goodFor: ['Parties', 'Celebrations', 'Big groups'],
       about: 'Our biggest box: two scoops each of ten candies, so a room full of people all find something they like.',
       season: null, size: 'party', color: 'pink',
-      candies: ['peach-rings', 'peach-rings', 'sour-straws', 'sour-straws', 'gummy-berries', 'gummy-berries', 'jolly-assorted', 'jolly-assorted', 'frooties-assorted', 'frooties-assorted', 'dum-dums', 'dum-dums', 'fruit-chews-assorted', 'fruit-chews-assorted', 'gummy-sharks', 'gummy-sharks', 'sour-belts', 'sour-belts', 'taffy-pops', 'taffy-pops'],
+      candies: ['peach-rings', 'peach-rings', 'sour-straws', 'sour-straws', 'gummy-berries', 'gummy-berries', 'jolly-assorted', 'jolly-assorted', 'frooties-assorted', 'frooties-assorted', 'fruit-chews-assorted', 'fruit-chews-assorted', 'gummy-sharks', 'gummy-sharks', 'sour-belts', 'sour-belts', 'blue-raspberry-rings', 'blue-raspberry-rings', 'squashies', 'squashies'],
       extras: ['scoop', 'stickers'], vibe: 'party'
     },
     {
@@ -843,7 +694,7 @@ window.YL = window.YL || {};
       goodFor: ['Thank-yous', 'Clients', 'Neighbours'],
       about: 'A polite, safe two pounds — nothing too sour, nothing too weird — with a hand-written note and premium wrap.',
       size: 'medium', color: 'gold', season: null,
-      candies: ['caramel-cubes', 'caramel-cubes', 'fruit-chews-assorted', 'frooties-assorted', 'wintergreen-mints', 'tootsie-juniors', 'peach-rings', 'dubai-chocolate'],
+      candies: ['caramel-cubes', 'caramel-cubes', 'fruit-chews-assorted', 'frooties-assorted', 'wintergreen-mints', 'peach-rings', 'gummy-berries', 'smarties-mini'],
       extras: ['note', 'wrap'], vibe: 'gift'
     },
     {
@@ -859,54 +710,54 @@ window.YL = window.YL || {};
       id: 'congrats', name: 'Congrats Box', tag: 'Well Done',
       desc: 'New job, new home, graduation — three pounds of it.',
       goodFor: ['Graduations', 'Promotions', 'New homes'],
-      about: 'A bright celebration mix with a scoop of Dubai pralines so it feels like an occasion, not a snack run.',
+      about: 'A bright celebration mix, heavy on the gummies, with a note and premium wrap so it feels like an occasion.',
       size: 'large', color: 'purple', season: null,
-      candies: ['dubai-chocolate', 'fruit-chews-assorted', 'fruit-chews-assorted', 'peach-rings', 'peach-rings', 'sour-straws', 'dum-dums', 'caramel-cubes', 'gummy-berries', 'frooties-assorted', 'frooties-assorted', 'tootsie-pops'],
+      candies: ['peach-rings', 'peach-rings', 'fruit-chews-assorted', 'fruit-chews-assorted', 'gummy-berries', 'gummy-berries', 'frooties-assorted', 'frooties-assorted', 'sour-straws', 'gummy-sharks', 'caramel-cubes', 'blue-raspberry-rings'],
       extras: ['note', 'wrap', 'stickers'], vibe: 'gift'
     },
     {
       id: 'love-box', name: 'Love You Box', tag: "Valentine's",
       desc: 'Two pounds of pink and red, nothing else.',
       goodFor: ["Valentine's Day", 'Anniversaries', 'Date nights'],
-      about: 'Three scoops of the all-pink strawberry chews, cherry, berries and a scoop of Dubai pralines, in a pink box with a hand-written note.',
+      about: 'Three scoops of the all-pink strawberry chews, plus cherry, berries and soft foam gummies, in a pink box with a hand-written note.',
       size: 'medium', color: 'pink', season: 'valentines',
-      candies: ['pink-strawberry-chews', 'pink-strawberry-chews', 'pink-strawberry-chews', 'cherry-chews', 'gummy-berries', 'dubai-chocolate', 'squashies', 'peach-rings'],
+      candies: ['pink-strawberry-chews', 'pink-strawberry-chews', 'pink-strawberry-chews', 'cherry-chews', 'gummy-berries', 'squashies', 'peach-rings', 'frootie-strawberry-lemonade'],
       extras: ['note', 'wrap'], vibe: 'gift'
     },
     {
       id: 'halloween-box', name: 'Trick or Treat Box', tag: 'Halloween',
       desc: 'Five pounds, almost all individually wrapped.',
       goodFor: ['Halloween', 'Trick-or-treaters', 'Class parties'],
-      about: 'Wrapped pieces kids actually recognise — pops, Frooties, Airheads and Jolly Ranchers — in a party-size box, so you are not rationing by 8pm.',
+      about: 'Wrapped pieces kids actually recognise — Jolly Ranchers, Frooties, Smarties and fruit chews — in a party-size box, so you are not rationing by 8pm.',
       size: 'party', color: 'purple', season: 'halloween',
-      candies: ['dum-dums', 'dum-dums', 'dum-dums', 'tootsie-pops', 'tootsie-pops', 'jolly-assorted', 'jolly-assorted', 'frooties-assorted', 'frooties-assorted', 'smarties-mini', 'smarties-mini', 'airheads', 'airheads', 'taffy-pops', 'taffy-pops', 'peach-rings', 'peach-rings', 'gummy-sharks', 'sour-straws', 'root-beer-barrels'],
+      candies: ['jolly-assorted', 'jolly-assorted', 'jolly-assorted', 'frooties-assorted', 'frooties-assorted', 'frooties-assorted', 'smarties-mini', 'smarties-mini', 'fruit-chews-assorted', 'fruit-chews-assorted', 'peach-rings', 'peach-rings', 'gummy-sharks', 'gummy-sharks', 'sour-straws', 'sour-straws', 'gummy-berries', 'gummy-berries', 'root-beer-barrels', 'smarties-tropical'],
       extras: ['stickers'], vibe: 'party'
     },
     {
       id: 'christmas-box', name: 'Christmas Stocking Box', tag: 'Holidays',
-      desc: 'Three pounds of mint, caramel and chocolate.',
+      desc: 'Three pounds of mint, caramel and retro.',
       goodFor: ['Christmas', 'Stocking fillers', 'Secret Santa'],
-      about: 'Wintergreen mints, caramels, Tootsie Rolls and a scoop of Dubai pralines, wrapped and ready to sit under the tree.',
+      about: 'Wintergreen mints, soft caramels, root beer barrels and a couple of nostalgic picks, wrapped and ready to sit under the tree.',
       size: 'large', color: 'mint', season: 'christmas',
-      candies: ['wintergreen-mints', 'wintergreen-mints', 'caramel-cubes', 'caramel-cubes', 'tootsie-juniors', 'choc-tootsie-pops', 'dubai-chocolate', 'smarties-mini', 'jolly-assorted', 'frooties-assorted', 'long-boys', 'root-beer-barrels'],
+      candies: ['wintergreen-mints', 'wintergreen-mints', 'caramel-cubes', 'caramel-cubes', 'smarties-mini', 'jolly-assorted', 'frooties-assorted', 'root-beer-barrels', 'chick-o-stick', 'bit-o-honey', 'peach-rings', 'gummy-berries'],
       extras: ['note', 'wrap'], vibe: 'holiday'
     },
     {
       id: 'easter-box', name: 'Easter Hunt Box', tag: 'Easter',
       desc: 'Three pounds of small, pastel, hideable pieces.',
       goodFor: ['Easter', 'Kids', 'Family gatherings'],
-      about: 'Foam gummies, peach rings, berries and pops — bright, small and wrapped, which is exactly what you want when you are hiding them in the garden.',
+      about: 'Foam gummies, peach rings, berries and sharks — bright, small and easy to hide, which is exactly what you want in the garden.',
       size: 'large', color: 'gold', season: 'easter',
-      candies: ['squashies', 'squashies', 'peach-rings', 'peach-rings', 'gummy-berries', 'gummy-berries', 'dum-dums', 'dum-dums', 'smarties-mini', 'frootie-watermelon', 'jolly-assorted', 'double-lollies'],
+      candies: ['squashies', 'squashies', 'peach-rings', 'peach-rings', 'gummy-berries', 'gummy-berries', 'gummy-sharks', 'gummy-sharks', 'smarties-mini', 'frootie-watermelon', 'jolly-assorted', 'blue-raspberry-rings'],
       extras: ['stickers'], vibe: 'holiday'
     },
     {
       id: 'kids-box', name: 'Kids Favourites Box', tag: 'For Kids',
       desc: 'One pound of the stuff kids actually ask for.',
       goodFor: ['Kids', 'Party bags', 'Rewards'],
-      about: 'No liquorice, no strong sours — sharks, pops, Frooties and peach rings, all fruity and easy to like.',
+      about: 'No liquorice, no strong sours — sharks, peach rings, berries and Frooties, all fruity and easy to like.',
       size: 'small', color: 'blue', season: null,
-      candies: ['gummy-sharks', 'dum-dums', 'frooties-assorted', 'peach-rings'],
+      candies: ['gummy-sharks', 'peach-rings', 'frooties-assorted', 'gummy-berries'],
       extras: ['stickers'], vibe: 'birthday'
     },
     {
@@ -922,18 +773,18 @@ window.YL = window.YL || {};
       id: 'retro-box', name: 'Retro Candy Store Box', tag: 'Nostalgia',
       desc: 'Two pounds of the old five-and-dime counter.',
       goodFor: ['Gifts for parents', 'Nostalgia', 'Anyone over 40'],
-      about: 'Root beer barrels, Long Boys, Chick-O-Stick, Bit-O-Honey and Smarties — candy that has not changed since they last had it.',
+      about: 'Root beer barrels, Chick-O-Stick, Bit-O-Honey, soft caramels and Smarties — candy that has not changed since they last had it.',
       size: 'medium', color: 'gold', season: null,
-      candies: ['root-beer-barrels', 'long-boys', 'chick-o-stick', 'bit-o-honey', 'tootsie-juniors', 'smarties-mini', 'taffy-pops', 'mike-ike-root-beer'],
+      candies: ['root-beer-barrels', 'chick-o-stick', 'bit-o-honey', 'caramel-cubes', 'smarties-mini', 'smarties-tropical', 'wintergreen-mints', 'mike-ike-root-beer'],
       extras: ['note'], vibe: 'gift'
     },
     {
       id: 'world-box', name: 'World Tour Box', tag: 'New',
       desc: 'Two pounds your corner shop does not stock.',
       goodFor: ['Trying something new', 'Gifting', 'Content & sharing'],
-      about: 'PicaFresa chili strawberries, Hot Tamales, Dubai pistachio pralines and mango Frooties — the box people film when they open it.',
+      about: 'PicaFresa chili strawberries, Hot Tamales, mango Frooties and limited-edition cotton candy chews — the box people film when they open it.',
       size: 'medium', color: 'blue', season: null,
-      candies: ['picafresa', 'picafresa', 'hot-tamales', 'dubai-chocolate', 'frootie-mango', 'mike-ike-cotton-candy', 'mike-ike-root-beer', 'chick-o-stick'],
+      candies: ['picafresa', 'picafresa', 'hot-tamales', 'hot-tamales', 'frootie-mango', 'mike-ike-cotton-candy', 'mike-ike-root-beer', 'chick-o-stick'],
       extras: ['stickers'], vibe: 'me'
     }
   ];
@@ -1055,7 +906,7 @@ window.YL = window.YL || {};
   };
 
   YL.HOW = [
-    { icon: 'box', title: '1. Pick a weight', text: '1 lb, 2 lb, 3 lb or 5 lb of candy.' },
+    { icon: 'box', title: '1. Pick a box', text: 'Small to party size, 1 lb up to 5 lb.' },
     { icon: 'candy', title: '2. Scoop it full', text: 'Every scoop is 4 oz. Double up on favourites.' },
     { icon: 'gift', title: '3. We weigh & pack', text: 'Scooped to order and checked on the scale.' },
     { icon: 'truck', title: '4. We ship', text: 'Same-day dispatch, 2–5 days across the USA.' },
@@ -1077,9 +928,9 @@ window.YL = window.YL || {};
   ];
 
   YL.FAQ = [
-    { q: 'How does the box builder work?', a: 'Pick a box size, then scoop it full. One scoop is 4 oz of candy, and each size holds a set number of scoops — Small takes 4 (1 lb), Medium 8 (2 lb), Large 12 (3 lb) and Party Size 20 (5 lb). Add the same candy twice for a double scoop. Add extras, review and check out.' },
+    { q: 'How does the box builder work?', a: 'Pick a box, then scoop it full. One scoop is 4 oz of candy: Small takes 4 scoops (1 lb), Medium 8 (2 lb), Large 12 (3 lb) and Party Size 20 (5 lb). Add the same candy twice for a double scoop. Add extras, review and check out.' },
     { q: 'How much candy actually comes in a box?', a: 'Exactly what the meter says. Boxes are filled by weight, not by piece count, so a Medium is two full pounds of candy whether you picked eight different things or four doubles. We weigh every box before it is sealed.' },
-    { q: 'Why do some candies cost extra per scoop?', a: 'Because they cost us more per pound. Usually that means a single-flavour scoop — all-pink strawberry chews, cherry Jolly Ranchers, chocolate Tootsie Pops — which has to be sorted out of assorted stock by hand; sometimes it is just an expensive candy, like the Dubai pistachio pralines. The surcharge is printed on the candy before you add it, and most of the range carries none at all.' },
+    { q: 'Why do some candies cost extra per scoop?', a: 'Because they cost us more per pound. It is almost always a single-flavour scoop — all-pink strawberry chews, cherry Jolly Ranchers, grape Jolly Ranchers — which has to be sorted out of assorted stock by hand. The surcharge is printed on the candy before you add it, and most of the range carries none at all.' },
     { q: 'How fresh is the candy?', a: 'Every box is scooped and packed to order the same day it ships, out of the same fast-moving bulk stock we sell by the pound. Nothing sits on a shelf waiting for you.' },
     { q: 'How fast is shipping?', a: 'Orders placed before 2pm ship the same business day. Standard delivery is 2–5 business days across the USA, and shipping is free on orders over $50 — which a Large box clears on its own.' },
     { q: 'Can I add a gift note?', a: 'Yes — the gift note is free. Add up to 200 characters in step 4 and we hand-write it onto a Yummyland card.' },

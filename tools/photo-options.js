@@ -15,13 +15,8 @@ window.YL.PHOTO_OPTIONS = {
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50129_1.jpg',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/burkes-naturals-gummy-peach-rings_88dc3c4a-91a1-4b8d-9e4c-2ddd070c484a.webp'
   ],
-  'blue-raspberry-rings': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/2594844-ezgif.com-webp-to-jpg-converter.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50131_1.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/2594845.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50131_1_600x_717b8aa3-91ef-4a80-8e77-34e327ec7f36.webp',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50131_1__04467.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/BlueRaspberryRings3-ezgif.com-webp-to-jpg-converter.jpg'
+  'sour-straws': [
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/sour-power-straws-tub-2-5lb-Candy-Funhouse-US.webp'
   ],
   'gummy-sharks': [
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/medium_1024x1024_28f675f8-8df7-4338-b357-e9bcf72ce661.webp',
@@ -29,6 +24,22 @@ window.YL.PHOTO_OPTIONS = {
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/ChatGPTImageJan15_2026_02_24_13PM.webp',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50193_1__29479.webp',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/albanese-blue-gummi-sharks-flavors_1__41649.webp'
+  ],
+  'pink-strawberry-chews': [
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Starburst-Pink-Strawberry-Chewy-Candy-1-LB-Approx-90-Pieces-Bulk-Bag-Pink-Individually-Wrapped-Candy-Perfect-Parties-Candy-Buffets-Pink-Party-Favors_bd113bcc-2707-4cd6-96b3-f51853448e.webp',
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/8fd292e3b1c14a03bc9b2197c4fba7ff_tplv-fhlh96nyum-origin-jpeg.jpg',
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Pink-Starburst-Shot.-1-2.jpg',
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71tkQAzOe-L.jpg',
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/D15CE0F9-D4AA-4ADD-AAE7-7ACB1EA47758.png',
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/4DFD7C7F-F25B-4579-89A9-A1962E840C00.png'
+  ],
+  'blue-raspberry-rings': [
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/2594844-ezgif.com-webp-to-jpg-converter.jpg',
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50131_1.jpg',
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/2594845.jpg',
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50131_1_600x_717b8aa3-91ef-4a80-8e77-34e327ec7f36.webp',
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50131_1__04467.jpg',
+    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/BlueRaspberryRings3-ezgif.com-webp-to-jpg-converter.jpg'
   ],
   'gummy-berries': [
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/61nqKx8C8jL.jpg',
@@ -43,9 +54,6 @@ window.YL.PHOTO_OPTIONS = {
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/9b7c6e85-1378-4bde-a7ea-ade1aedd4203.3412116f834eba850d1be742b587d98b.webp',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/00a1384f-ee08-4ce8-b05f-38b866cf74c9.2398704b2d699c9cb1b09ebfbde65488.webp',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/image_2025-06-26_11-45-38_2_1.png'
-  ],
-  'sour-straws': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/sour-power-straws-tub-2-5lb-Candy-Funhouse-US.webp'
   ],
   'sour-belts': [
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Sour-Power-Quattro-150-Count-42-3-Ounce_c87510f2-7358-4e1f-8411-6c11bdec8e8f.94b1481dcc27bd480602a6620014fe0e.avif',
@@ -69,28 +77,12 @@ window.YL.PHOTO_OPTIONS = {
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/51FMn4uWG5L._SL1500.jpg',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91F0XEnCnGL._SL1500.jpg'
   ],
-  'airheads-sour': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71puLWj05hL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71fjBr4H0JL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/8_7a4cf732-ebf5-4b52-a25b-cdd69f065d12.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81ANdd4vtZL._SX679.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91ZgjLt5mXL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81SrIZGFX-L._SX679.jpg'
-  ],
   'fruit-chews-assorted': [
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/IMG000_19_1.jpg',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/28.jpg',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/810NADw8axL._SL1500.jpg',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/3b8467f0-68d4-4522-9334-9fb005f811e5.0db0d26a922779e2c0a983651cf4ab7e.avif',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/s-l1200.png'
-  ],
-  'pink-strawberry-chews': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/8fd292e3b1c14a03bc9b2197c4fba7ff_tplv-fhlh96nyum-origin-jpeg.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Starburst-Pink-Strawberry-Chewy-Candy-1-LB-Approx-90-Pieces-Bulk-Bag-Pink-Individually-Wrapped-Candy-Perfect-Parties-Candy-Buffets-Pink-Party-Favors_bd113bcc-2707-4cd6-96b3-f51853448e.webp',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Pink-Starburst-Shot.-1-2.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71tkQAzOe-L.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/D15CE0F9-D4AA-4ADD-AAE7-7ACB1EA47758.png',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/4DFD7C7F-F25B-4579-89A9-A1962E840C00.png'
   ],
   'cherry-chews': [
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/8EEF34EC-87E1-41FA-A43E-15443FD88BB6.jpg',
@@ -112,14 +104,6 @@ window.YL.PHOTO_OPTIONS = {
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/2B21924C-13DD-44FC-A2EE-0186C0E428C1.jpg',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/1D09DCAA-7301-47ED-AC3A-27B75FE090D1.jpg',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/7D0AD6EE-E751-4287-80E0-9F50027A85FB.jpg'
-  ],
-  'airheads': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71b06w0nYBL._SX679.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/7_1.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81ANdd4vtZL._SX679.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81SrIZGFX-L._SX679.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/711f-mpl-vL._SX679.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71fjBr4H0JL._SL1500.jpg'
   ],
   'hot-tamales': [
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71Tpa2fXERL._SL1500.jpg',
@@ -202,14 +186,6 @@ window.YL.PHOTO_OPTIONS = {
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/717xyPtgpjL._SL1200.jpg',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/5_481d9d42-9fb1-4d16-9c29-5a8256aa7cc9.jpg'
   ],
-  'tootsie-juniors': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/222.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/30.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/newbag.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/top.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/81Lcisn38DL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/7_9dc0d217-7e64-4701-a554-313845fa10c2.jpg'
-  ],
   'jolly-assorted': [
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/91HWGWO064L._SL1500.jpg',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/14_1_1.jpg',
@@ -284,62 +260,12 @@ window.YL.PHOTO_OPTIONS = {
   'smarties-mini': [
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/61Y2OrUU70L._SL1500.jpg'
   ],
-  'dum-dums': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91QoYr7zxpL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/12_1_1.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/817Ki_-Dq6L._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/dumdums00071-1_1_d03aba07-1219-4d3c-bae3-41b28ce46ca0.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Sugar-Cookie-Dum-Dum-Pops.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/713EDPKwFQL._SL1200_ff019cc8-fae6-46b2-9287-fda4fb1c7737.jpg'
-  ],
-  'tootsie-pops': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/91jMWOg8TPL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/c1f9f9a2-5deb-4f55-9e7e-20f108c3427b.4a17a30932b7357aac942a990833c338.webp',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/5_1.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/0d232973-0b4b-47d9-ab3f-f52b4eeddfe3.ca8b7c2c93ddc5e7fcf93f9020c4a003.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/5_c984c23f-1c57-48f0-97d9-92af7b9f0df5.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/22889e8d-0d62-48f1-b9fc-0910ce692c18.0d85f37663bdafc52dad78ff66ac652e.webp'
-  ],
-  'raspberry-tootsie-pops': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/6.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/9124cumYSBL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/81-jdDJCkSL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/81jPHvN1clL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/81VUdl99sNL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/91hbABT6JcL._SL1500.jpg'
-  ],
-  'choc-tootsie-pops': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/5_2_117dc797-f112-4895-af70-643d9615e6be.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/11_1.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/91hOuxAVcvL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/81uGGGRhbaL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/71Q2q1_NO4L._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/81ARWUYQZfL._SL1500.jpg'
-  ],
-  'double-lollies': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/61hQWVQfs1L._SL1500.jpg'
-  ],
-  'taffy-pops': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91PMmmYtwxL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/31_1.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71iVEPKY4LL._SL1500.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/s-l1600_1.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/s-l1600_2.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/399e9bd0-3a8a-45f8-9006-7b66402ef464.f9e1b6625ac56cdfbc96d93726b263cc.webp'
-  ],
   'caramel-cubes': [
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81zqz8D8qbL.jpg',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Caramel_cubes_candy.webp',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/504239c2-698e-4d9e-9b2b-853f133671ec.3a56cdf4bfc386d715079f54f2d990db.avif',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81fFh_oTjYL.jpg',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/4DC6E35A-673B-4C95-9E6A-0732AC43E3FC.webp'
-  ],
-  'long-boys': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/IMG_6348_1.webp',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/IMG_6476_1.webp',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/atkinsons-coconut-long-boys__52289.1702583274.1280.1280.webp',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Long_boy_coconut_1000x600_35ecb6e8-abbd-440b-8c45-d16501eb9a88.jpg',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/IMG_6343.webp'
   ],
   'bit-o-honey': [
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/102599_2.png',
@@ -361,12 +287,5 @@ window.YL.PHOTO_OPTIONS = {
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/22ba5d09-16b6-4c80-b3bf-80e0487f4c1c.9c9695cc88b433808bb0be1d3b9bf56b.avif',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/58e3bb20-4563-4af5-82d0-406dc7b4c75b.1bdf467bade0905ead3896b5b2ce443d.avif',
     'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/d816dd09-4a97-4c58-ae3d-682f617d8d23.e082900abac9c2d795453bad1ac512a3.avif'
-  ],
-  'dubai-chocolate': [
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/6c3f8c11-ac23-4ee7-915e-ca3da7863293.3cfe2a82aee15a8b7a509fdf18f765ae.avif',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/22106ed6-e080-4bae-ae9f-4cb4b91bcbb8.0247f254321cc4d7355b4785febbc941.avif',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/b0ac43f5-3179-4a74-a744-91702fe3c56c.b163eab8ebc3f59e215549a35944a18d.avif',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/1a0c9255-7a3e-4830-a30b-2f3a8817a1cb.a54c90ae57845878ca3e88c920dbe9fd.avif',
-    'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/06481a46-53ec-4be8-b559-999e6ea45dfd.e15d3b77b818d4654f43fbec0fd468b7.avif'
   ]
 };

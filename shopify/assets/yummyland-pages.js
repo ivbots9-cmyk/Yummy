@@ -11,7 +11,7 @@ window.YL = window.YL || {};
   /* a generic mixed-candy recipe for decorative artwork */
   YL.mixedRecipe = function (ids) {
     var list = ids || ['peach-rings', 'sour-belts', 'gummy-berries', 'fruit-chews-assorted',
-      'gummy-sharks', 'dum-dums', 'jolly-assorted', 'squashies'];
+      'gummy-sharks', 'blue-raspberry-rings', 'jolly-assorted', 'squashies'];
     var out = [];
     list.forEach(function (id) {
       var c = YL.getCandy(id);

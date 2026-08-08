@@ -827,13 +827,8 @@ body.modal-open { overflow: hidden; }
 }
 .extras__note svg { flex: none; width: 16px; height: 16px; color: var(--mint); }
 
-/* size cards now lead with weight and close with a price per pound */
-.size .size__wt { font-size: 12.5px; font-weight: 800; color: var(--ink); margin-top: 4px; }
-.size .size__unit {
-  margin-top: 2px; font-size: 11px; font-weight: 800; color: var(--ink-40);
-  letter-spacing: .04em;
-}
-.size.is-on .size__unit { color: var(--pink); }
+/* size cards answer "how big, how much" — the weight lives on the meter */
+.size .size__scoops { font-size: 12.5px; font-weight: 800; color: var(--ink); margin-top: 4px; }
 
 .pcard__weight {
   display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
