@@ -191,11 +191,19 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
     radial-gradient(900px 420px at 78% 30%, #ffd9ea 0%, rgba(255, 217, 234, 0) 70%),
     linear-gradient(180deg, #fff6fa 0%, #ffeef6 100%);
 }
-.hero__in { display: grid; grid-template-columns: 1.02fr .98fr; gap: 30px; align-items: center; padding: 54px 0 60px; }
+.hero__in { display: grid; grid-template-columns: 1.02fr .98fr; gap: 30px; align-items: center; padding: 54px 0 34px; }
 .hero h1 { font-size: clamp(40px, 6.2vw, 74px); text-transform: uppercase; letter-spacing: -.02em; }
 .hero h1 span { display: block; color: var(--pink); }
 .hero p.lede { font-size: 18px; color: var(--ink-60); max-width: 480px; margin: 18px 0 26px; }
 .hero__cta { display: flex; flex-wrap: wrap; gap: 12px; }
+/* Rating sits directly under the buttons — the one line of proof that
+   earns its place next to a call to action. Everything practical
+   (shipping, guarantee) waits for the trust strip below. */
+.hero__proof { margin-top: 24px; }
+.hero__proof .proof { justify-content: flex-start; }
+/* The trust strip rides on the hero's own gradient so the fold reads as
+   one screen you are scrolling through, not a second section. */
+.hero__trust { padding-bottom: 46px; }
 .hero__usps { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 34px; }
 .usp { display: flex; align-items: center; gap: 10px; }
 .usp svg { width: 30px; height: 30px; color: var(--pink); flex: none; }
@@ -213,14 +221,21 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-12px) rotate(-2deg); } }
 
 @media (max-width: 900px) {
-  .hero__in { grid-template-columns: 1fr; padding: 34px 0 40px; }
-  .hero__art { order: -1; }
+  .hero__in { grid-template-columns: 1fr; padding: 26px 0 26px; }
+  /* Art leads on a phone — it says "candy box" before a word is read —
+     but it is capped so the headline and the button stay above the fold.
+     An uncapped illustration ate 590px of an 844px screen and pushed the
+     primary call to action off it entirely. */
+  .hero__art { order: -1; width: min(300px, 74%); margin: 0 auto; }
 }
 @media (max-width: 720px) {
   .header__in { gap: 10px; }
   .logo__sub { display: none; }
   .logo__txt { font-size: 22px; }
-  .hero__art .float-badge { width: 76px; height: 76px; font-size: 9.5px; top: 0; right: 0; }
+  .hero__art { width: min(260px, 70%); }
+  .hero__art .float-badge { width: 64px; height: 64px; font-size: 8.5px; top: -4px; right: -10px; }
+  .hero h1 { margin-top: 10px !important; }
+  .hero p.lede { margin: 12px 0 20px; }
   .section { padding: 52px 0; }
 }
 
@@ -700,6 +715,8 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
   .hero h1 { font-size: clamp(34px, 11vw, 46px); }
   .hero p.lede { font-size: 16px; }
   .hero__cta .btn { flex: 1 1 100%; }
+  .hero__proof .proof { justify-content: center; }
+  .hero__trust { padding-bottom: 34px; }
   .hero__usps { gap: 14px 22px; margin-top: 24px; }
 
   .grid-cards { grid-template-columns: 1fr; }
@@ -937,6 +954,16 @@ body.modal-open { overflow: hidden; }
 }
 .trust__item span { font-size: 12.5px; color: var(--ink-40); }
 @media (max-width: 860px) { .trust { grid-template-columns: 1fr 1fr; } }
+/* Two-up on a phone the labels were wrapping onto a second line each and
+   the strip ate half the screen. Tighter icon and type keep every title
+   on one line. */
+@media (max-width: 560px) {
+  .trust { gap: 16px 10px; padding: 15px 14px; border-radius: var(--radius); }
+  .trust__item { gap: 8px; }
+  .trust__item svg { width: 23px; height: 23px; }
+  .trust__item b { font-size: 11px; letter-spacing: .03em; }
+  .trust__item span { font-size: 11.5px; line-height: 1.35; }
+}
 
 .offer {
   position: fixed; inset: 0; z-index: 190;
@@ -979,9 +1006,13 @@ body.modal-open { overflow: hidden; }
   width: 74px; height: 74px; padding: 0; border: 3px solid #fff; border-radius: 50%;
   background: linear-gradient(180deg, #fff6fa, #ffe0ee);
   box-shadow: var(--shadow-l); overflow: hidden;
-  transition: transform .18s ease, box-shadow .18s ease;
+  transition: transform .18s ease, box-shadow .18s ease, opacity .2s ease;
+  /* Nothing to peek at until the builder is on screen, and up in the
+     hero it lands on top of the secondary button. */
+  opacity: 0; pointer-events: none; transform: scale(.8);
 }
-.peek-fab:hover { transform: scale(1.06); }
+.peek-fab.is-live { opacity: 1; pointer-events: auto; transform: none; }
+.peek-fab.is-live:hover { transform: scale(1.06); }
 .peek-fab.is-open { transform: scale(.94); }
 .peek-fab__art { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; }
 .peek-fab__art svg { width: 132%; max-width: none; transform: translateY(6%); }
@@ -1030,4 +1061,18 @@ body.modal-open { overflow: hidden; }
   body.peek-open { overflow: hidden; }
   body.peek-open .mbar { transform: translateY(120%); }
   .mbar { transition: transform .25s ease; }
+}
+
+/* Below ~400px the logo and the four tool buttons stop fitting side by
+   side and push the page 11px wider than the screen. Tighten both
+   rather than dropping a control the customer might need. */
+@media (max-width: 400px) {
+  .header__in { gap: 6px; }
+  .logo { gap: 7px; }
+  .logo__mark { width: 30px; height: 30px; }
+  .logo__txt { font-size: 19px; }
+  .header__tools { gap: 0; }
+  .icon-btn { width: 34px; height: 34px; }
+  .icon-btn svg { width: 20px; height: 20px; }
+  .cart-count { min-width: 17px; height: 17px; font-size: 10px; }
 }

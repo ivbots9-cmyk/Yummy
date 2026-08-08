@@ -877,9 +877,9 @@ window.YL = window.YL || {};
      (kills hesitation), risk reversal, and a first-order code. Reorder or
      trim freely — the bar cycles through whatever is in this array. */
   YL.ANNOUNCE = [
-    { icon: 'truck', text: '<b>Free shipping</b> on orders over $50 — a 3 lb box gets there on its own',
+    { icon: 'truck', text: '<b>Free shipping</b> on orders over $50',
       link: 'boxes.html', linkText: 'Shop boxes' },
-    { icon: 'clock', text: 'Order before <b>2pm</b> and it is scooped, weighed and shipped today',
+    { icon: 'clock', text: 'Order before <b>2pm</b> and it ships today',
       link: 'index.html', linkText: 'Build yours' },
     { icon: 'gift', text: 'Free <b>hand-written note</b> on every gift box',
       link: 'gifts.html', linkText: 'Send a gift' },
@@ -890,7 +890,7 @@ window.YL = window.YL || {};
   YL.ANNOUNCE_INTERVAL = 4800;
 
   YL.TRUST = [
-    { icon: 'box', title: 'Sold by weight', text: '1 lb to 5 lb, weighed before sealing' },
+    { icon: 'box', title: 'Sold by weight', text: 'Small 1 lb to party 5 lb' },
     { icon: 'truck', title: 'Free over $50', text: 'Flat $4.99 under that' },
     { icon: 'clock', title: 'Ships same day', text: 'Order before 2pm' },
     { icon: 'shield', title: '100% happiness', text: '30 days to make it right' }

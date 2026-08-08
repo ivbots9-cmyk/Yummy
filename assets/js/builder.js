@@ -124,6 +124,17 @@ window.YL = window.YL || {};
       c.classList.toggle('is-active', i === active);
       c.classList.toggle('is-done', isStepDone(i) && i !== active);
     });
+    markPeek();
+  }
+
+  /* The floating peek only earns its spot once the builder is in view. */
+  function markPeek() {
+    var fab = $('#peek-fab');
+    var builder = document.getElementById('builder');
+    if (!fab || !builder) return;
+    var live = builder.getBoundingClientRect().top < window.innerHeight * 0.6;
+    fab.classList.toggle('is-live', live);
+    if (!live) YL.togglePeek(false);
   }
 
   function isStepDone(i) {
