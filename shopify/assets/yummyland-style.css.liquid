@@ -223,7 +223,26 @@
 .yummyland .step-chip.is-active .step-chip__t { color: var(--pink); }
 .yummyland .step-chip.is-done .step-chip__n { background: var(--mint); color: #fff; }
 .yummyland .steps__sep { flex: none; width: 26px; height: 2px; background: var(--line); border-radius: 2px; }
+.yummyland .steps__now { display: none; }
 @media (max-width: 780px) {.yummyland .steps__sep { display: none; }}
+@media (max-width: 900px) {.yummyland .steps { padding: 11px 14px; gap: 0; overflow: hidden; }
+.yummyland .step-chip, .yummyland .steps__sep { display: none; }
+.yummyland .steps__now {
+    display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; width: 100%; align-items: baseline;
+  }
+.yummyland .steps__now b {
+    font-size: 11px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; color: var(--pink);
+  }
+.yummyland .steps__now span { font-size: 13.5px; font-weight: 800; }
+.yummyland .steps__bar {
+    grid-column: 1 / -1; margin-top: 7px;
+    display: block; height: 5px; border-radius: 999px; background: var(--pink-100); overflow: hidden;
+  }
+.yummyland .steps__bar s {
+    display: block; height: 100%; width: 0; border-radius: 999px;
+    background: linear-gradient(90deg, var(--pink), #ff7ab5);
+    transition: width .3s ease;
+  }}
 .yummyland .builder__flow { max-width: 900px; margin-inline: auto; }
 .yummyland .card {
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius-l);
@@ -383,15 +402,26 @@
 }
 .yummyland .guarantee svg { width: 26px; height: 26px; color: var(--pink); flex: none; }
 .yummyland .guarantee b { display: block; color: var(--ink); font-size: 13px; }
-.yummyland .inspo { margin-top: 20px; }
-.yummyland .inspo__row {
-  display: flex; align-items: center; gap: 12px; padding: 9px 6px; border-bottom: 1px solid var(--line);
+.yummyland .quickmix {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin: 0 0 18px; padding: 12px 14px;
+  background: var(--pink-50); border: 1px dashed #ffb2d5; border-radius: var(--radius);
 }
-.yummyland .inspo__row:last-child { border-bottom: 0; }
-.yummyland .inspo__row svg { width: 34px; height: 34px; flex: none; border-radius: 9px; }
-.yummyland .inspo__row b { font-size: 13px; }
-.yummyland .inspo__row small { display: block; font-size: 11.5px; color: var(--ink-40); }
-.yummyland .inspo__row .btn { margin-left: auto; }
+.yummyland .quickmix__label {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--ink-60); margin-right: 2px;
+}
+.yummyland .quickmix__label svg { width: 16px; height: 16px; color: var(--pink); flex: none; }
+.yummyland .quickmix__btn {
+  border: 1.5px solid var(--pink); background: #fff; color: var(--pink);
+  border-radius: 999px; padding: 7px 14px;
+  font-size: 12px; font-weight: 900; transition: .15s;
+}
+.yummyland .quickmix__btn:hover { background: var(--pink); color: #fff; }
+@media (max-width: 560px) {.yummyland .quickmix { gap: 6px; padding: 11px 12px; }
+.yummyland .quickmix__label { width: 100%; margin-bottom: 2px; }
+.yummyland .quickmix__btn { padding: 6px 12px; font-size: 11.5px; }}
 .yummyland .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(216px, 1fr)); gap: 18px; }
 .yummyland .pcard {
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius-l); overflow: hidden;
@@ -409,12 +439,20 @@
 .yummyland .pcard__body p { font-size: 13px; color: var(--ink-60); margin: 6px 0 12px; flex: 1; }
 .yummyland .pcard__price { font-family: var(--display); font-weight: 800; color: var(--pink); font-size: 17px; margin-bottom: 12px; }
 .yummyland .pcard__price small { color: var(--ink-40); font-family: var(--font); font-size: 11px; font-weight: 700; }
-.yummyland .how { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-@media (max-width: 900px) {.yummyland .how { grid-template-columns: repeat(2, 1fr); }}
+.yummyland .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .yummyland .how__item { text-align: center; padding: 10px; }
 .yummyland .how__item svg { width: 46px; height: 46px; margin: 0 auto 12px; color: var(--pink); }
 .yummyland .how__item b { display: block; font-size: 12.5px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: var(--pink); }
 .yummyland .how__item p { font-size: 13px; color: var(--ink-60); margin: 6px 0 0; }
+@media (max-width: 700px) {.yummyland .how { grid-template-columns: 1fr; gap: 10px; }
+.yummyland .how__item {
+    display: grid; grid-template-columns: auto 1fr; column-gap: 14px;
+    text-align: left; padding: 13px 15px; background: #fff;
+    border: 1px solid var(--line); border-radius: var(--radius-l);
+  }
+.yummyland .how__item svg { width: 34px; height: 34px; margin: 0; grid-row: 1 / span 2; align-self: center; }
+.yummyland .how__item b { align-self: end; }
+.yummyland .how__item p { align-self: start; margin: 3px 0 0; }}
 .yummyland .occasions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
 .yummyland .occasion {
   display: flex; align-items: center; gap: 12px; padding: 16px 18px;
@@ -588,7 +626,6 @@
 .yummyland .hero__trust { padding-bottom: 34px; }
 .yummyland .hero__usps { gap: 14px 22px; margin-top: 24px; }
 .yummyland .grid-cards { grid-template-columns: 1fr; }
-.yummyland .how { grid-template-columns: 1fr 1fr; }
 .yummyland .vibes { grid-template-columns: repeat(2, 1fr); }
 .yummyland .chips { gap: 5px; }
 .yummyland .chip { font-size: 11.5px; }}

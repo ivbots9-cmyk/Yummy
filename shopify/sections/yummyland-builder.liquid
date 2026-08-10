@@ -54,9 +54,6 @@
       <div class="builder__flow">
         <div class="card" id="step-size"></div>
         <div class="card" id="step-candy"></div>
-        {%- if section.settings.show_inspiration -%}
-          <div class="card" id="inspo"></div>
-        {%- endif -%}
         <div class="card" id="step-vibe"></div>
         <div class="card" id="step-extras"></div>
         <div class="card" id="step-review"></div>
@@ -155,7 +152,6 @@
     { "type": "text", "id": "secondary_label", "label": "Secondary button", "default": "Shop ready-made boxes" },
     { "type": "url", "id": "secondary_url", "label": "Secondary button link" },
     { "type": "header", "content": "Builder" },
-    { "type": "checkbox", "id": "show_inspiration", "label": "Show auto-build presets", "default": true },
     { "type": "checkbox", "id": "go_to_cart", "label": "Go to cart after adding a box", "default": false },
     { "type": "url", "id": "builder_url", "label": "Builder page URL", "info": "Used by 'Customize' links. Default /pages/build-your-box" },
     { "type": "url", "id": "boxes_url", "label": "Ready-made boxes URL" }

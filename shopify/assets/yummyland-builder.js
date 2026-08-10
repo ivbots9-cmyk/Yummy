@@ -97,13 +97,20 @@ window.YL = window.YL || {};
   function renderSteps() {
     var host = $('#steps');
     if (!host) return;
-    host.innerHTML = STEPS.map(function (s, i) {
-      return '<button class="step-chip" data-goto="' + s.id + '" data-step="' + i + '">' +
-        '<span class="step-chip__n">' + (i + 1) + '</span>' +
-        '<span><span class="step-chip__t">' + s.t + '</span>' +
-        '<span class="step-chip__d">' + s.d + '</span></span></button>' +
-        (i < STEPS.length - 1 ? '<span class="steps__sep"></span>' : '');
-    }).join('');
+    /* Five chips do not fit a phone, and a strip cut off mid-word looks
+       broken rather than scrollable. Narrow screens get a plain "step 2
+       of 5" with a bar instead — same job (you are here, this is how far
+       it goes) with nothing hidden off the edge. */
+    host.innerHTML =
+      '<div class="steps__now"><b data-now-n></b><span data-now-t></span>' +
+      '<i class="steps__bar"><s data-now-bar></s></i></div>' +
+      STEPS.map(function (s, i) {
+        return '<button class="step-chip" data-goto="' + s.id + '" data-step="' + i + '">' +
+          '<span class="step-chip__n">' + (i + 1) + '</span>' +
+          '<span><span class="step-chip__t">' + s.t + '</span>' +
+          '<span class="step-chip__d">' + s.d + '</span></span></button>' +
+          (i < STEPS.length - 1 ? '<span class="steps__sep"></span>' : '');
+      }).join('');
     host.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-goto]');
       if (!btn) return;
@@ -125,6 +132,24 @@ window.YL = window.YL || {};
       c.classList.toggle('is-active', i === active);
       c.classList.toggle('is-done', isStepDone(i) && i !== active);
     });
+
+    var n = $('[data-now-n]'), t = $('[data-now-t]'), bar = $('[data-now-bar]');
+    if (n) n.textContent = 'Step ' + (active + 1) + ' of ' + STEPS.length;
+    if (t) t.textContent = STEPS[active].t;
+    if (bar) bar.style.width = ((active + 1) / STEPS.length * 100) + '%';
+
+    /* On the widths where the chips do still scroll, keep the live one
+       in view so the strip visibly follows along. */
+    var host = $('#steps');
+    if (host && host.scrollWidth > host.clientWidth + 4) {
+      var el = chips[active];
+      if (el) {
+        var want = el.offsetLeft - (host.clientWidth - el.offsetWidth) / 2;
+        if (Math.abs(host.scrollLeft - want) > 8) {
+          host.scrollTo({ left: Math.max(0, want), behavior: 'smooth' });
+        }
+      }
+    }
     markPeek();
   }
 
@@ -205,6 +230,7 @@ window.YL = window.YL || {};
       head(2, 'Step 2: Scoop it full',
         'Every tap adds one 4 oz scoop. Tap the same candy twice for a double scoop.',
         '<span class="badge">' + oz(used()) + ' / ' + oz(slots()) + '</span>') +
+      quickMix() +
       '<div class="filters">' + YL.CATEGORIES.map(function (c) {
         return '<button class="filter' + (c.id === filter ? ' is-on' : '') + '" data-filter="' + c.id + '">' + c.name + '</button>';
       }).join('') + '</div>' +
@@ -224,6 +250,15 @@ window.YL = window.YL || {};
       ' Allergens change with the recipe, so we point you at the pack rather than guessing. ' +
       'Tell us what to leave out in step 4 and we read it before we scoop.</p>';
 
+    $$('[data-preset]', host).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var preset = YL.PRESETS.filter(function (p) { return p.id === b.dataset.preset; })[0];
+        if (!preset) return;
+        fillRandom(preset.candies);
+        renderAll();
+        YL.toast(preset.name + ' box built — swap anything you like.');
+      });
+    });
     $$('[data-filter]', host).forEach(function (b) {
       b.addEventListener('click', function () { filter = b.dataset.filter; showAll = false; renderCandy(); });
     });
@@ -506,34 +541,20 @@ window.YL = window.YL || {};
   }
 
   /* ------------------------------------------------------------------ */
-  /* render: inspiration / auto-build                                    */
+  /* auto-build: the escape hatch from 41 cards                          */
   /* ------------------------------------------------------------------ */
-  function renderInspo() {
-    var host = $('#inspo');
-    if (!host) return;
-    host.className = 'card inspo';
-    host.innerHTML =
-      '<div class="card__head"><span class="card__num">&#9733;</span>' +
-      '<div><h2>In a hurry?</h2><p>Scoop the box full from one of our favourite mixes, then tweak it.</p></div></div>' +
+  /* This used to be a card of its own below the candy wall, which is the
+     wrong moment — by then a hesitant customer has already scrolled past
+     everything that overwhelmed them. It now sits directly above the
+     grid, as one compact row, so the way out is visible exactly where
+     the choice gets heavy. */
+  function quickMix() {
+    return '<div class="quickmix"><span class="quickmix__label">' + YL.icon('sparkle') +
+      'In a hurry? Fill it with</span>' +
       YL.PRESETS.map(function (p) {
-        var sample = p.candies ? YL.getCandy(p.candies[0]) : YL.CANDIES[0];
-        return '<div class="inspo__row">' + YL.candyDot(sample, 34) +
-          '<span><b>' + p.name + '</b><small>' + p.desc + '</small></span>' +
-          '<button class="btn btn--soft btn--sm" data-preset="' + p.id + '">Auto-build</button></div>';
-      }).join('');
-
-    $$('[data-preset]', host).forEach(function (b) {
-      b.addEventListener('click', function () {
-        var preset = YL.PRESETS.filter(function (p) { return p.id === b.dataset.preset; })[0];
-        fillRandom(preset.candies);
-        renderAll();
-        YL.toast(preset.name + ' box built — tweak anything you like.');
-        var el = document.getElementById('step-candy');
-        if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
-      });
-    });
+        return '<button class="quickmix__btn" data-preset="' + p.id + '">' + p.name + '</button>';
+      }).join('') + '</div>';
   }
-
 
   /* ------------------------------------------------------------------ */
   /* floating peek: the box so far, without scrolling anywhere           */
@@ -647,7 +668,6 @@ window.YL = window.YL || {};
     document.body.classList.add('has-mbar');
     initPeek();
     renderSteps();
-    renderInspo();
     renderAll();
 
     var ticking = false;

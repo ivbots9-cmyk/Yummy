@@ -905,12 +905,13 @@ window.YL = window.YL || {};
     button: 'Send me the code'
   };
 
+  /* Only the part the customer cannot see for themselves. Picking a box and
+     scooping it full is the builder sitting right above this block — writing
+     those two steps out again is instructions for something already done. */
   YL.HOW = [
-    { icon: 'box', title: '1. Pick a box', text: 'Small to party size, 1 lb up to 5 lb.' },
-    { icon: 'candy', title: '2. Scoop it full', text: 'Every scoop is 4 oz. Double up on favourites.' },
-    { icon: 'gift', title: '3. We weigh & pack', text: 'Scooped to order and checked on the scale.' },
-    { icon: 'truck', title: '4. We ship', text: 'Same-day dispatch, 2–5 days across the USA.' },
-    { icon: 'shield', title: '5. 100% happiness', text: "Not right? We'll make it right." }
+    { icon: 'gift', title: 'We scoop it fresh', text: 'Your box is filled by hand the day it ships, out of the same bulk stock we sell by the pound.' },
+    { icon: 'truck', title: 'We weigh it & send it', text: 'On the scale before it is sealed, then out the door same day. 2–5 days across the USA.' },
+    { icon: 'shield', title: '100% happiness', text: "Anything not right within 30 days and we replace it or refund you. That's the whole policy." }
   ];
 
   YL.OCCASIONS = [

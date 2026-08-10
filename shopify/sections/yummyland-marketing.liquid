@@ -15,7 +15,7 @@
           <div class="wrap">
             <div class="section__head">
               {%- if block.settings.eyebrow != blank -%}<span class="eyebrow">{{ block.settings.eyebrow }}</span>{%- endif -%}
-              <h2>{{ block.settings.title | default: 'How it works' }}</h2>
+              <h2>{{ block.settings.title | default: 'What happens after you order' }}</h2>
               {%- if block.settings.text != blank -%}<p>{{ block.settings.text }}</p>{%- endif -%}
             </div>
             <div data-yl-render="how"></div>
@@ -123,8 +123,8 @@
       "type": "how", "name": "How it works",
       "settings": [
         { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Sweet and simple" },
-        { "type": "text", "id": "title", "label": "Title", "default": "How it works" },
-        { "type": "text", "id": "text", "label": "Text", "default": "From your screen to your door in five happy steps." }
+        { "type": "text", "id": "title", "label": "Title", "default": "What happens after you order" },
+        { "type": "text", "id": "text", "label": "Text", "default": "You did the fun part. Here is everything we do next." }
       ]
     },
     {
