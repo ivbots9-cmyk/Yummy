@@ -541,7 +541,7 @@ window.YL = window.YL || {};
   }
 
   /* ------------------------------------------------------------------ */
-  /* auto-build: the escape hatch from 41 cards                          */
+  /* auto-build: the escape hatch from the candy wall                    */
   /* ------------------------------------------------------------------ */
   /* This used to be a card of its own below the candy wall, which is the
      wrong moment — by then a hesitant customer has already scrolled past
