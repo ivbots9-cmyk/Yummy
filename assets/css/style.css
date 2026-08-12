@@ -881,6 +881,97 @@ body.modal-open { overflow: hidden; }
   margin: 6px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--ink-60);
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
+/* =========================================================
+   Flavour groups — one tile, many flavours
+   ========================================================= */
+/* The collage stands in for a photo, so it has to keep exactly the
+   same box as .candy__photo or the cards in a row stop lining up. */
+.candy__collage {
+  display: block; position: relative; width: 100%; aspect-ratio: 150 / 104;
+  border-radius: 12px; overflow: hidden;
+}
+.candy__cell { position: absolute; overflow: hidden; }
+.candy__cell img,
+.candy__cell svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.candy__more {
+  position: absolute; right: 6px; top: 6px; z-index: 2;
+  background: rgba(20, 8, 14, .72); color: #fff;
+  border-radius: 999px; padding: 3px 8px;
+  font-size: 10px; font-weight: 900; letter-spacing: .04em;
+}
+/* scoops taken from this group, shown on the tile so the wall reflects
+   choices made behind the picker */
+.candy__count {
+  position: absolute; right: 6px; bottom: 6px; z-index: 2;
+  min-width: 22px; height: 22px; padding: 0 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--pink); color: #fff; border-radius: 999px;
+  font-family: var(--display); font-size: 12px; font-weight: 900;
+  box-shadow: 0 2px 8px rgba(255, 30, 135, .4);
+}
+.candy__about--picked { color: var(--pink-700); font-weight: 700; -webkit-line-clamp: 2; }
+.candy__about--picked svg { width: 12px; height: 12px; vertical-align: -1px; }
+.candy__add--pick { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.candy__add--pick svg { width: 13px; height: 13px; }
+
+/* ---------- the picker sheet ---------- */
+body.no-scroll { overflow: hidden; }
+.fsheet { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; }
+.fsheet__back { position: absolute; inset: 0; background: rgba(28, 8, 20, .55); backdrop-filter: blur(2px); }
+.fsheet__panel {
+  position: relative; z-index: 1; display: flex; flex-direction: column;
+  width: min(660px, calc(100vw - 32px)); max-height: min(86vh, 760px);
+  background: #fff; border-radius: var(--radius-l); overflow: hidden;
+  box-shadow: 0 30px 70px rgba(28, 8, 20, .32);
+}
+.fsheet__x {
+  position: absolute; right: 12px; top: 12px; z-index: 2;
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--line); background: #fff; color: var(--ink-60);
+}
+.fsheet__x::before, .fsheet__x::after {
+  content: ''; position: absolute; left: 10px; top: 16px; width: 13px; height: 2px;
+  border-radius: 2px; background: currentColor;
+}
+.fsheet__x::before { transform: rotate(45deg); }
+.fsheet__x::after { transform: rotate(-45deg); }
+.fsheet__x:hover { border-color: var(--pink); color: var(--pink); }
+.fsheet__head { padding: 20px 56px 14px 20px; border-bottom: 1px solid var(--line); }
+.fsheet__head b { display: block; font-family: var(--display); font-size: 19px; font-weight: 900; }
+.fsheet__head p { margin: 5px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-60); }
+.fsheet__meter {
+  display: inline-block; margin-top: 10px; padding: 4px 11px; border-radius: 999px;
+  background: var(--pink-50); color: var(--pink-700);
+  font-size: 10.5px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase;
+}
+.fsheet__list { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 20px; }
+.fsheet__foot { padding: 14px 20px; border-top: 1px solid var(--line); background: #fff; }
+
+.frow { display: grid; grid-template-columns: 84px 1fr; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.frow:last-child { border-bottom: 0; }
+/* fixed square, top-aligned — the row grows with its text, the thumb does not */
+.frow__art { width: 84px; height: 84px; align-self: start; border-radius: 12px; overflow: hidden; }
+.frow__art img, .frow__art svg { display: block; width: 100%; height: 100%; }
+.frow__art img { object-fit: cover; aspect-ratio: 1; }
+.frow__body b { display: block; font-size: 13.5px; font-weight: 900; }
+.frow__body small { display: block; margin-top: 1px; font-size: 11.5px; color: var(--ink-40); }
+.frow__body p { margin: 5px 0 0; font-size: 12px; line-height: 1.45; color: var(--ink-60); }
+.frow__body .candy__add, .frow__body .qty { margin-top: 9px; }
+.frow__body .qty { justify-content: flex-start; }
+.frow.is-on .frow__art { box-shadow: 0 0 0 2px var(--pink); }
+
+@media (max-width: 560px) {
+  /* on a phone the sheet is a bottom sheet — thumb reach beats centring */
+  .fsheet { align-items: flex-end; }
+  .fsheet__panel { width: 100vw; max-height: 90vh; border-radius: var(--radius-l) var(--radius-l) 0 0; }
+  .fsheet__head { padding: 18px 52px 12px 16px; }
+  .fsheet__list { padding: 6px 16px; }
+  .fsheet__foot { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+  .frow { grid-template-columns: 64px 1fr; gap: 11px; }
+  .frow__art { width: 64px; height: 64px; }
+  .frow__body p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+}
+
 .candies__note {
   display: flex; align-items: flex-start; gap: 8px;
   margin: 18px 0 0; padding: 12px 14px; border-radius: var(--radius);

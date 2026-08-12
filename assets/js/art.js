@@ -211,6 +211,47 @@ window.YL = window.YL || {};
       }) + '</svg>';
   };
 
+  /* ---------- a flavour group, drawn as a collage of its members ----------
+     A group tile has to say "several things live in here" at a glance,
+     which one photo cannot do. So the tile is split into up to four
+     panes, each showing a different flavour, and a "+N" chip counts the
+     rest. Photos are used when they exist and generated pieces fill in
+     when they do not, so the collage never comes out half empty. */
+  YL.groupTile = function (group, members, opts) {
+    opts = opts || {};
+    var list = (members || []).slice(0, 4);
+    if (!list.length) return '';
+    var extra = (members || []).length - list.length;
+    var cells = list.length === 1 ? [[0, 0, 100, 100]]
+      : list.length === 2 ? [[0, 0, 50, 100], [50, 0, 50, 100]]
+        : list.length === 3 ? [[0, 0, 50, 100], [50, 0, 50, 50], [50, 50, 50, 50]]
+          : [[0, 0, 50, 50], [50, 0, 50, 50], [0, 50, 50, 50], [50, 50, 50, 50]];
+
+    var html = '<span class="candy__collage" style="background:' + esc(group.bg || '#fff2f8') + '">';
+    list.forEach(function (c, i) {
+      var box = cells[i];
+      var style = 'left:' + box[0] + '%;top:' + box[1] + '%;width:' + box[2] + '%;height:' + box[3] + '%;' +
+        'background:' + (c.bg || '#fff2f8');
+      html += '<span class="candy__cell" style="' + style + '">' +
+        (c.img && !opts.vector
+          ? '<img src="' + esc(photoUrl(c, opts.px || 300)) + '" alt="" loading="lazy" decoding="async" ' +
+            'onerror="YL.photoFallback(this)" data-candy-id="' + esc(c.id) + '">'
+          : cellArt(c)) +
+        '</span>';
+    });
+    if (extra > 0) html += '<span class="candy__more">+' + extra + '</span>';
+    return html + '</span>';
+  };
+
+  /* the vector stand-in for one collage pane */
+  function cellArt(candy) {
+    var rec = candy.recipe || [{ shape: 'bean', colors: { a: '#ff5ea8' } }];
+    return '<svg viewBox="0 0 60 60" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+      '<rect width="60" height="60" fill="' + (candy.bg || '#fff2f8') + '"/>' +
+      '<g transform="translate(30 30) scale(1.5)">' + piece(rec[0].shape, rec[0].colors, rec[0].sour) + '</g>' +
+      '</svg>';
+  }
+
   /* A local copy wins when tools/fetch-photos.js has put one there.
      Otherwise it is the Shopify CDN, which resizes on the fly — asking
      for the width we actually render keeps the cards light. Any other

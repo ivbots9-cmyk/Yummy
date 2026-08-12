@@ -28,17 +28,16 @@ window.YL = window.YL || {};
         Party  20 scoops = 5 lb
 
      Pricing. `baseLb` below is the blended bulk shelf price per pound
-     across the standard range (median $9.99/lb, mean $10.68/lb over the
-     29 candies in this file), so it is a deliberately conservative
+     across the standard range (median $10.99/lb, mean $11.34/lb over the
+     48 flavours in this file), so it is a deliberately conservative
      stand-in for cost: the real landed cost per pound is lower than
      what the same candy sells for loose on the shop shelf.
 
-     Cutting the range to bulk-only moved that mean down from $11.43,
-     because the packet products it dropped were the expensive ones per
-     pound — a 10 oz bag priced for a shelf costs far more per pound than
-     the same candy out of a 5 lb sack. Every box therefore earns a
-     little more than it did, and only two scoops in the whole range now
-     carry a surcharge at all.
+     The single flavours are what pull that mean up: a hand-sorted pound
+     of one colour costs more than the assorted sack it came out of, and
+     nine of them sit above the base. Every one of those is a deliberate
+     choice by the customer inside the flavour picker, priced there, so
+     the default path through the builder stays surcharge-free.
 
         size    fill    price     $/lb    merch @ baseLb    over merch
         small   1 lb    $22.99   22.99         $11.00      $11.99  52%
@@ -397,7 +396,7 @@ window.YL = window.YL || {};
       ]
     },
     {
-      id: 'smarties-sour', name: 'Smarties X-Treme Sour Rolls', flavor: 'Extremely sour',
+      id: 'smarties-sour', name: 'Smarties X-Treme Sour', flavor: 'Extremely sour', group: 'smarties',
       cats: ['sour', 'classic'], traits: ['wrapped', 'mix'],
       perLb: 12.99, handle: 'smarties-x-treme-sour-candy-rolls-bulk-bag',
       about: 'Classic Smarties rolls turned up to eleven. Individually wrapped, so they travel well in a box.',
@@ -424,7 +423,7 @@ window.YL = window.YL || {};
       pieces: 22
     },
     {
-      id: 'fruit-chews-assorted', name: 'Original Fruit Chews', flavor: 'Assorted fruit',
+      id: 'fruit-chews-assorted', name: 'Starburst Assorted', flavor: 'Assorted fruit', group: 'starburst',
       cats: ['chewy'], traits: ['wrapped', 'mix'],
       perLb: 9.99, handle: 'starburst-original-assorted-fruit-chews-candy',
       about: 'The square fruit chews everyone knows — strawberry, cherry, orange and lemon, individually wrapped.',
@@ -436,7 +435,7 @@ window.YL = window.YL || {};
       ]
     },
     {
-      id: 'frooties-assorted', name: 'Frooties Assorted', flavor: '10 fruit flavours',
+      id: 'frooties-assorted', name: 'Frooties Assorted', flavor: '10 fruit flavours', group: 'frooties',
       cats: ['chewy'], traits: ['wrapped', 'mix'],
       perLb: 10.99, handle: 'tootsie-frooties-assorted-fruit-chewy-candy-10-flavors',
       about: 'Ten Tootsie Frooties flavours in one scoop, each piece individually wrapped. Great value per pound.',
@@ -475,7 +474,7 @@ window.YL = window.YL || {};
 
     /* ---------- classics ---------- */
     {
-      id: 'jolly-assorted', name: 'Jolly Rancher Assorted', flavor: '5 fruit flavours',
+      id: 'jolly-assorted', name: 'Jolly Rancher Assorted', flavor: '5 fruit flavours', group: 'jolly',
       cats: ['classic'], traits: ['wrapped', 'mix'],
       perLb: 7.99, handle: 'jolly-rancher-assorted-hard-candy',
       about: 'Cherry, watermelon, green apple, blue raspberry and grape. The cheapest pound in the shop and it never sits still.',
@@ -510,6 +509,179 @@ window.YL = window.YL || {};
         { shape: 'bar', colors: { a: '#f0c785' } }, { shape: 'bar', colors: { a: '#e0aa5c' } },
         { shape: 'taffy', colors: { a: '#ffe9c9', b: '#e0aa5c' } }
       ]
+    },
+
+    /* ---------- single flavours, reached through the flavour picker ---------- */
+    {
+      id: 'cherry-chews', name: 'Cherry Chews', flavor: 'Cherry only', group: 'starburst',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 14.99, handle: 'yummyland-cherry-chewy-candy-1-lb-single-flavor-red-soft-original-fruit-chews-candy-individually-wrapped-bulk-candies-16-oz',
+      about: 'Single-flavour red fruit chews. Pairs well with the all-pink strawberry scoop.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/8EEF34EC-87E1-41FA-A43E-15443FD88BB6.jpg',
+      bg: '#fff0f1',
+      recipe: [{ shape: 'taffy', colors: { a: '#e8324a', b: '#ffd2d7' } }, { shape: 'taffy', colors: { a: '#ff4d63', b: '#ffdde1' } }]
+    },
+    {
+      id: 'lemon-chews', name: 'Lemon Chews', flavor: 'Lemon only', group: 'starburst',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 14.99, handle: 'yummyland-lemon-chewy-candy-1-lb-yellow-single-flavor-soft-original-fruit-chews-candy-individually-wrapped-bulk-candies-16-oz',
+      about: 'Sharp yellow lemon chews, one flavour all the way through the scoop.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/8BE508EC-B505-401A-BE38-053D68B5B4EF.jpg',
+      bg: '#fffaea',
+      recipe: [{ shape: 'taffy', colors: { a: '#ffd23f', b: '#fff3c4' } }, { shape: 'taffy', colors: { a: '#f7c00f', b: '#ffeeb0' } }]
+    },
+    {
+      id: 'orange-chews', name: 'Orange Chews', flavor: 'Orange only', group: 'starburst',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 14.99, handle: 'orange-chewy-candy-1-lb-single-flavor-soft-original-fruit-chews-candy-individually-wrapped-bulk-candies-16-oz',
+      about: 'Single-flavour orange fruit chews — the one people always dig for in a mixed bag.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/913B71CF-14E3-450F-A0E0-98100610187A.jpg',
+      bg: '#fff5e9',
+      recipe: [{ shape: 'taffy', colors: { a: '#ff9f2e', b: '#ffe3bd' } }, { shape: 'taffy', colors: { a: '#ff8412', b: '#ffdcae' } }]
+    },
+    {
+      id: 'frootie-blue-raspberry', name: 'Frooties Blue Raspberry', flavor: 'Blue raspberry only', group: 'frooties',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 10.99, handle: 'tootsie-frooties-blue-raspberry-fruit-chewy-candy-bulk',
+      about: 'Single-flavour blue raspberry Frooties — the colour that makes a box pop.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/GUEST_49bb116d-6eeb-4a1a-a295-c45eb538a286.webp',
+      bg: '#eef6ff',
+      recipe: [{ shape: 'wrapped', colors: { a: '#d9ecff', b: '#3fa9f5' } }, { shape: 'wrapped', colors: { a: '#c2e4ff', b: '#2f8fe0' } }]
+    },
+    {
+      id: 'frootie-green-apple', name: 'Frooties Green Apple', flavor: 'Green apple only', group: 'frooties',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 10.99, handle: 'tootsie-frooties-green-apple-fruit-chewy-candy-bulk',
+      about: 'Tart green apple Frooties, one flavour only.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81X3NEOjx-L._SL1200.jpg',
+      bg: '#f2fbea',
+      recipe: [{ shape: 'wrapped', colors: { a: '#dcf5c4', b: '#69c35a' } }, { shape: 'wrapped', colors: { a: '#c9ee9f', b: '#4fa93f' } }]
+    },
+    {
+      id: 'frootie-watermelon', name: 'Frooties Watermelon', flavor: 'Watermelon only', group: 'frooties',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 10.99, handle: 'tootsie-frooties-watermelon-fruit-chewy-candy-bulk',
+      about: 'Summer-flavoured watermelon Frooties. Reliably the first single flavour to empty.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/817JU0l9FwL._SL1200.jpg',
+      bg: '#fff0f3',
+      recipe: [{ shape: 'wrapped', colors: { a: '#ffd4dc', b: '#ff5d73' } }, { shape: 'wrapped', colors: { a: '#ffe1e6', b: '#f0455f' } }]
+    },
+    {
+      id: 'frootie-mango', name: 'Frooties Mango', flavor: 'Mango only', group: 'frooties',
+      cats: ['chewy', 'world'], traits: ['wrapped', 'single'],
+      perLb: 10.99, handle: 'tootsie-frooties-mango-fruit-chewy-candy-bulk',
+      about: 'Sweet tropical mango Frooties — quietly one of the best flavours in the range.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71LYHPKKIJL._SL1200.jpg',
+      bg: '#fff7e8',
+      recipe: [{ shape: 'wrapped', colors: { a: '#ffe3b0', b: '#ff9f2e' } }, { shape: 'wrapped', colors: { a: '#ffd695', b: '#f08300' } }]
+    },
+    {
+      id: 'frootie-pineapple', name: 'Frooties Pineapple', flavor: 'Pineapple only', group: 'frooties',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 10.99, handle: 'tootsie-frooties-pineapple-fruit-chewy-candy-bulk',
+      about: 'Bright tropical pineapple Frooties. The yellow that stops a box looking all red and pink.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/TR7855_2_1000x1000_crop_center_acdd332f-411a-45d0-85be-a2cac1b3590f.webp',
+      bg: '#fffbe8',
+      recipe: [{ shape: 'wrapped', colors: { a: '#fff3bf', b: '#ffcc33' } }]
+    },
+    {
+      id: 'frootie-strawberry', name: 'Frooties Strawberry', flavor: 'Strawberry only', group: 'frooties',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 10.99, handle: 'tootsie-frooties-strawberry-fruit-chewy-candy-bulk',
+      about: 'Classic red strawberry Frooties — the safest single flavour to put in a gift box.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81MawXIj50L._SL1200.jpg',
+      bg: '#fff0f4',
+      recipe: [{ shape: 'wrapped', colors: { a: '#ffd9e4', b: '#ff4d6d' } }]
+    },
+    {
+      id: 'frootie-strawberry-lemonade', name: 'Frooties Strawberry Lemonade', flavor: 'Strawberry lemonade', group: 'frooties',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 10.99, handle: 'tootsie-frooties-strawberry-lemonade-fruit-chewy-candy-bulk',
+      about: 'Pink and sharp at the same time. Strawberry lemonade Frooties, single flavour.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81lcj2xSL3L._SL1200.jpg',
+      bg: '#fff4f4',
+      recipe: [{ shape: 'wrapped', colors: { a: '#ffdfe4', b: '#ff6b7f' } }, { shape: 'wrapped', colors: { a: '#fff0c8', b: '#ffcc33' } }]
+    },
+    {
+      id: 'frootie-grape', name: 'Frooties Grape', flavor: 'Grape only', group: 'frooties',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 10.99, handle: 'tootsie-frooties-grape-fruit-chewy-candy-bulk',
+      about: 'Deep purple grape Frooties. Adds contrast to an otherwise very pink box.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81ROx8s4aFL._SL1200.jpg',
+      bg: '#f7f2ff',
+      recipe: [{ shape: 'wrapped', colors: { a: '#e4d5ff', b: '#8b5cf6' } }, { shape: 'wrapped', colors: { a: '#d3bcff', b: '#6f3fd6' } }]
+    },
+    {
+      id: 'frootie-fruit-punch', name: 'Frooties Fruit Punch', flavor: 'Fruit punch', group: 'frooties',
+      cats: ['chewy'], traits: ['wrapped', 'single'],
+      perLb: 10.99, handle: 'tootsie-frooties-fruit-punch-fruit-chewy-candy-bulk',
+      about: 'Mixed-berry fruit punch Frooties, individually wrapped.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91MRqOOi5oL._SL1500.jpg',
+      bg: '#fff2f0',
+      recipe: [{ shape: 'wrapped', colors: { a: '#ffd6cf', b: '#ff5a3c' } }, { shape: 'wrapped', colors: { a: '#ffc2b8', b: '#e8452c' } }]
+    },
+    {
+      id: 'frootie-sour-cherry', name: 'Frooties Sour Cherry', flavor: 'Sour cherry', group: 'frooties',
+      cats: ['chewy', 'sour'], traits: ['wrapped', 'single'],
+      perLb: 10.99, handle: 'tootsie-frooties-sour-cherry-fruit-chewy-candy-bulk',
+      about: 'Cherry Frooties with a sour edge — the only Frootie that bites back.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81BPGW7lysS._SL1200.jpg',
+      bg: '#fff2f2',
+      recipe: [{ shape: 'wrapped', colors: { a: '#ffd6d6', b: '#e63946' }, sour: true }]
+    },
+    {
+      id: 'jolly-cherry', name: 'Jolly Rancher Cherry', flavor: 'Cherry only', group: 'jolly',
+      cats: ['hard'], traits: ['wrapped', 'single'],
+      perLb: 14.99, handle: 'jolly-rancher-cherry-hard-candy-1',
+      about: 'Single-flavour cherry Jolly Ranchers — the red box builder favourite.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/JOLLYRANCHER_3.jpg',
+      bg: '#fff0f1',
+      recipe: [{ shape: 'square', colors: { a: '#ff2e46' } }, { shape: 'square', colors: { a: '#e01f36' } }]
+    },
+    {
+      id: 'jolly-green-apple', name: 'Jolly Rancher Green Apple', flavor: 'Green apple only', group: 'jolly',
+      cats: ['hard'], traits: ['wrapped', 'single'],
+      perLb: 14.99, handle: 'jolly-rancher-green-apple-hard-candy-1',
+      about: 'Sharp green apple, hand-sorted into a single-flavour scoop.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/A1ztBLaihxL._SL1500.jpg',
+      bg: '#f1fbec',
+      recipe: [{ shape: 'square', colors: { a: '#4cd964' } }, { shape: 'square', colors: { a: '#3fbf55' } }]
+    },
+    {
+      id: 'jolly-watermelon', name: 'Jolly Rancher Watermelon', flavor: 'Watermelon only', group: 'jolly',
+      cats: ['hard'], traits: ['wrapped', 'single'],
+      perLb: 14.99, handle: 'jolly-rancher-watermelon-hard-candy-1',
+      about: 'Watermelon only. The flavour people fish out of the assorted bag anyway.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/JOLLYRANCHER_5.jpg',
+      bg: '#fff1f4',
+      recipe: [{ shape: 'square', colors: { a: '#ff5d73' } }, { shape: 'square', colors: { a: '#ff7d8f' } }]
+    },
+    {
+      id: 'jolly-blue-raspberry', name: 'Jolly Rancher Blue Raspberry', flavor: 'Blue raspberry only', group: 'jolly',
+      cats: ['hard'], traits: ['wrapped', 'single'],
+      perLb: 14.99, handle: 'jolly-rancher-blue-raspberry-hard-candy-1',
+      about: 'A whole scoop of nothing but the blue ones. Sorted by hand, so it costs a little more.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/JOLLYRANCHER_2.jpg',
+      bg: '#eef6ff',
+      recipe: [{ shape: 'square', colors: { a: '#3fb8ff' } }, { shape: 'square', colors: { a: '#5fc4ff' } }]
+    },
+    {
+      id: 'jolly-grape', name: 'Jolly Rancher Grape', flavor: 'Grape only', group: 'jolly',
+      cats: ['hard'], traits: ['wrapped', 'single'],
+      perLb: 9.99, handle: 'jolly-rancher-grape-hard-candy',
+      about: 'A full scoop of grape. Divisive, and its fans are loyal.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/JOLLYRANCHER_4_26d213be-7a4e-45f5-a045-6270ff2e019e.jpg',
+      bg: '#f6f1ff',
+      recipe: [{ shape: 'square', colors: { a: '#a76bff' } }, { shape: 'square', colors: { a: '#8b5cf6' } }]
+    },
+    {
+      id: 'smarties-tropical', name: 'Smarties Tropical Rolls', flavor: 'Tropical fruit', group: 'smarties',
+      cats: ['hard', 'retro'], traits: ['wrapped', 'mix'],
+      perLb: 9.99, handle: 'smarties-tropical-candy-rolls-bulk-bag',
+      about: 'Tropical-flavoured Smarties rolls. Nostalgic, cheap to add and easy to hand out.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91R5Noswj8L._SL1500.jpg',
+      bg: '#fff7ee',
+      recipe: [{ shape: 'coil', colors: { a: '#ffd23f', b: '#ff9f2e' } }, { shape: 'coil', colors: { a: '#a8e05f', b: '#4cd964' } }]
     }
   ];
 
@@ -865,6 +1037,52 @@ window.YL = window.YL || {};
     { q: 'What is your happiness guarantee?', a: "If anything about your box is not right, message us within 30 days and we will replace it or refund you. That's it." }
   ];
 
+  /* ---------------------------------------------------------------
+     FLAVOUR GROUPS
+     ---------------------------------------------------------------
+     Some products are one candy sold in many single flavours. Listing
+     each of them on the wall is what made the old catalogue feel like
+     a warehouse — five Jolly Rancher tiles that differ only by colour
+     read as noise, not as choice.
+
+     So they collapse. A group takes one tile on the wall, shows a
+     collage of its flavours, and opens a picker where each flavour has
+     its own photo, note and scoop counter. One tile, every flavour, and
+     the customer only meets the long list if they ask for it.
+
+     A group is purely a presentation layer: its members stay ordinary
+     entries in YL.CANDIES with their own id, handle and price, so the
+     box, the cart, the ready-made boxes and the Shopify line items all
+     work exactly as they did. `lead` is the member shown on the tile
+     and the one a plain click adds.
+     --------------------------------------------------------------- */
+  YL.GROUPS = [
+    {
+      id: 'starburst', name: 'Starburst Fruit Chews', lead: 'fruit-chews-assorted',
+      flavor: 'Assorted or one flavour', cats: ['chewy'], traits: ['wrapped', 'single', 'mix'],
+      about: 'The square fruit chews everyone knows. Take the assorted scoop, or pick a single colour — we sort those by hand.',
+      bg: '#fff5ec'
+    },
+    {
+      id: 'frooties', name: 'Tootsie Frooties', lead: 'frooties-assorted',
+      flavor: '11 flavours to choose from', cats: ['chewy'], traits: ['wrapped', 'single', 'mix'],
+      about: 'Small wrapped chews with the widest flavour range we stock — from mango and pineapple to sour cherry. Mix them or commit to one.',
+      bg: '#fff6ef'
+    },
+    {
+      id: 'jolly', name: 'Jolly Rancher Hard Candy', lead: 'jolly-assorted',
+      flavor: 'Assorted or one flavour', cats: ['classic'], traits: ['wrapped', 'single', 'mix'],
+      about: 'Long-lasting wrapped hard candy. The assorted scoop is the cheapest pound in the shop; single colours are hand-sorted.',
+      bg: '#fff6f2'
+    },
+    {
+      id: 'smarties', name: 'Smarties Candy Rolls', lead: 'smarties-sour',
+      flavor: 'Sour or tropical', cats: ['sour', 'classic'], traits: ['wrapped', 'mix'],
+      about: 'Wrapped rolls of pressed candy tablets, in the face-pulling X-Treme Sour or the milder tropical mix.',
+      bg: '#f6f9ff'
+    }
+  ];
+
   /* --------- helpers --------- */
 
   /* Per-scoop surcharge is derived from the candy's real bulk price per
@@ -873,6 +1091,48 @@ window.YL = window.YL || {};
   YL.CANDIES.forEach(function (c) {
     if (c.extra == null) c.extra = YL.scoopExtra(c.perLb);
   });
+
+  YL.getGroup = function (id) {
+    for (var i = 0; i < YL.GROUPS.length; i++) if (YL.GROUPS[i].id === id) return YL.GROUPS[i];
+    return null;
+  };
+
+  /* `lead` first, then catalogue order. It is the flavour a customer is
+     most likely to want — the assorted scoop, where there is one — so it
+     opens the picker and takes the first pane of the collage. */
+  YL.groupMembers = function (id) {
+    var g = YL.getGroup(id);
+    var list = YL.CANDIES.filter(function (c) { return c.group === id; });
+    if (!g || !g.lead) return list;
+    return list.sort(function (a, b) {
+      return (a.id === g.lead ? -1 : 0) - (b.id === g.lead ? -1 : 0);
+    });
+  };
+
+  /* The wall in tile order: a plain candy stays itself, and the first
+     member of a group is replaced by the group so it keeps that slot
+     rather than jumping to the end. */
+  YL.candyTiles = function () {
+    var seen = {}, out = [];
+    YL.CANDIES.forEach(function (c) {
+      if (!c.group) { out.push({ type: 'candy', id: c.id, candy: c }); return; }
+      if (seen[c.group]) return;
+      seen[c.group] = 1;
+      var g = YL.getGroup(c.group);
+      if (!g) { out.push({ type: 'candy', id: c.id, candy: c }); return; }
+      out.push({ type: 'group', id: g.id, group: g, members: YL.groupMembers(g.id) });
+    });
+    return out;
+  };
+
+  /* A tile matches a filter if it, or any flavour under it, matches. */
+  YL.tileMatches = function (tile, cat, traits) {
+    var pool = tile.type === 'group' ? tile.members : [tile.candy];
+    return pool.some(function (c) {
+      if (cat && cat !== 'all' && c.cats.indexOf(cat) < 0) return false;
+      return (traits || []).every(function (t) { return c.traits.indexOf(t) > -1; });
+    });
+  };
 
   YL.getCandy = function (id) {
     for (var i = 0; i < YL.CANDIES.length; i++) if (YL.CANDIES[i].id === id) return YL.CANDIES[i];

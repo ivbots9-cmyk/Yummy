@@ -215,13 +215,9 @@ window.YL = window.YL || {};
   function renderCandy() {
     var host = $('#step-candy');
     if (!host) return;
-    var list = YL.CANDIES.filter(function (c) {
-      if (filter !== 'all' && c.cats.indexOf(filter) < 0) return false;
-      for (var i = 0; i < traits.length; i++) {
-        if ((c.traits || []).indexOf(traits[i]) < 0) return false;
-      }
-      return true;
-    });
+    /* The wall is built from tiles, not candies: a product sold in many
+       single flavours takes one tile and opens a picker. */
+    var list = YL.candyTiles().filter(function (t) { return YL.tileMatches(t, filter, traits); });
     var visible = showAll ? list : list.slice(0, 16);
     var full = left() <= 0;
 
@@ -241,7 +237,9 @@ window.YL = window.YL || {};
       }).join('') +
       (traits.length ? '<button class="link-btn" data-trait-clear>Clear</button>' : '') +
       '</div>' +
-      '<div class="candies">' + visible.map(function (c) { return candyCard(c, full); }).join('') + '</div>' +
+      '<div class="candies">' + visible.map(function (t) {
+        return t.type === 'group' ? groupCard(t.group, t.members, full) : candyCard(t.candy, full);
+      }).join('') + '</div>' +
       (list.length > 16 ? '<div class="more-row"><button class="btn btn--soft" data-toggle-more>' +
         (showAll ? 'Show fewer candies' : 'Show more candies (' + (list.length - 16) + ')') + '</button></div>' : '') +
       (list.length === 0 ? '<p class="center" style="color:var(--ink-40)">Nothing matches those filters — try clearing one.</p>' : '') +
@@ -289,6 +287,140 @@ window.YL = window.YL || {};
     $$('[data-dec]', host).forEach(function (b) {
       b.addEventListener('click', function () { removeCandy(b.dataset.dec); renderAll(); });
     });
+    $$('[data-flavors]', host).forEach(function (b) {
+      b.addEventListener('click', function () { openFlavors(b.dataset.flavors); });
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* the flavour picker                                                  */
+  /* ------------------------------------------------------------------ */
+
+  /* how many scoops of a whole group are in the box */
+  function groupQty(members) {
+    return members.reduce(function (n, c) { return n + qtyOf(c.id); }, 0);
+  }
+
+  function groupCard(g, members, full) {
+    var q = groupQty(members);
+    var picked = members.filter(function (c) { return qtyOf(c.id) > 0; });
+    /* Show what is actually in the box rather than the generic blurb —
+       once you have chosen, the tile should confirm the choice. */
+    var body = picked.length
+      ? '<p class="candy__about candy__about--picked">' + YL.icon('check') + ' ' +
+        picked.map(function (c) {
+          return YL.esc(c.name.replace(/^(Frooties|Jolly Rancher|Smarties|Starburst)\s+/, '')) +
+            (qtyOf(c.id) > 1 ? ' ×' + qtyOf(c.id) : '');
+        }).join(', ') + '</p>'
+      : '<p class="candy__about">' + g.about + '</p>';
+
+    return '<div class="candy candy--group' + (q ? ' is-on' : '') + (full && !q ? ' is-full' : '') +
+      '" data-candy="' + g.id + '">' +
+      '<span class="candy__tag candy__tag--mint">' + members.length + ' flavours</span>' +
+      '<div class="candy__art">' + YL.groupTile(g, members) +
+      '<span class="candy__scoop">' + YL.PRICING.scoopOz + ' oz scoop</span>' +
+      (q ? '<span class="candy__count">' + q + '</span>' : '') + '</div>' +
+      '<b>' + g.name + '</b><small>' + g.flavor + '</small>' + body +
+      '<button class="candy__add candy__add--pick" data-flavors="' + g.id + '">' +
+      YL.icon('sparkle') + (q ? 'Change flavours' : 'Choose flavour') + '</button></div>';
+  }
+
+  var flavorEsc = null;
+
+  function openFlavors(groupId) {
+    var g = YL.getGroup(groupId);
+    if (!g) return;
+    closeFlavors();
+
+    var wrap = document.createElement('div');
+    wrap.className = 'fsheet';
+    wrap.setAttribute('role', 'dialog');
+    wrap.setAttribute('aria-modal', 'true');
+    wrap.setAttribute('aria-label', g.name + ' flavours');
+    wrap.innerHTML =
+      '<div class="fsheet__back" data-fclose></div>' +
+      '<div class="fsheet__panel">' +
+      '<button class="fsheet__x" data-fclose aria-label="Close flavour picker"></button>' +
+      '<div class="fsheet__head"><b>' + g.name + '</b>' +
+      '<p>' + g.about + '</p>' +
+      '<span class="fsheet__meter" data-fmeter></span></div>' +
+      '<div class="fsheet__list" data-flist></div>' +
+      '<div class="fsheet__foot"><button class="btn btn--block" data-fclose>Done</button></div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+    document.body.classList.add('no-scroll');
+
+    drawFlavors(g);
+
+    $$('[data-fclose]', wrap).forEach(function (b) {
+      b.addEventListener('click', closeFlavors);
+    });
+    flavorEsc = function (e) { if (e.key === 'Escape') closeFlavors(); };
+    document.addEventListener('keydown', flavorEsc);
+    var first = $('.fsheet__x', wrap);
+    if (first) first.focus();
+  }
+
+  function drawFlavors(g) {
+    var wrap = $('.fsheet');
+    if (!wrap) return;
+    var members = YL.groupMembers(g.id);
+    var host = $('[data-flist]', wrap);
+    var full = left() <= 0;
+
+    host.innerHTML = members.map(function (c) {
+      var q = qtyOf(c.id);
+      var control = q > 0
+        ? '<div class="qty"><button data-fdec="' + c.id + '" aria-label="Remove one scoop of ' + YL.esc(c.name) + '">' +
+          YL.icon('minus') + '</button><span>' + q + ' × ' + YL.PRICING.scoopOz + ' oz</span>' +
+          '<button data-finc="' + c.id + '" aria-label="Add another scoop of ' + YL.esc(c.name) + '">' + YL.icon('plus') + '</button></div>'
+        : '<button class="candy__add" data-fadd="' + c.id + '"' + (full ? ' disabled' : '') + '>' +
+          YL.icon('plus') + (full ? ' Box is full' : ' Add scoop' + (c.extra ? ' · +' + YL.money(c.extra) : '')) + '</button>';
+      return '<div class="frow' + (q ? ' is-on' : '') + '">' +
+        /* square thumb, so the generated pile fills it instead of
+           letterboxing inside the card's 150x104 box */
+        '<div class="frow__art">' + YL.candyTile(c, { w: 104, h: 104, px: 220 }) + '</div>' +
+        '<div class="frow__body"><b>' + c.name + '</b>' +
+        '<small>' + c.flavor + (c.pieces ? ' · ~' + c.pieces + ' pcs a scoop' : '') + '</small>' +
+        (c.about ? '<p>' + c.about + '</p>' : '') + control + '</div></div>';
+    }).join('');
+
+    var meter = $('[data-fmeter]', wrap);
+    if (meter) {
+      var q = groupQty(members);
+      meter.innerHTML = oz(used()) + ' / ' + oz(slots()) + ' packed' +
+        (q ? ' · ' + q + ' from this range' : '');
+    }
+
+    $$('[data-fadd]', host).forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (addCandy(b.dataset.fadd)) {
+          if (YL.trackStep) YL.trackStep('candy', { candy: b.dataset.fadd });
+          afterFlavorChange(g);
+        }
+      });
+    });
+    $$('[data-finc]', host).forEach(function (b) {
+      b.addEventListener('click', function () { if (addCandy(b.dataset.finc)) afterFlavorChange(g); });
+    });
+    $$('[data-fdec]', host).forEach(function (b) {
+      b.addEventListener('click', function () { removeCandy(b.dataset.fdec); afterFlavorChange(g); });
+    });
+  }
+
+  /* Keep the sheet open while the box, the meter and the tile behind it
+     all catch up — picking four flavours should be four taps, not four
+     round trips through the wall. */
+  function afterFlavorChange(g) {
+    renderAll();
+    drawFlavors(g);
+  }
+
+  function closeFlavors() {
+    var wrap = $('.fsheet');
+    if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
+    document.body.classList.remove('no-scroll');
+    if (flavorEsc) { document.removeEventListener('keydown', flavorEsc); flavorEsc = null; }
   }
 
   function candyCard(c, full) {
