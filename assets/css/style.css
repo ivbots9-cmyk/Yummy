@@ -914,8 +914,25 @@ body.modal-open { overflow: hidden; }
 .candy__add--pick { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .candy__add--pick svg { width: 13px; height: 13px; }
 
+/* ---------- start over ---------- */
+/* Deliberately quiet next to the meter: it is the escape hatch from a
+   full box, not something to invite on the way in. */
+.link-btn--reset {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 6px; text-decoration: none; letter-spacing: .04em;
+  font-size: 11px; font-weight: 900; text-transform: uppercase;
+}
+.link-btn--reset svg { width: 11px; height: 11px; }
+.badge--full { background: var(--pink); color: #fff; }
+
+/* A control that cannot do anything has to look like it. */
+.qty button[disabled] { opacity: .3; pointer-events: none; }
+.candy__add[disabled] { opacity: .45; pointer-events: none; }
+
 /* ---------- the picker sheet ---------- */
 body.no-scroll { overflow: hidden; }
+/* the toast must clear the sheet's Done button, not hide under it */
+body.no-scroll .toast { bottom: 92px; z-index: 220; }
 .fsheet { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; }
 .fsheet__back { position: absolute; inset: 0; background: rgba(28, 8, 20, .55); backdrop-filter: blur(2px); }
 .fsheet__panel {
@@ -944,8 +961,24 @@ body.no-scroll { overflow: hidden; }
   background: var(--pink-50); color: var(--pink-700);
   font-size: 10.5px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase;
 }
+.fsheet__meter.is-full { background: var(--pink); color: #fff; }
+/* Says the quiet part out loud: nothing is broken, the box is simply
+   full — and puts the way out right next to the message. */
+.fsheet__full {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 20px; background: var(--pink-50);
+  border-bottom: 1px solid var(--line);
+}
+.fsheet__full[hidden] { display: none; }
+.fsheet__full span { font-size: 12px; font-weight: 700; color: var(--pink-700); line-height: 1.4; }
+.fsheet__full .btn { flex: none; }
 .fsheet__list { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 20px; }
-.fsheet__foot { padding: 14px 20px; border-top: 1px solid var(--line); background: #fff; }
+.fsheet__foot {
+  display: flex; gap: 10px; padding: 14px 20px;
+  border-top: 1px solid var(--line); background: #fff;
+}
+.fsheet__foot .btn { flex: 1; }
+.fsheet__foot .btn--soft { flex: 0 0 auto; }
 
 .frow { display: grid; grid-template-columns: 84px 1fr; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line); }
 .frow:last-child { border-bottom: 0; }
@@ -965,6 +998,8 @@ body.no-scroll { overflow: hidden; }
   .fsheet { align-items: flex-end; }
   .fsheet__panel { width: 100vw; max-height: 90vh; border-radius: var(--radius-l) var(--radius-l) 0 0; }
   .fsheet__head { padding: 18px 52px 12px 16px; }
+  .fsheet__full { padding: 10px 16px; gap: 10px; }
+  .fsheet__full span { font-size: 11.5px; }
   .fsheet__list { padding: 6px 16px; }
   .fsheet__foot { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
   .frow { grid-template-columns: 64px 1fr; gap: 11px; }

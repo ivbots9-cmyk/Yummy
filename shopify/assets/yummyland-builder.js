@@ -56,6 +56,14 @@ window.YL = window.YL || {};
     persist();
   }
 
+  /* Emptying the box without touching its size. Once a box is full every
+     add is refused, and clearing it a scoop at a time is a dozen taps —
+     this is the one button that gets you back to a blank box. */
+  function clearCandies() {
+    box.candies = [];
+    persist();
+  }
+
   /* Shrinking the box (or dropping the extra-scoop add-on) trims the
      last scoops off the end rather than silently overfilling. */
   function trimToFit() {
@@ -225,7 +233,9 @@ window.YL = window.YL || {};
     host.innerHTML =
       head(2, 'Step 2: Scoop it full',
         'Every tap adds one 4 oz scoop. Tap the same candy twice for a double scoop.',
-        '<span class="badge">' + oz(used()) + ' / ' + oz(slots()) + '</span>') +
+        '<span class="badge' + (full ? ' badge--full' : '') + '">' + oz(used()) + ' / ' + oz(slots()) + '</span>' +
+        (used() > 0 ? '<button class="link-btn link-btn--reset" data-reset>' +
+          YL.icon('x') + 'Start over</button>' : '')) +
       quickMix() +
       '<div class="filters">' + YL.CATEGORIES.map(function (c) {
         return '<button class="filter' + (c.id === filter ? ' is-on' : '') + '" data-filter="' + c.id + '">' + c.name + '</button>';
@@ -291,6 +301,17 @@ window.YL = window.YL || {};
     $$('[data-flavors]', host).forEach(function (b) {
       b.addEventListener('click', function () { openFlavors(b.dataset.flavors); });
     });
+    var reset = $('[data-reset]', host);
+    if (reset) reset.addEventListener('click', resetCandies);
+  }
+
+  function resetCandies() {
+    if (!used()) return;
+    clearCandies();
+    renderAll();
+    var sheet = $('.fsheet');
+    if (sheet) drawFlavors(YL.getGroup(sheet.getAttribute('data-group')));
+    YL.toast('Box emptied — pick your ' + oz(slots()) + ' again.');
   }
 
   /* ------------------------------------------------------------------ */
@@ -338,6 +359,7 @@ window.YL = window.YL || {};
     wrap.setAttribute('role', 'dialog');
     wrap.setAttribute('aria-modal', 'true');
     wrap.setAttribute('aria-label', g.name + ' flavours');
+    wrap.setAttribute('data-group', g.id);
     wrap.innerHTML =
       '<div class="fsheet__back" data-fclose></div>' +
       '<div class="fsheet__panel">' +
@@ -345,8 +367,10 @@ window.YL = window.YL || {};
       '<div class="fsheet__head"><b>' + g.name + '</b>' +
       '<p>' + g.about + '</p>' +
       '<span class="fsheet__meter" data-fmeter></span></div>' +
+      '<div class="fsheet__full" data-ffull hidden>' +
+      '<span>Your box is full — take a scoop off below, or start over.</span></div>' +
       '<div class="fsheet__list" data-flist></div>' +
-      '<div class="fsheet__foot"><button class="btn btn--block" data-fclose>Done</button></div>' +
+      '<div class="fsheet__foot" data-ffoot></div>' +
       '</div>';
     document.body.appendChild(wrap);
     document.body.classList.add('no-scroll');
@@ -364,20 +388,24 @@ window.YL = window.YL || {};
 
   function drawFlavors(g) {
     var wrap = $('.fsheet');
-    if (!wrap) return;
+    if (!wrap || !g) return;
     var members = YL.groupMembers(g.id);
     var host = $('[data-flist]', wrap);
     var full = left() <= 0;
 
     host.innerHTML = members.map(function (c) {
       var q = qtyOf(c.id);
+      /* A "+" that cannot add anything must not look like it can. When the
+         box is full BOTH controls go dead, not just the Add button — that
+         asymmetry is what made a full box feel broken rather than full. */
       var control = q > 0
         ? '<div class="qty"><button data-fdec="' + c.id + '" aria-label="Remove one scoop of ' + YL.esc(c.name) + '">' +
           YL.icon('minus') + '</button><span>' + q + ' × ' + YL.PRICING.scoopOz + ' oz</span>' +
-          '<button data-finc="' + c.id + '" aria-label="Add another scoop of ' + YL.esc(c.name) + '">' + YL.icon('plus') + '</button></div>'
+          '<button data-finc="' + c.id + '"' + (full ? ' disabled' : '') +
+          ' aria-label="Add another scoop of ' + YL.esc(c.name) + '">' + YL.icon('plus') + '</button></div>'
         : '<button class="candy__add" data-fadd="' + c.id + '"' + (full ? ' disabled' : '') + '>' +
           YL.icon('plus') + (full ? ' Box is full' : ' Add scoop' + (c.extra ? ' · +' + YL.money(c.extra) : '')) + '</button>';
-      return '<div class="frow' + (q ? ' is-on' : '') + '">' +
+      return '<div class="frow' + (q ? ' is-on' : '') + '" data-frow="' + c.id + '">' +
         /* square thumb, so the generated pile fills it instead of
            letterboxing inside the card's 150x104 box */
         '<div class="frow__art">' + YL.candyTile(c, { w: 104, h: 104, px: 220 }) + '</div>' +
@@ -391,30 +419,55 @@ window.YL = window.YL || {};
       var q = groupQty(members);
       meter.innerHTML = oz(used()) + ' / ' + oz(slots()) + ' packed' +
         (q ? ' · ' + q + ' from this range' : '');
+      meter.className = 'fsheet__meter' + (full ? ' is-full' : '');
+    }
+    var banner = $('[data-ffull]', wrap);
+    if (banner) banner.hidden = !full;
+
+    /* Start over lives in the footer, always in reach — not only while the
+       box is full, because changing your mind is not the same as running
+       out of room. */
+    var foot = $('[data-ffoot]', wrap);
+    if (foot) {
+      foot.innerHTML =
+        (used() > 0 ? '<button class="btn btn--soft" data-freset>Start over</button>' : '') +
+        '<button class="btn" data-fclose>Done</button>';
+      var fr2 = $('[data-freset]', foot);
+      if (fr2) fr2.addEventListener('click', resetCandies);
+      $$('[data-fclose]', foot).forEach(function (b) { b.addEventListener('click', closeFlavors); });
     }
 
     $$('[data-fadd]', host).forEach(function (b) {
       b.addEventListener('click', function () {
         if (addCandy(b.dataset.fadd)) {
           if (YL.trackStep) YL.trackStep('candy', { candy: b.dataset.fadd });
-          afterFlavorChange(g);
+          afterFlavorChange(g, b.dataset.fadd);
         }
       });
     });
     $$('[data-finc]', host).forEach(function (b) {
-      b.addEventListener('click', function () { if (addCandy(b.dataset.finc)) afterFlavorChange(g); });
+      b.addEventListener('click', function () { if (addCandy(b.dataset.finc)) afterFlavorChange(g, b.dataset.finc); });
     });
     $$('[data-fdec]', host).forEach(function (b) {
-      b.addEventListener('click', function () { removeCandy(b.dataset.fdec); afterFlavorChange(g); });
+      b.addEventListener('click', function () { removeCandy(b.dataset.fdec); afterFlavorChange(g, b.dataset.fdec); });
     });
   }
 
   /* Keep the sheet open while the box, the meter and the tile behind it
      all catch up — picking four flavours should be four taps, not four
-     round trips through the wall. */
-  function afterFlavorChange(g) {
+     round trips through the wall. The row that changed pops, so the change
+     is visible even when the meter has scrolled out of view. */
+  function afterFlavorChange(g, id) {
+    var list = $('.fsheet__list');
+    var keep = list ? list.scrollTop : 0;
     renderAll();
     drawFlavors(g);
+    list = $('.fsheet__list');
+    if (list) list.scrollTop = keep;
+    if (id) {
+      var row = $('[data-frow="' + id + '"]');
+      if (row) { row.classList.remove('pop'); void row.offsetWidth; row.classList.add('pop'); }
+    }
   }
 
   function closeFlavors() {
@@ -435,7 +488,8 @@ window.YL = window.YL || {};
     var control = q > 0
       ? '<div class="qty"><button data-dec="' + c.id + '" aria-label="Remove one scoop of ' + YL.esc(c.name) + '">' + YL.icon('minus') + '</button>' +
         '<span>' + q + ' × ' + YL.PRICING.scoopOz + ' oz</span>' +
-        '<button data-inc="' + c.id + '" aria-label="Add another scoop of ' + YL.esc(c.name) + '">' + YL.icon('plus') + '</button></div>'
+        '<button data-inc="' + c.id + '"' + (full ? ' disabled' : '') +
+        ' aria-label="Add another scoop of ' + YL.esc(c.name) + '">' + YL.icon('plus') + '</button></div>'
       : '<button class="candy__add" data-add="' + c.id + '">' + YL.icon('plus') + ' Add scoop' +
         (c.extra ? ' · +' + YL.money(c.extra) : '') + '</button>';
     return '<div class="candy' + (q ? ' is-on' : '') + (full && !q ? ' is-full' : '') + '" data-candy="' + c.id + '">' +
