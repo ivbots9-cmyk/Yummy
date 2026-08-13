@@ -143,7 +143,7 @@ window.YL = window.YL || {};
   YL.CANDIES = [
     /* ---------- the opening four ---------- */
     {
-      id: 'gummy-bears-12', name: '12 Flavor Gummi Bears', flavor: '12 fruit flavours',
+      id: 'gummy-bears-12', name: '12 Flavor Gummi Bears', flavor: '12 fruit flavours', group: 'bears',
       cats: ['gummies'], traits: ['mix'],
       perLb: 9.99, handle: '12-flavors-assorted-gummy-bears-bulk-candy-bag-soft-chewy-fruity-gummies-colorful-party-snack-bulk-candy-for-sharing',
       tag: 'top pick',
@@ -198,7 +198,7 @@ window.YL = window.YL || {};
 
     /* ---------- the gummy core ---------- */
     {
-      id: 'gummy-worms', name: 'Gummi Worms', flavor: 'Assorted fruit',
+      id: 'gummy-worms', name: 'Large Gummi Worms', flavor: 'Assorted fruit, 4"', group: 'worms',
       cats: ['gummies'], traits: ['mix'],
       perLb: 9.99, handle: 'large-assorted-fruit-gummi-worms-4',
       about: 'Four inches of two-tone chew. The scoop that photographs best and the one kids dangle before eating.',
@@ -211,7 +211,7 @@ window.YL = window.YL || {};
       ]
     },
     {
-      id: 'sour-neon-worms', name: 'Sour Neon Gummi Worms', flavor: 'Sour, neon bright',
+      id: 'sour-neon-worms', name: 'Sour Large Neon Worms', flavor: 'Sour neon, 4"', group: 'worms',
       cats: ['gummies', 'sour'], traits: ['mix'],
       perLb: 10.99, handle: 'sour-large-neon-gummi-worms-4',
       about: 'The same worm rolled in sour sugar and turned neon. Louder on camera, louder in the mouth.',
@@ -236,7 +236,7 @@ window.YL = window.YL || {};
       ]
     },
     {
-      id: 'sour-gummy-bears', name: 'Sour Gummi Bears', flavor: 'Sour sugar coated',
+      id: 'sour-gummy-bears', name: 'Sour Gummi Bears', flavor: 'Sour sugar coated', group: 'bears',
       cats: ['gummies', 'sour'], traits: ['mix'],
       perLb: 9.99, handle: 'sour-gummi-bears',
       about: 'The twelve-flavour bear with a sour sugar jacket. Half our sour boxes start here.',
@@ -681,6 +681,170 @@ window.YL = window.YL || {};
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91R5Noswj8L._SL1500.jpg',
       bg: '#fff7ee',
       recipe: [{ shape: 'coil', colors: { a: '#ffd23f', b: '#ff9f2e' } }, { shape: 'coil', colors: { a: '#a8e05f', b: '#4cd964' } }]
+    },
+
+    /* ---------- the bear and worm benches ---------- */
+    {
+      id: 'bear-cubs', name: 'Gummi Bear Cubs', flavor: '12 flavours, mini', group: 'bears',
+      cats: ['gummies'], traits: ['mix'],
+      perLb: 9.99, handle: '12-flavor-gummi-bear-cubs™',
+      about: 'The same twelve flavours at half the size. More bears to the scoop and easier for small hands.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50235_1.jpg',
+      bg: '#fff2f7',
+      recipe: [{ shape: 'bear', colors: { a: '#ff6fb0' } }]
+    },
+    {
+      id: 'bear-natural', name: '5 Natural Flavor Bears', flavor: 'Colours from fruit & veg', group: 'bears',
+      cats: ['gummies'], traits: ['mix'],
+      perLb: 10.99, handle: '5-natural-flavor-gummi-bears™',
+      about: 'Five flavours coloured with fruit and vegetable juice instead of dyes. Softer, more muted colours on purpose.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50270_1.jpg',
+      bg: '#fff8ec',
+      recipe: [{ shape: 'bear', colors: { a: '#e8a33d' } }]
+    },
+    {
+      id: 'bear-papa', name: 'Gummi Papa Bears', flavor: 'Oversized, assorted', group: 'bears',
+      cats: ['gummies'], traits: ['mix'],
+      perLb: 10.99, handle: 'gummi-papa-bears',
+      about: 'Big bears, roughly four times the usual size. One is a mouthful and they make a box look generous.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50183_1.png',
+      bg: '#fff1ee',
+      recipe: [{ shape: 'bear', colors: { a: '#c0392b' } }]
+    },
+    {
+      id: 'bear-cherry', name: 'Wild Cherry Bears', flavor: 'Wild cherry only', group: 'bears',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'wild-cherry-gummi-bears',
+      about: 'Deep red, properly cherry. The single flavour people ask for most.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50107_1.png',
+      bg: '#fff0f1',
+      recipe: [{ shape: 'bear', colors: { a: '#e63946' } }]
+    },
+    {
+      id: 'bear-strawberry', name: 'Strawberry Bears', flavor: 'Strawberry only', group: 'bears',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'strawberry-gummi-bears',
+      about: 'Sweet red strawberry bears — the safe pick for a pink box or a baby shower.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50114_1.png',
+      bg: '#fff0f4',
+      recipe: [{ shape: 'bear', colors: { a: '#ff4d6d' } }]
+    },
+    {
+      id: 'bear-grapefruit', name: 'Pink Grapefruit Bears', flavor: 'Pink grapefruit only', group: 'bears',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'pink-grapefruit-gummi-bears',
+      about: 'Soft pink with a bittersweet citrus finish. The most grown-up bear in the range.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50176_1.png',
+      bg: '#fff2f5',
+      recipe: [{ shape: 'bear', colors: { a: '#ff8fa3' } }]
+    },
+    {
+      id: 'bear-orange', name: 'Orange Bears', flavor: 'Orange only', group: 'bears',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'orange-gummi-bears',
+      about: 'Bright citrus orange. Good contrast in a box that is otherwise all reds and pinks.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50106_1.png',
+      bg: '#fff6ea',
+      recipe: [{ shape: 'bear', colors: { a: '#ff9f2e' } }]
+    },
+    {
+      id: 'bear-mango', name: 'Mango Bears', flavor: 'Mango only', group: 'bears',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'mango-gummi-bears',
+      about: 'Ripe tropical mango — quietly one of the best flavours Albanese makes.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50112_1.png',
+      bg: '#fff8e9',
+      recipe: [{ shape: 'bear', colors: { a: '#ffb52e' } }]
+    },
+    {
+      id: 'bear-green-apple', name: 'Green Apple Bears', flavor: 'Green apple only', group: 'bears',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'green-apple-gummi-bears',
+      about: 'Tart green apple. The one flavour that cuts through a very sweet box.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50105_1.png',
+      bg: '#f4fff0',
+      recipe: [{ shape: 'bear', colors: { a: '#7bbf3f' } }]
+    },
+    {
+      id: 'bear-watermelon', name: 'Watermelon Bears', flavor: 'Watermelon only', group: 'bears',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'watermelon-gummi-bears',
+      about: 'Summer in a scoop. Reliably the first single flavour to run out at a party.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50188_1.png',
+      bg: '#fff1f2',
+      recipe: [{ shape: 'bear', colors: { a: '#ff5d73' } }]
+    },
+    {
+      id: 'bear-blue-raspberry', name: 'Blue Raspberry Bears', flavor: 'Blue raspberry only', group: 'bears',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'blue-raspberry-gummi-bears',
+      about: 'The blue ones, and only the blue ones. Nothing else makes a box pop like a full scoop of these.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50123_1.png',
+      bg: '#eef7ff',
+      recipe: [{ shape: 'bear', colors: { a: '#3fb8ff' } }]
+    },
+    {
+      id: 'bear-grape', name: 'Grape Bears', flavor: 'Grape only', group: 'bears',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'grape-gummi-bears',
+      about: 'Deep purple grape. Divisive, and the people who love it want a whole scoop.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50109_1.png',
+      bg: '#f7f1ff',
+      recipe: [{ shape: 'bear', colors: { a: '#a76bff' } }]
+    },
+    {
+      id: 'bear-pineapple', name: 'Pineapple Bears', flavor: 'Pineapple only', group: 'bears',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'pineapple-gummi-bears',
+      about: 'Sharp yellow pineapple — the brightest colour in the bear line.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50108_1.png',
+      bg: '#fffceb',
+      recipe: [{ shape: 'bear', colors: { a: '#ffd23f' } }]
+    },
+    {
+      id: 'bear-banana', name: 'Strawberry-Banana Bears', flavor: 'White strawberry-banana', group: 'bears',
+      cats: ['gummies'], traits: ['single'],
+      perLb: 9.99, handle: 'white-strawberry-banana-gummi-bears',
+      about: 'Creamy white bears that taste of strawberry and banana together. Unusual, and people come back for them.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50180_1.png',
+      bg: '#fffaf0',
+      recipe: [{ shape: 'bear', colors: { a: '#fff0d6' } }]
+    },
+    {
+      id: 'worm-mini', name: 'Mini Gummi Worms', flavor: 'Assorted fruit, 2"', group: 'worms',
+      cats: ['gummies'], traits: ['mix'],
+      perLb: 9.99, handle: 'mini-assorted-fruit-gummi-worms-2',
+      about: 'Half-length worms, same two-tone chew. They portion into a box far more neatly than the big ones.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50137_1.png',
+      bg: '#fff3f8',
+      recipe: [{ shape: 'worm', colors: { a: '#ff6fb0', b: '#ffd23f' } }]
+    },
+    {
+      id: 'worm-sour-mini-neon', name: 'Sour Mini Neon Worms', flavor: 'Sour neon, 2"', group: 'worms',
+      cats: ['gummies', 'sour'], traits: ['mix'],
+      perLb: 10.99, handle: 'sour-mini-neon-gummi-worms-2',
+      about: 'Neon minis in sour sugar. The loudest colour in the range and the easiest sour to share out.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50124_1.jpg',
+      bg: '#f4fff2',
+      recipe: [{ shape: 'worm', colors: { a: '#a8e05f', b: '#3fb8ff' }, sour: true }]
+    },
+    {
+      id: 'worm-large-sour', name: 'Large Sour Fruit Worms', flavor: 'Sour assorted, 4"', group: 'worms',
+      cats: ['gummies', 'sour'], traits: ['mix'],
+      perLb: 10.99, handle: 'large-sour-assorted-fruit-gummi-worms-4',
+      about: 'Full-size worms in the classic fruit colours, rolled in sour sugar rather than turned neon.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50118_1.png',
+      bg: '#fff4f2',
+      recipe: [{ shape: 'worm', colors: { a: '#ff4757', b: '#ffd23f' }, sour: true }]
+    },
+    {
+      id: 'worm-natural-mini', name: '5 Natural Flavor Mini Worms', flavor: 'Colours from fruit & veg, 2"', group: 'worms',
+      cats: ['gummies'], traits: ['mix'],
+      perLb: 10.99, handle: '5-natural-flavor-mini-gummi-worms-2',
+      about: 'Mini worms coloured with fruit and vegetable juice. Muted next to the neon, and that is the point.',
+      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50271_2.png',
+      bg: '#fff9ee',
+      recipe: [{ shape: 'worm', colors: { a: '#e8a33d', b: '#7bbf3f' } }]
     }
   ];
 
@@ -1056,6 +1220,18 @@ window.YL = window.YL || {};
      and the one a plain click adds.
      --------------------------------------------------------------- */
   YL.GROUPS = [
+    {
+      id: 'bears', name: 'Gummi Bears', lead: 'gummy-bears-12', tag: 'top pick',
+      flavor: '16 flavours to choose from', cats: ['gummies'], traits: ['single', 'mix'],
+      about: 'The whole bear bench: the twelve-flavour assortment, sour, mini cubs, oversized Papa bears, and eleven single colours you can take a full scoop of.',
+      bg: '#fff4e6'
+    },
+    {
+      id: 'worms', name: 'Gummi Worms', lead: 'gummy-worms',
+      flavor: '6 shapes and sours', cats: ['gummies'], traits: ['mix'],
+      about: 'Two-tone worms in long and mini, plain fruit or rolled in sour sugar. The scoop that photographs best.',
+      bg: '#fff2f7'
+    },
     {
       id: 'starburst', name: 'Starburst Fruit Chews', lead: 'fruit-chews-assorted',
       flavor: 'Assorted or one flavour', cats: ['chewy'], traits: ['wrapped', 'single', 'mix'],

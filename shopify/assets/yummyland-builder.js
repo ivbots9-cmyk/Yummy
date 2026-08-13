@@ -141,6 +141,14 @@ window.YL = window.YL || {};
       c.classList.toggle('is-done', isStepDone(i) && i !== active);
     });
 
+    /* The card you are actually on gets a ring. Five identical white
+       cards in a column give no clue where to look, and step 1 in
+       particular just read as page furniture on a wide screen. */
+    STEPS.forEach(function (s, i) {
+      var card = document.getElementById(s.id);
+      if (card) card.classList.toggle('is-live', i === active);
+    });
+
     var n = $('[data-now-n]'), t = $('[data-now-t]'), bar = $('[data-now-bar]');
     if (n) n.textContent = 'Step ' + (active + 1) + ' of ' + STEPS.length;
     if (t) t.textContent = STEPS[active].t;
@@ -338,7 +346,7 @@ window.YL = window.YL || {};
 
     return '<div class="candy candy--group' + (q ? ' is-on' : '') + (full && !q ? ' is-full' : '') +
       '" data-candy="' + g.id + '">' +
-      '<span class="candy__tag candy__tag--mint">' + members.length + ' flavours</span>' +
+      '<span class="candy__tag candy__tag--mint">' + (g.tag || members.length + ' flavours') + '</span>' +
       '<div class="candy__art">' + YL.groupTile(g, members) +
       '<span class="candy__scoop">' + YL.PRICING.scoopOz + ' oz scoop</span>' +
       (q ? '<span class="candy__count">' + q + '</span>' : '') + '</div>' +
@@ -605,6 +613,19 @@ window.YL = window.YL || {};
   /* ------------------------------------------------------------------ */
   /* render: step 5 — review                                             */
   /* ------------------------------------------------------------------ */
+  /* The last thing before Add to cart should look like the box, not like
+     an invoice. A run-on sentence of eight candy names is the hardest
+     place on the page to spot the one you did not mean to add. */
+  function reviewCandies() {
+    return '<span class="rcandies">' + box.candies.map(function (c) {
+      var candy = YL.getCandy(c.id);
+      if (!candy) return '';
+      return '<span class="rcandy">' + YL.candyDot(candy, 44) +
+        '<span class="rcandy__t"><b>' + candy.name + '</b><small>' + oz(c.qty) +
+        (c.qty > 1 ? ' · ' + c.qty + ' scoops' : '') + '</small></span></span>';
+    }).join('') + '</span>';
+  }
+
   function renderReview() {
     var host = $('#step-review');
     if (!host) return;
@@ -621,9 +642,8 @@ window.YL = window.YL || {};
       row('Box size', size.name + ' · ' + YL.weightLabel(size.oz) + ' · ' + size.serves, 'step-size') +
       row('Fill weight', oz(used()) + ' of ' + oz(slots()) +
         (left() > 0 ? ' <span class="warn">— ' + oz(left()) + ' still empty</span>' : ' — packed full'), 'step-candy') +
-      row('Candies', used() ? box.candies.map(function (c) {
-        return YL.getCandy(c.id).name + ' (' + oz(c.qty) + ')';
-      }).join(', ') : 'Nothing scooped yet', 'step-candy') +
+      (used() ? rowBlock('Candies', reviewCandies(), 'step-candy')
+              : row('Candies', 'Nothing scooped yet', 'step-candy')) +
       row('Vibe', vibe ? vibe.name : '—', 'step-vibe') +
       row('Extras', extras.length ? extras.join(', ') : 'None', 'step-extras') +
       (box.note ? row('Gift note', '“' + YL.esc(box.note) + '”', 'step-extras') : '') +
@@ -645,6 +665,16 @@ window.YL = window.YL || {};
     });
     var cta = $('[data-add-cart]', host);
     if (cta) cta.addEventListener('click', addToCart);
+  }
+
+  /* Same row, but the value gets the full width underneath the label —
+     a grid of thumbnails cannot live in a right-aligned column. */
+  function rowBlock(label, value, jump) {
+    return '<div class="rblock">' +
+      '<div class="rblock__top">' +
+      '<span class="rblock__label">' + label + '</span>' +
+      '<button class="link-btn" data-jump="' + jump + '">Edit</button></div>' +
+      value + '</div>';
   }
 
   function row(label, value, jump) {

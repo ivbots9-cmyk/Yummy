@@ -295,7 +295,15 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 .card {
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius-l);
   padding: 24px; box-shadow: var(--shadow-s); margin-bottom: 20px;
+  transition: box-shadow .25s ease, border-color .25s ease;
 }
+/* The step you are on. Five identical white cards stacked in a column
+   give the eye nothing to land on — this is the "you are here". */
+.card.is-live {
+  border-color: #ffb2d5;
+  box-shadow: 0 0 0 3px var(--pink-50), 0 18px 44px rgba(255, 30, 135, .12);
+}
+.card.is-live .card__num { transform: scale(1.08); box-shadow: 0 6px 18px rgba(255, 30, 135, .38); }
 .card__head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
 .card__num {
   width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%;
@@ -350,8 +358,15 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
   font-size: 11.5px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-60);
   transition: .15s;
 }
-.filter:hover { border-color: var(--pink); color: var(--pink); }
-.filter.is-on { background: var(--pink); border-color: var(--pink); color: #fff; }
+/* Hover only where there is a real pointer. On a phone :hover sticks to
+   the last thing tapped, so an unselected chip kept looking selected. */
+@media (hover: hover) {
+  .filter:hover { border-color: var(--pink); color: var(--pink); }
+}
+.filter.is-on {
+  background: var(--pink); border-color: var(--pink); color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 30, 135, .3);
+}
 
 /* candy grid */
 .candies { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; }
@@ -485,12 +500,17 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
   color: var(--ink-60); margin-right: 2px;
 }
 .quickmix__label svg { width: 16px; height: 16px; color: var(--pink); flex: none; }
+/* Filled, not outlined. These sit two rows above the category chips and
+   an outlined pill next to an outlined pill reads as the same control. */
 .quickmix__btn {
-  border: 1.5px solid var(--pink); background: #fff; color: var(--pink);
+  border: 1.5px solid transparent; background: var(--pink); color: #fff;
   border-radius: 999px; padding: 7px 14px;
   font-size: 12px; font-weight: 900; transition: .15s;
+  box-shadow: 0 3px 10px rgba(255, 30, 135, .26);
 }
-.quickmix__btn:hover { background: var(--pink); color: #fff; }
+@media (hover: hover) {
+  .quickmix__btn:hover { background: var(--pink-700); }
+}
 @media (max-width: 560px) {
   .quickmix { gap: 6px; padding: 11px 12px; }
   .quickmix__label { width: 100%; margin-bottom: 2px; }
@@ -914,6 +934,29 @@ body.modal-open { overflow: hidden; }
 .candy__add--pick { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .candy__add--pick svg { width: 13px; height: 13px; }
 
+/* ---------- review: the box, not an invoice ---------- */
+.rblock { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.rblock__top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.rblock__label {
+  font-size: 12px; font-weight: 900; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-40);
+}
+.rcandies { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 2px; }
+.rcandy {
+  display: flex; align-items: center; gap: 9px; min-width: 0;
+  padding: 6px 8px; border: 1px solid var(--line); border-radius: 12px; background: #fff;
+}
+.rcandy .candy-dot { width: 44px; height: 44px; border-radius: 10px; }
+.rcandy__t { min-width: 0; }
+.rcandy__t b {
+  display: block; font-size: 11.5px; font-weight: 800; line-height: 1.25; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.rcandy__t small { display: block; font-size: 10.5px; color: var(--pink-700); font-weight: 800; }
+@media (max-width: 900px) { .rcandies { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 420px) { .rcandies { grid-template-columns: 1fr; } }
+
 /* ---------- start over ---------- */
 /* Deliberately quiet next to the meter: it is the escape hatch from a
    full box, not something to invite on the way in. */
@@ -1179,9 +1222,10 @@ body.no-scroll .toast { bottom: 92px; z-index: 220; }
    ========================================================= */
 .peek-fab {
   position: fixed; right: 22px; bottom: 22px; z-index: 70;
-  width: 74px; height: 74px; padding: 0; border: 3px solid #fff; border-radius: 50%;
+  width: 74px; height: 74px; padding: 0; border: 3px solid var(--pink); border-radius: 50%;
   background: linear-gradient(180deg, #fff6fa, #ffe0ee);
-  box-shadow: var(--shadow-l); overflow: hidden;
+  box-shadow: 0 0 0 4px rgba(255, 30, 135, .16), 0 14px 32px rgba(255, 30, 135, .38);
+  overflow: hidden;
   transition: transform .18s ease, box-shadow .18s ease, opacity .2s ease;
   /* Nothing to peek at until the builder is on screen, and up in the
      hero it lands on top of the secondary button. */
