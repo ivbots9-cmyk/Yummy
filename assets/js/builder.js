@@ -341,7 +341,7 @@ window.YL = window.YL || {};
     /* The whole card is the target, not just the small Add button. Tapping
        a candy is the primary way to fill a cell, so it should not require
        aiming. Clicks that land on a real control are left to that control. */
-    $$('.candy[data-drag]', host).forEach(function (el) {
+    $$('.candy[data-drag]:not(.candy--group)', host).forEach(function (el) {
       el.addEventListener('click', function (e) {
         if (e.target.closest('button') || e.target.closest('a')) return;
         if (addCandy(el.dataset.drag)) {
@@ -349,6 +349,16 @@ window.YL = window.YL || {};
           flash(el.dataset.candy);
           if (YL.trackStep) YL.trackStep('candy', { candy: el.dataset.drag });
         }
+      });
+    });
+
+    /* A group tile has no single thing to add, so tapping it asks rather
+       than guessing. Quietly dropping in the assorted scoop looked like the
+       picker had failed to open. */
+    $$('.candy--group', host).forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        openFlavors(el.dataset.candy);
       });
     });
 

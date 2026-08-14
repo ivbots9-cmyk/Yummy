@@ -285,6 +285,28 @@ window.YL = window.YL || {};
       : YL.candyTile(candy, { vector: true });
   };
 
+  /* ---------- a few pieces drifting into the hero box ----------
+     Decoration only, and deliberately slight: a handful of the same drawn
+     pieces the rest of the site uses, falling on long staggered loops so
+     the hero has a pulse without asking to be watched. */
+  YL.heroFall = function () {
+    var drops = [
+      { shape: 'bear', colors: { a: '#ff4757' }, x: 14, size: 30, dur: 9.5, delay: 0 },
+      { shape: 'worm', colors: { a: '#4cd964', b: '#ffd23f' }, x: 30, size: 34, dur: 11, delay: 2.2 },
+      { shape: 'ring', colors: { a: '#ffb26b' }, x: 45, size: 26, dur: 8.5, delay: 4.1 },
+      { shape: 'bear', colors: { a: '#3fb8ff' }, x: 58, size: 28, dur: 12, delay: 1.1 },
+      { shape: 'ball', colors: { a: '#ff2e8b' }, x: 22, size: 22, dur: 10.5, delay: 5.6 },
+      { shape: 'ring', colors: { a: '#4bb9ff' }, x: 38, size: 24, dur: 13, delay: 7.3 },
+      { shape: 'bear', colors: { a: '#ffd23f' }, x: 52, size: 26, dur: 9, delay: 3.4 }
+    ];
+    return '<span class="hero__fall" aria-hidden="true">' + drops.map(function (d) {
+      return '<span class="hero__drop" style="left:' + d.x + '%;' +
+        'animation-duration:' + d.dur + 's;animation-delay:-' + d.delay + 's">' +
+        '<svg viewBox="-16 -16 32 32" width="' + d.size + '" height="' + d.size + '">' +
+        piece(d.shape, d.colors) + '</svg></span>';
+    }).join('') + '</span>';
+  };
+
   /* ---------- little round swatch (used in lists) ---------- */
   YL.candyDot = function (candy, size) {
     var s = size || 40;

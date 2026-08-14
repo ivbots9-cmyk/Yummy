@@ -159,7 +159,7 @@ window.YL = window.YL || {};
     },
     {
       id: 'peach-rings', name: 'Gummi Peach Rings', flavor: 'Sweet peach, sugar coated',
-      cats: ['gummies', 'sour'], traits: ['single'],
+      cats: ['gummies'], traits: ['single'],
       perLb: 9.99, handle: 'gummi-peach-rings',
       tag: 'top pick',
       about: 'Soft peach rings in a light sour-sugar coat — our single best-selling scoop.',
@@ -212,7 +212,7 @@ window.YL = window.YL || {};
       ]
     },
     {
-      id: 'sour-neon-worms', name: 'Sour Large Neon Worms', flavor: 'Sour neon, 4"', group: 'worms',
+      id: 'sour-neon-worms', name: 'Sour Large Neon Worms', flavor: 'Sour neon, 4"', group: 'sour-worms',
       cats: ['gummies', 'sour'], traits: ['mix'],
       perLb: 10.99, handle: 'sour-large-neon-gummi-worms-4',
       about: 'The same worm rolled in sour sugar and turned neon. Louder on camera, louder in the mouth.',
@@ -237,7 +237,7 @@ window.YL = window.YL || {};
       ]
     },
     {
-      id: 'sour-gummy-bears', name: 'Sour Gummi Bears', flavor: 'Sour sugar coated', group: 'bears',
+      id: 'sour-gummy-bears', name: 'Sour Gummi Bears', flavor: 'Sour sugar coated',
       cats: ['gummies', 'sour'], traits: ['mix'],
       perLb: 9.99, handle: 'sour-gummi-bears',
       about: 'The twelve-flavour bear with a sour sugar jacket. Half our sour boxes start here.',
@@ -286,7 +286,7 @@ window.YL = window.YL || {};
     },
     {
       id: 'blue-raspberry-rings', name: 'Blue Raspberry Rings', flavor: 'Bold blue raspberry',
-      cats: ['gummies', 'sour'], traits: ['single'],
+      cats: ['gummies'], traits: ['single'],
       perLb: 9.99, handle: 'gummi-blue-raspberry-rings',
       about: 'The blue-raspberry answer to the peach ring. Chewy, tangy, and it turns your tongue blue.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/2594844-ezgif.com-webp-to-jpg-converter.jpg',
@@ -412,7 +412,7 @@ window.YL = window.YL || {};
     {
       id: 'pink-strawberry-chews', name: 'All Pink Strawberry Chews', flavor: 'Strawberry only',
       cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 14.99, handle: 'all-pink-strawberry-chewy-candy-1-lb-approx-90-pieces-bulk-bag-pink-individually-wrapped-candy-perfect-for-parties-events-candy-buffets-pink-party-favors-birthdays-weddings-baby-shower-candy-pack-by-yummyland-16-oz',
+      perLb: 14.99, extra: 0, handle: 'all-pink-strawberry-chewy-candy-1-lb-approx-90-pieces-bulk-bag-pink-individually-wrapped-candy-perfect-for-parties-events-candy-buffets-pink-party-favors-birthdays-weddings-baby-shower-candy-pack-by-yummyland-16-oz',
       about: 'Nothing but the pink ones — about 90 strawberry chews to the pound. The single most requested pick we stock.',
       img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Starburst-Pink-Strawberry-Chewy-Candy-1-LB-Approx-90-Pieces-Bulk-Bag-Pink-Individually-Wrapped-Candy-Perfect-Parties-Candy-Buffets-Pink-Party-Favors_bd113bcc-2707-4cd6-96b3-f51853448e.webp',
       bg: '#fff0f6',
@@ -821,7 +821,7 @@ window.YL = window.YL || {};
       recipe: [{ shape: 'worm', colors: { a: '#ff6fb0', b: '#ffd23f' } }]
     },
     {
-      id: 'worm-sour-mini-neon', name: 'Sour Mini Neon Worms', flavor: 'Sour neon, 2"', group: 'worms',
+      id: 'worm-sour-mini-neon', name: 'Sour Mini Neon Worms', flavor: 'Sour neon, 2"', group: 'sour-worms',
       cats: ['gummies', 'sour'], traits: ['mix'],
       perLb: 10.99, handle: 'sour-mini-neon-gummi-worms-2',
       about: 'Neon minis in sour sugar. The loudest colour in the range and the easiest sour to share out.',
@@ -830,7 +830,7 @@ window.YL = window.YL || {};
       recipe: [{ shape: 'worm', colors: { a: '#a8e05f', b: '#3fb8ff' }, sour: true }]
     },
     {
-      id: 'worm-large-sour', name: 'Large Sour Fruit Worms', flavor: 'Sour assorted, 4"', group: 'worms',
+      id: 'worm-large-sour', name: 'Large Sour Fruit Worms', flavor: 'Sour assorted, 4"', group: 'sour-worms',
       cats: ['gummies', 'sour'], traits: ['mix'],
       perLb: 10.99, handle: 'large-sour-assorted-fruit-gummi-worms-4',
       about: 'Full-size worms in the classic fruit colours, rolled in sour sugar rather than turned neon.',
@@ -1223,15 +1223,21 @@ window.YL = window.YL || {};
   YL.GROUPS = [
     {
       id: 'bears', name: 'Gummi Bears', lead: 'gummy-bears-12', tag: 'top pick',
-      flavor: '16 flavours to choose from', cats: ['gummies'], traits: ['single', 'mix'],
-      about: 'The whole bear bench: the twelve-flavour assortment, sour, mini cubs, oversized Papa bears, and eleven single colours you can take a full scoop of.',
+      flavor: '15 flavours to choose from', cats: ['gummies'], traits: ['single', 'mix'],
+      about: 'The whole bear bench: the twelve-flavour assortment, mini cubs, oversized Papa bears, and eleven single colours you can take a full scoop of.',
       bg: '#fff4e6'
     },
     {
       id: 'worms', name: 'Gummi Worms', lead: 'gummy-worms',
-      flavor: '6 shapes and sours', cats: ['gummies'], traits: ['mix'],
-      about: 'Two-tone worms in long and mini, plain fruit or rolled in sour sugar. The scoop that photographs best.',
+      flavor: 'Long, mini and natural', cats: ['gummies'], traits: ['mix'],
+      about: 'Two-tone fruit worms in full length and mini, plus a version coloured with fruit and vegetable juice.',
       bg: '#fff2f7'
+    },
+    {
+      id: 'sour-worms', name: 'Sour Gummi Worms', lead: 'sour-neon-worms',
+      flavor: 'Neon and sour-sugared', cats: ['gummies', 'sour'], traits: ['mix'],
+      about: 'The worms rolled in sour sugar — neon in long and mini, plus the classic fruit colours with the sour coat.',
+      bg: '#f4fff2'
     },
     {
       id: 'starburst', name: 'Starburst Fruit Chews', lead: 'fruit-chews-assorted',
@@ -1263,9 +1269,17 @@ window.YL = window.YL || {};
 
   /* Per-scoop surcharge is derived from the candy's real bulk price per
      pound, so adding a product to YL.CANDIES prices itself. Set `extra`
-     explicitly on a candy to override. */
+     explicitly on a candy to override.
+
+     A flavour is never a surcharge. Cherry Jolly Ranchers cost us more per
+     pound than the assorted bag they were sorted out of, but to a customer
+     they are the same sweet in one colour, and charging for picking a
+     colour reads as a penalty for deciding. So anything that belongs to a
+     flavour group is priced as its group. As it stands nothing in the range
+     carries a surcharge at all; the tiers stay for genuinely premium stock
+     later, not for variations of what we already sell. */
   YL.CANDIES.forEach(function (c) {
-    if (c.extra == null) c.extra = YL.scoopExtra(c.perLb);
+    if (c.extra == null) c.extra = c.group ? 0 : YL.scoopExtra(c.perLb);
   });
 
   YL.getGroup = function (id) {
@@ -1301,13 +1315,16 @@ window.YL = window.YL || {};
     return out;
   };
 
-  /* A tile matches a filter if it, or any flavour under it, matches. */
+  /* A group is filtered on what the group itself is, not on the union of
+     everything inside it. Matching any member meant one sour flavour buried
+     in a sweet range dragged the whole range into the Sour filter — which
+     is how peach rings ended up there. Sour is its own product line, with
+     its own tiles, so the filter can stay honest. */
   YL.tileMatches = function (tile, cat, traits) {
-    var pool = tile.type === 'group' ? tile.members : [tile.candy];
-    return pool.some(function (c) {
-      if (cat && cat !== 'all' && c.cats.indexOf(cat) < 0) return false;
-      return (traits || []).every(function (t) { return c.traits.indexOf(t) > -1; });
-    });
+    var cats = tile.type === 'group' ? tile.group.cats : tile.candy.cats;
+    var tr = tile.type === 'group' ? tile.group.traits : tile.candy.traits;
+    if (cat && cat !== 'all' && cats.indexOf(cat) < 0) return false;
+    return (traits || []).every(function (t) { return (tr || []).indexOf(t) > -1; });
   };
 
   YL.getCandy = function (id) {

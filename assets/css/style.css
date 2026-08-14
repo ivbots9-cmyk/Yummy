@@ -182,6 +182,10 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
   .nav.is-open { transform: none; }
   .nav a { padding: 12px 14px; font-size: 15px; }
   .burger { display: grid; }
+  /* The nav goes position:fixed here, so it leaves the flex row and stops
+     pushing the tools over. Without this the icons sat next to the logo
+     with the whole right-hand side empty. */
+  .header__tools { margin-left: auto; }
 }
 
 /* ---------- hero ---------- */
@@ -967,6 +971,27 @@ body.modal-open { overflow: hidden; }
 .rcandy__t small { display: block; font-size: 10.5px; color: var(--pink-700); font-weight: 800; }
 @media (max-width: 900px) { .rcandies { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 420px) { .rcandies { grid-template-columns: 1fr; } }
+
+/* ---------- candy drifting into the hero box ----------
+   Decoration, so it sits behind the photo and ignores the pointer. Long
+   durations and negative delays mean the pieces are already mid-fall on
+   load rather than all starting together. */
+.hero__fall { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.hero__drop {
+  position: absolute; top: -14%; opacity: 0;
+  animation-name: heroFall; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+.hero__drop svg { display: block; filter: drop-shadow(0 3px 5px rgba(196, 22, 104, .18)); }
+@keyframes heroFall {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+  12%  { opacity: .95; }
+  70%  { opacity: .95; }
+  100% { transform: translate3d(14px, 300px, 0) rotate(190deg); opacity: 0; }
+}
+.hero__art > *:not(.hero__fall) { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .hero__fall { display: none; }
+}
 
 /* ---------- hero photo ----------
    A real face beats generated artwork in the hero, so the photo wins when

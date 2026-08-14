@@ -157,7 +157,8 @@
   }
 .yummyland .nav.is-open { transform: none; }
 .yummyland .nav a { padding: 12px 14px; font-size: 15px; }
-.yummyland .burger { display: grid; }}
+.yummyland .burger { display: grid; }
+.yummyland .header__tools { margin-left: auto; }}
 .yummyland .hero {
   position: relative; overflow: hidden;
   background:
@@ -772,6 +773,20 @@
 .yummyland .rcandy__t small { display: block; font-size: 10.5px; color: var(--pink-700); font-weight: 800; }
 @media (max-width: 900px) {.yummyland .rcandies { grid-template-columns: 1fr 1fr; }}
 @media (max-width: 420px) {.yummyland .rcandies { grid-template-columns: 1fr; }}
+.yummyland .hero__fall { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.yummyland .hero__drop {
+  position: absolute; top: -14%; opacity: 0;
+  animation-name: heroFall; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+.yummyland .hero__drop svg { display: block; filter: drop-shadow(0 3px 5px rgba(196, 22, 104, .18)); }
+@keyframes heroFall {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+  12%  { opacity: .95; }
+  70%  { opacity: .95; }
+  100% { transform: translate3d(14px, 300px, 0) rotate(190deg); opacity: 0; }
+}
+.yummyland .hero__art > *:not(.hero__fall) { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) {.yummyland .hero__fall { display: none; }}
 .yummyland .hero__photo {
   display: block; width: 100%; height: auto; max-width: 560px; margin: 0 auto;
   
