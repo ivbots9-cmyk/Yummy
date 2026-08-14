@@ -21,7 +21,7 @@
 <meta name="twitter:image" content="https://yummylandcandy.com/assets/img/og.png">
 <link rel="preload" href="assets/fonts/nunito.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/baloo2.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=641a258e">
+<link rel="stylesheet" href="assets/css/style.css?v=3c15de82">
 <!-- JSONLD:START -->
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://yummylandcandy.com/#org","name":"Yummyland Candy","url":"https://yummylandcandy.com/","logo":"https://yummylandcandy.com/assets/img/apple-touch-icon.png","image":"https://yummylandcandy.com/assets/img/og.png","description":"Custom candy boxes built by the customer, packed fresh and shipped across the USA.","email":"hello@yummylandcandy.com","telephone":"+1-833-986-6526","address":{"@type":"PostalAddress","addressLocality":"Los Angeles","addressRegion":"CA","addressCountry":"US"},"sameAs":["https://instagram.com/yummylandcandy","https://tiktok.com/@yummylandcandy","https://facebook.com/yummylandcandy"]},{"@type":"WebSite","@id":"https://yummylandcandy.com/#website","url":"https://yummylandcandy.com/","name":"Yummyland Candy","publisher":{"@id":"https://yummylandcandy.com/#org"}},{"@type":"Product","name":"Build Your Own Candy Box","description":"Choose your box size, pick from 66 candies, add a vibe and extras — packed fresh and shipped to your door.","image":["https://yummylandcandy.com/assets/img/og.png"],"brand":{"@type":"Brand","name":"Yummyland Candy"},"offers":{"@type":"AggregateOffer","priceCurrency":"USD","lowPrice":"22.99","highPrice":"79.99","offerCount":4,"availability":"https://schema.org/InStock","url":"https://yummylandcandy.com/"}}]}</script>
 <!-- JSONLD:END -->
@@ -65,8 +65,11 @@
     </div>
   </div>
   <div class="wrap hero__trust"><div id="trust"></div></div>
-  <div class="seam" id="seam" aria-hidden="true"></div>
 </section>
+<!-- Outside the hero on purpose: the hero clips its overflow, so a seam
+     that hangs past its edge gets sliced off flat. As a sibling it can
+     sit on the join and spill into both sections. -->
+<div class="seam" id="seam" aria-hidden="true"></div>
 
 <!-- ==================== BUILDER ==================== -->
 <section class="builder" id="builder">
@@ -175,13 +178,13 @@
 <footer id="site-footer"></footer>
 
 <script src="assets/js/config.js?v=6c122cdf"></script>
-<script src="assets/js/art.js?v=0090a578"></script>
-<script src="assets/js/data.js?v=7ebf8196"></script>
+<script src="assets/js/art.js?v=b275d576"></script>
+<script src="assets/js/data.js?v=e1bd067f"></script>
 <script src="assets/js/store.js?v=062bd0f8"></script>
 <script src="assets/js/analytics.js?v=c6c3e27a"></script>
 <script src="assets/js/site.js?v=43890654"></script>
 <script src="assets/js/pages.js?v=04824f3a"></script>
-<script src="assets/js/builder.js?v=4c39393e"></script>
+<script src="assets/js/builder.js?v=8633586d"></script>
 <script>
   YL.boot('chrome', function () { YL.initChrome('build'); });
   YL.boot('builder', function () { YL.initBuilder(); });

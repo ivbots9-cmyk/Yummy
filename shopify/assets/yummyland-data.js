@@ -1345,6 +1345,12 @@ window.YL = window.YL || {};
   };
   YL.money = function (n) { return '$' + (Math.round(n * 100) / 100).toFixed(2); };
 
+  /* The photo of the real mailer, shown as the closed-box preview. Left
+     null until the shot is in assets/img/, because pointing <img> at a
+     file that is not there costs a failed request on every load — the
+     drawn box is the fallback and always works. */
+  YL.BOX_PHOTO = null;
+
   YL.SHIPPING = { flat: 4.99, freeOver: 50 };
   YL.PROMOS = { SWEET10: { off: 0.10, label: '10% off' }, YUMMY5: { flat: 5, label: '$5 off' } };
 })(window.YL);

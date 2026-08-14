@@ -213,32 +213,40 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 .hero__proof .proof { justify-content: flex-start; }
 /* The trust strip rides on the hero's own gradient so the fold reads as
    one screen you are scrolling through, not a second section. */
-.hero__trust { padding-bottom: 28px; position: relative; z-index: 2; }
+/* The seam sits on the boundary between this and the builder, so both
+   sides pad by the same amount and the candy lands in the middle of the
+   gap rather than hugging one section. */
+.hero__trust { padding-bottom: 22px; position: relative; z-index: 2; }
 
 /* ---------- the seam between the hero and the builder ----------
    The hero and the builder already share a colour here, so the join was
    never a hard edge — it was 72px of flat pink with nothing in it. The
-   candy straddles the boundary so the marketing half spills into the tool
-   half, and the negative margin lets it sit over both. */
-.seam {
-  position: relative; z-index: 1; height: 54px; margin-bottom: -18px;
-  overflow: hidden; pointer-events: none;
-}
+   candy sits on the boundary and spills into both sections.
+
+   The band has no height of its own: it is a line, and the pieces are
+   centred on it. That way the boundary IS the centre of the row, so the
+   candy cannot drift toward one section, and there is no box edge for it
+   to be clipped against. The gap is symmetric (both sides pad by the
+   same amount) so the row lands in the middle of it. */
+.seam { position: relative; z-index: 3; height: 0; pointer-events: none; }
 .seam__bit {
-  position: absolute; top: 50%; opacity: .5;
+  position: absolute; top: 0; opacity: .5;
   animation-name: seamBob; animation-timing-function: ease-in-out;
   animation-iteration-count: infinite; animation-direction: alternate;
 }
 .seam__bit svg { display: block; filter: drop-shadow(0 2px 4px rgba(196, 22, 104, .16)); }
+/* Bobs an equal distance either side of the line, so the row's resting
+   position stays centred on the join. */
 @keyframes seamBob {
-  from { transform: translate(-50%, -60%) rotate(-8deg); }
-  to   { transform: translate(-50%, -34%) rotate(10deg); }
+  from { transform: translate(-50%, -58%) rotate(-8deg); }
+  to   { transform: translate(-50%, -42%) rotate(10deg); }
 }
 @media (prefers-reduced-motion: reduce) {
   .seam__bit { animation: none; transform: translate(-50%, -50%); }
 }
+/* Half the pieces on a phone. They are spaced so that the ones that stay
+   are still evenly spread and still symmetric about the centre. */
 @media (max-width: 700px) {
-  .seam { height: 40px; margin-bottom: -14px; }
   .seam__bit:nth-child(even) { display: none; }
 }
 .hero__usps { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 34px; }
@@ -295,7 +303,7 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 }
 
 /* ---------- builder ---------- */
-.builder { padding: 16px 0 80px; background: linear-gradient(180deg, #ffeef6 0%, #fff 260px); }
+.builder { padding: 22px 0 80px; background: linear-gradient(180deg, #ffeef6 0%, #fff 260px); }
 
 .steps {
   position: sticky; top: var(--header-h); z-index: 40;
@@ -849,7 +857,7 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
   .hero p.lede { font-size: 16px; }
   .hero__cta .btn { flex: 1 1 100%; }
   .hero__proof .proof { justify-content: center; }
-  .hero__trust { padding-bottom: 34px; }
+  .hero__trust { padding-bottom: 22px; }
   .hero__usps { gap: 14px 22px; margin-top: 24px; }
 
   .grid-cards { grid-template-columns: 1fr; }
@@ -1136,6 +1144,10 @@ body.modal-open { overflow: hidden; }
 .tray.is-closed .tray__open { display: none; }
 .tray__closed { display: grid; place-items: center; padding: 8px 0 4px; }
 .tray__closed svg { width: min(340px, 100%); height: auto; }
+.tray__photo {
+  display: block; width: min(340px, 100%); height: auto; border-radius: 12px;
+  filter: drop-shadow(0 10px 22px rgba(196, 22, 104, .18));
+}
 .tray__closednote {
   margin-top: 6px; font-size: 12px; font-weight: 900;
   letter-spacing: .05em; text-transform: uppercase; color: var(--pink-700);
@@ -1194,10 +1206,19 @@ body.modal-open { overflow: hidden; }
 .cell.is-filled:hover .cell__x, .cell.is-filled:focus-visible .cell__x { opacity: 1; }
 /* on touch there is no hover, so the remove affordance is always there */
 @media (hover: none) { .cell__x { opacity: .9; } }
-.cell.is-target {
+/* The cell you have aimed at. It has to be obvious from across the
+   screen, because the candy you tap next lands here and nowhere else. */
+.cell.is-armed {
   border-color: var(--pink); border-style: solid;
-  box-shadow: 0 0 0 4px rgba(255, 30, 135, .22); transform: scale(1.06);
+  box-shadow: 0 0 0 4px rgba(255, 30, 135, .22);
+  animation: cellPulse 1.4s ease-in-out infinite alternate;
 }
+.cell.is-armed .cell__ghost { color: var(--pink); }
+@keyframes cellPulse {
+  from { box-shadow: 0 0 0 3px rgba(255, 30, 135, .16); }
+  to   { box-shadow: 0 0 0 6px rgba(255, 30, 135, .30); }
+}
+@media (prefers-reduced-motion: reduce) { .cell.is-armed { animation: none; } }
 
 .tray__hint {
   display: flex; align-items: flex-start; gap: 7px;
@@ -1205,17 +1226,43 @@ body.modal-open { overflow: hidden; }
 }
 .tray__hint svg { flex: none; width: 14px; height: 14px; color: var(--pink); margin-top: 1px; }
 
-/* the thing that follows your finger */
-.dragghost {
-  position: fixed; left: 0; top: 0; z-index: 300; pointer-events: none;
-  width: 62px; height: 62px; border-radius: 14px; overflow: hidden;
-  box-shadow: 0 12px 30px rgba(28, 8, 20, .35); border: 3px solid #fff;
-  transform: translate(-100px, -100px);
+/* Everything here is placed by tapping. Dragging is deliberately gone:
+   a press that the browser turned into its own image drag never sent a
+   pointerup, so the page was left with touch-action locked and stopped
+   responding to anything until a reload. Nothing can start a native drag
+   either — hence the user-drag rules below. */
+.candy[data-place] { cursor: pointer; }
+.candy img, .cell img, .candy svg, .cell svg {
+  -webkit-user-drag: none; user-select: none; -webkit-user-select: none;
 }
-.dragghost img, .dragghost svg { width: 100%; height: 100%; object-fit: cover; display: block; }
-body.is-dragging { user-select: none; -webkit-user-select: none; touch-action: none; }
-body.is-dragging .candy { cursor: grabbing; }
-.candy[data-drag] { cursor: grab; }
+
+/* the weight, under the box it describes */
+.tray__gauge { display: flex; align-items: center; gap: 9px; margin: 9px 2px 0; }
+/* .meter is otherwise only styled inside .capacity, so the track needs
+   spelling out here rather than inheriting a look it never had. */
+.tray__gauge .meter {
+  flex: 1; height: 8px; border-radius: 999px;
+  background: #ffd9e9; overflow: hidden;
+}
+.tray__gauge .meter i {
+  display: block; height: 100%; width: 0; border-radius: 999px;
+  background: linear-gradient(90deg, var(--pink), #ff7ab5);
+  transition: width .3s ease;
+}
+.tray__gauge b { font-size: 13px; font-weight: 900; color: var(--pink); white-space: nowrap; }
+.tray__gauge span { font-size: 12.5px; color: var(--ink-40); white-space: nowrap; }
+.tray__gauge.is-full .meter i { background: linear-gradient(90deg, #17a673, #38d39f); }
+.tray__gauge.is-full b { color: #17a673; }
+
+/* start over, as an icon in the corner of the box */
+.tray__reset {
+  flex: none; width: 30px; height: 30px; display: grid; place-items: center;
+  border: 1px solid #ffd2e6; border-radius: 50%; background: #fff;
+  color: var(--pink-700); transition: .15s;
+}
+.tray__reset svg { width: 15px; height: 15px; }
+.tray__reset:hover:not(:disabled) { background: var(--pink); border-color: var(--pink); color: #fff; transform: rotate(-45deg); }
+.tray__reset:disabled { opacity: .34; cursor: default; }
 
 /* On a phone every row above the box costs a row of candy below it, so the
    secondary controls become single scrollable lines and the step's blurb
@@ -1233,7 +1280,6 @@ body.is-dragging .candy { cursor: grabbing; }
   .filters--diet .filter, .filters--diet .filters__label { flex: none; white-space: nowrap; }
 }
 
-.tray__hint--short { display: none; }
 
 @media (max-width: 700px) {
   /* The whole point on a phone: the box and the candy list have to share
@@ -1257,12 +1303,11 @@ body.is-dragging .candy { cursor: grabbing; }
   .tray__bar { gap: 8px; margin-bottom: 8px; }
   .tray__tab { padding: 6px 12px; font-size: 11px; }
   .tray__count { font-size: 10.5px; }
+  .tray__reset { width: 27px; height: 27px; }
   .tray__lid { padding: 7px 12px; }
   .tray__lid b { font-size: 13px; }
   .tray__lid small { font-size: 9.5px; }
   .tray__hint { margin-top: 7px; font-size: 10.5px; }
-  .tray__hint--long { display: none; }
-  .tray__hint--short { display: inline; }
 
   /* the palette shrinks too, so a row of candy is visible with the box */
   .build2__list .candies { grid-template-columns: repeat(3, 1fr); gap: 7px; }
@@ -1283,12 +1328,6 @@ body.is-dragging .candy { cursor: grabbing; }
 /* ---------- start over ---------- */
 /* Deliberately quiet next to the meter: it is the escape hatch from a
    full box, not something to invite on the way in. */
-.link-btn--reset {
-  display: inline-flex; align-items: center; gap: 4px;
-  margin-top: 6px; text-decoration: none; letter-spacing: .04em;
-  font-size: 11px; font-weight: 900; text-transform: uppercase;
-}
-.link-btn--reset svg { width: 11px; height: 11px; }
 .badge--full { background: var(--pink); color: #fff; }
 
 /* A control that cannot do anything has to look like it. */

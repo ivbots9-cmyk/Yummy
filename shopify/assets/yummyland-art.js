@@ -314,19 +314,21 @@ window.YL = window.YL || {};
      texture, not content, and it bobs rather than races. */
   YL.seamCandy = function () {
     var bits = [
-      { shape: 'bear', colors: { a: '#ff4757' }, x: 4, s: 30, d: 0 },
-      { shape: 'ring', colors: { a: '#ffb26b' }, x: 12, s: 24, d: 1.4 },
-      { shape: 'ball', colors: { a: '#3fb8ff' }, x: 19, s: 20, d: 2.7 },
-      { shape: 'worm', colors: { a: '#4cd964', b: '#ffd23f' }, x: 27, s: 32, d: .6 },
+      /* Evenly spaced and symmetric about the centre, and spaced so the
+         odd-numbered ones a phone keeps are still both. */
+      { shape: 'bear', colors: { a: '#ff4757' }, x: 5, s: 30, d: 0 },
+      { shape: 'ring', colors: { a: '#ffb26b' }, x: 12.5, s: 24, d: 1.4 },
+      { shape: 'ball', colors: { a: '#3fb8ff' }, x: 20, s: 20, d: 2.7 },
+      { shape: 'worm', colors: { a: '#4cd964', b: '#ffd23f' }, x: 27.5, s: 32, d: .6 },
       { shape: 'bean', colors: { a: '#a76bff' }, x: 35, s: 20, d: 3.1 },
-      { shape: 'ring', colors: { a: '#4bb9ff' }, x: 43, s: 26, d: 1.9 },
-      { shape: 'bear', colors: { a: '#ffd23f' }, x: 51, s: 28, d: 2.2 },
-      { shape: 'ball', colors: { a: '#ff2e8b' }, x: 59, s: 22, d: .3 },
-      { shape: 'worm', colors: { a: '#ff6fb0', b: '#3fb8ff' }, x: 67, s: 30, d: 2.9 },
-      { shape: 'bean', colors: { a: '#a8e05f' }, x: 75, s: 20, d: 1.1 },
-      { shape: 'ring', colors: { a: '#ff8f6b' }, x: 83, s: 26, d: 3.4 },
-      { shape: 'bear', colors: { a: '#4cd964' }, x: 91, s: 28, d: 1.7 },
-      { shape: 'ball', colors: { a: '#ffd23f' }, x: 97, s: 18, d: 2.4 }
+      { shape: 'ring', colors: { a: '#4bb9ff' }, x: 42.5, s: 26, d: 1.9 },
+      { shape: 'bear', colors: { a: '#ffd23f' }, x: 50, s: 28, d: 2.2 },
+      { shape: 'ball', colors: { a: '#ff2e8b' }, x: 57.5, s: 22, d: .3 },
+      { shape: 'worm', colors: { a: '#ff6fb0', b: '#3fb8ff' }, x: 65, s: 30, d: 2.9 },
+      { shape: 'bean', colors: { a: '#a8e05f' }, x: 72.5, s: 20, d: 1.1 },
+      { shape: 'ring', colors: { a: '#ff8f6b' }, x: 80, s: 26, d: 3.4 },
+      { shape: 'bear', colors: { a: '#4cd964' }, x: 87.5, s: 28, d: 1.7 },
+      { shape: 'ball', colors: { a: '#ffd23f' }, x: 95, s: 18, d: 2.4 }
     ];
     return bits.map(function (b, i) {
       return '<span class="seam__bit" style="left:' + b.x + '%;animation-delay:-' + b.d + 's;' +
@@ -457,6 +459,7 @@ window.YL = window.YL || {};
     plus: '<path d="M12 5v14M5 12h14"/>',
     minus: '<path d="M5 12h14"/>',
     x: '<path d="M6 6l12 12M18 6L6 18"/>',
+    refresh: '<path d="M20 11a8 8 0 1 0-1.6 5.6"/><path d="M20 4v7h-7"/>',
     shield: '<path d="M12 3l8 3v6c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
     star: '<path d="M12 3l2.7 5.9 6.3.7-4.7 4.3 1.3 6.1L12 17l-5.6 3 1.3-6.1L3 9.6l6.3-.7z"/>',
     note: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',

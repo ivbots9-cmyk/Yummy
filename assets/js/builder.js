@@ -10,7 +10,11 @@ window.YL = window.YL || {};
 
   var $ = YL.$, $$ = YL.$$;
   var box, filter = 'all', showAll = false, traits = [];
-  var trayOpen = true, heldCandy = null;
+  var trayOpen = true;
+  /* The cell a tap has singled out, waiting for a candy. Cell-first is
+     the other half of tap-to-place: pick the slot, then pick what fills
+     it, instead of dragging one onto the other. */
+  var armedCell = null;
 
   var STEPS = [
     { id: 'step-size', t: 'Choose box', d: 'Small to party size' },
@@ -64,16 +68,6 @@ window.YL = window.YL || {};
     var list = cells();
     if (i < 0 || i >= list.length || !list[i]) return false;
     list[i] = null;
-    writeCells(list);
-    return true;
-  }
-
-  /* Dragging a filled cell onto another one swaps them, which is what
-     everybody expects and costs nothing to support. */
-  function swapCells(a, b) {
-    var list = cells();
-    if (a === b || a < 0 || b < 0 || a >= list.length || b >= list.length) return false;
-    var t = list[a]; list[a] = list[b]; list[b] = t;
     writeCells(list);
     return true;
   }
@@ -263,9 +257,9 @@ window.YL = window.YL || {};
     host.innerHTML =
       head(2, 'Step 2: Scoop it full',
         'Every tap adds one 4 oz scoop. Tap the same candy twice for a double scoop.',
-        '<span class="badge' + (full ? ' badge--full' : '') + '">' + oz(used()) + ' / ' + oz(slots()) + '</span>' +
-        (used() > 0 ? '<button class="link-btn link-btn--reset" data-reset>' +
-          YL.icon('x') + 'Start over</button>' : '')) +
+        /* No aside: the weight and the reset both live on the box now,
+           where they belong to the thing they describe. */
+        '') +
       '<div class="build2">' +
       '<div class="build2__tray">' + renderTray() + '</div>' +
       '<div class="build2__list">' +
@@ -319,7 +313,8 @@ window.YL = window.YL || {};
 
     $$('[data-add]', host).forEach(function (b) {
       b.addEventListener('click', function () {
-        if (addCandy(b.dataset.add)) {
+        if (placeCandy(b.dataset.add, armedCell)) {
+          armedCell = null;
           renderAll();
           flash(b.dataset.add);
           if (YL.trackStep) YL.trackStep('candy', { candy: b.dataset.add });
@@ -341,13 +336,14 @@ window.YL = window.YL || {};
     /* The whole card is the target, not just the small Add button. Tapping
        a candy is the primary way to fill a cell, so it should not require
        aiming. Clicks that land on a real control are left to that control. */
-    $$('.candy[data-drag]:not(.candy--group)', host).forEach(function (el) {
+    $$('.candy[data-place]:not(.candy--group)', host).forEach(function (el) {
       el.addEventListener('click', function (e) {
         if (e.target.closest('button') || e.target.closest('a')) return;
-        if (addCandy(el.dataset.drag)) {
+        if (placeCandy(el.dataset.place, armedCell)) {
+          armedCell = null;
           renderAll();
           flash(el.dataset.candy);
-          if (YL.trackStep) YL.trackStep('candy', { candy: el.dataset.drag });
+          if (YL.trackStep) YL.trackStep('candy', { candy: el.dataset.place });
         }
       });
     });
@@ -366,6 +362,7 @@ window.YL = window.YL || {};
   }
 
   function resetCandies() {
+    armedCell = null;
     if (!used()) return;
     clearCandies();
     renderAll();
@@ -397,7 +394,7 @@ window.YL = window.YL || {};
       : '<p class="candy__about">' + g.about + '</p>';
 
     return '<div class="candy candy--group' + (q ? ' is-on' : '') + (full && !q ? ' is-full' : '') +
-      '" data-candy="' + g.id + '" data-drag="' + (g.lead || members[0].id) + '">' +
+      '" data-candy="' + g.id + '" data-place="' + (g.lead || members[0].id) + '">' +
       '<span class="candy__tag candy__tag--mint">' + (g.tag || members.length + ' flavours') + '</span>' +
       '<div class="candy__art">' + YL.groupTile(g, members) +
       '<span class="candy__scoop">' + YL.PRICING.scoopOz + ' oz scoop</span>' +
@@ -553,7 +550,7 @@ window.YL = window.YL || {};
       : '<button class="candy__add" data-add="' + c.id + '">' + YL.icon('plus') + ' Add scoop' +
         (c.extra ? ' · +' + YL.money(c.extra) : '') + '</button>';
     return '<div class="candy' + (q ? ' is-on' : '') + (full && !q ? ' is-full' : '') +
-      '" data-candy="' + c.id + '" data-drag="' + c.id + '">' +
+      '" data-candy="' + c.id + '" data-place="' + c.id + '">' +
       tag + '<div class="candy__art">' + YL.candyTile(c) + scoop + '</div>' +
       '<b>' + c.name + '</b><small>' + c.flavor + '</small>' +
       (c.about ? '<p class="candy__about">' + c.about + '</p>' : '') + control + '</div>';
@@ -842,12 +839,15 @@ window.YL = window.YL || {};
     var cols = trayCols(cap);
     var size = YL.getSize(box.size);
     var filled = used();
+    var pct = slots() ? Math.min(100, (used() / slots()) * 100) : 0;
 
     var grid = list.map(function (id, i) {
       var c = id ? YL.getCandy(id) : null;
       if (!c) {
-        return '<button class="cell" data-cell="' + i + '" aria-label="Empty cell ' + (i + 1) +
-          '"><span class="cell__ghost">' + YL.icon('plus') + '</span></button>';
+        return '<button class="cell' + (armedCell === i ? ' is-armed' : '') +
+          '" data-cell="' + i + '" aria-pressed="' + (armedCell === i) +
+          '" aria-label="Empty cell ' + (i + 1) + ' — tap to choose what goes in it">' +
+          '<span class="cell__ghost">' + YL.icon('plus') + '</span></button>';
       }
       /* The candy photo is the cell. That is the whole illusion — you are
          looking into the box, not at a list of what is in it. */
@@ -865,12 +865,20 @@ window.YL = window.YL || {};
       '<button class="tray__tab' + (trayOpen ? ' is-on' : '') + '" data-tray-view="open">Open</button>' +
       '</div>' +
       '<span class="tray__count">' + filled + ' of ' + cap + ' cells</span>' +
+      /* Emptying the box is a corner action: always in the same place,
+         never competing with the step title for room. */
+      '<button class="tray__reset" data-reset' + (filled ? '' : ' disabled') +
+      ' title="Start over" aria-label="Start over — empty the box">' +
+      YL.icon('refresh') + '</button>' +
       '</div>' +
 
       '<div class="tray__stage">' +
       /* closed: the parcel as it arrives, so the size means something */
       '<div class="tray__closed">' +
-      YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'tray' }) +
+      (YL.BOX_PHOTO
+        ? '<img class="tray__photo" src="' + YL.esc(YL.BOX_PHOTO) + '" alt="A sealed Yummyland box" ' +
+          'loading="lazy" onerror="this.remove()">'
+        : YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'tray' })) +
       '<span class="tray__closednote">' + size.name + ' · ' + YL.weightLabel(size.oz) + '</span>' +
       '</div>' +
       /* open: the grid you actually fill */
@@ -882,11 +890,28 @@ window.YL = window.YL || {};
       '</div>' +
       '</div>' +
 
+      /* The weight sits under the box it describes rather than in the step
+         header, where it was taking a third of the row to say something
+         the box itself is already showing. */
+      '<div class="tray__gauge' + (left() <= 0 ? ' is-full' : '') + '">' +
+      '<span class="meter"><i style="width:' + pct + '%"></i></span>' +
+      '<b>' + oz(used()) + '</b><span> / ' + oz(slots()) + '</span></div>' +
+
       '<p class="tray__hint">' + YL.icon('sparkle') +
-      '<span class="tray__hint--long">Tap a candy below to drop it in the next free cell, ' +
-      'or drag it straight onto the cell you want.</span>' +
-      '<span class="tray__hint--short">Tap a candy to drop it in. Tap a filled cell to empty it.</span></p>' +
+      '<span>' + (armedCell != null
+        ? 'Cell ' + (armedCell + 1) + ' is waiting — pick a candy below and it goes in there.'
+        : 'Tap a candy to drop it in the next free cell, or tap an empty cell to choose what fills it.') +
+      '</span></p>' +
       '</div>';
+  }
+
+  /* Aiming at a cell is only useful if the candies are then in front of
+     you — on a phone the list starts below the fold. */
+  function scrollToList() {
+    var list = $('.build2__list');
+    if (!list) return;
+    var top = list.getBoundingClientRect().top + window.scrollY - 84;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
   }
 
   function bindTray(host) {
@@ -899,99 +924,15 @@ window.YL = window.YL || {};
     $$('[data-cell]', host).forEach(function (el) {
       el.addEventListener('click', function () {
         var i = +el.dataset.cell;
-        if (el.dataset.has) { clearCell(i); renderAll(); return; }
-        /* an empty cell is a target, so if something is already picked up
-           by tap it lands here rather than in the next free slot */
-        if (heldCandy) { placeCandy(heldCandy, i); heldCandy = null; renderAll(); }
+        if (el.dataset.has) { armedCell = null; clearCell(i); renderAll(); return; }
+        /* Tapping an empty cell aims the next candy at it and takes you to
+           the list; tapping it again changes your mind. */
+        if (armedCell === i) { armedCell = null; renderAll(); return; }
+        armedCell = i;
+        renderAll();
+        scrollToList();
       });
     });
-    bindDrag(host);
-  }
-
-  /* ---------------- drag and drop ----------------
-     Pointer Events rather than HTML5 drag-and-drop, because the latter
-     does not exist on touch and this has to work on a phone first. A
-     press that never moves is left alone and becomes a click. */
-  /* ---------------- drag, mouse only ----------------
-     Touch does not drag here, deliberately. A finger that starts on a card
-     and then scrolls makes the browser take the gesture and fire
-     pointercancel, not pointerup — which stranded the floating ghost on
-     screen, one per attempt, until the page was reloaded. Suppressing the
-     scroll to prevent that would cost more than the feature is worth on a
-     phone, where tapping already places a scoop in one go. So: mouse drags,
-     fingers tap, and nothing can be left behind. */
-  function bindDrag(host) {
-    /* #step-candy is re-filled, never replaced, so a listener added here
-       survives every render. Binding per render stacked them up and one
-       drag ran N times — two swaps in a row look like nothing happened. */
-    if (host.__dragBound) return;
-    host.__dragBound = true;
-    var ghost = null, from = null, fromCell = null, startX = 0, startY = 0, dragging = false;
-
-    /* Belt and braces: whatever happens, no ghost outlives its drag. */
-    function cleanup() {
-      document.removeEventListener('pointermove', onMove);
-      document.removeEventListener('pointerup', onUp);
-      document.removeEventListener('pointercancel', onCancel);
-      window.removeEventListener('blur', onCancel);
-      $$('.cell', host).forEach(function (c) { c.classList.remove('is-target'); });
-      $$('.dragghost').forEach(function (g) { if (g.parentNode) g.parentNode.removeChild(g); });
-      document.body.classList.remove('is-dragging');
-      ghost = null; from = null; fromCell = null; dragging = false;
-    }
-
-    function onDown(e) {
-      if (e.pointerType === 'touch' || e.button > 0) return;
-      var src = e.target.closest('[data-drag]') || e.target.closest('.cell.is-filled');
-      if (!src) return;
-      from = src.getAttribute('data-drag') || src.getAttribute('data-has');
-      if (!from) return;
-      fromCell = src.hasAttribute('data-cell') ? +src.dataset.cell : null;
-      startX = e.clientX; startY = e.clientY; dragging = false;
-      document.addEventListener('pointermove', onMove);
-      document.addEventListener('pointerup', onUp);
-      document.addEventListener('pointercancel', onCancel);
-      window.addEventListener('blur', onCancel);
-    }
-
-    function onMove(e) {
-      if (!from) return;
-      if (!dragging) {
-        if (Math.abs(e.clientX - startX) < 6 && Math.abs(e.clientY - startY) < 6) return;
-        dragging = true;
-        $$('.dragghost').forEach(function (g) { if (g.parentNode) g.parentNode.removeChild(g); });
-        var candy = YL.getCandy(from);
-        ghost = document.createElement('div');
-        ghost.className = 'dragghost';
-        ghost.innerHTML = candy ? YL.candyDot(candy, 62) : '';
-        document.body.appendChild(ghost);
-        document.body.classList.add('is-dragging');
-      }
-      ghost.style.transform = 'translate(' + (e.clientX - 31) + 'px,' + (e.clientY - 31) + 'px)';
-      var over = cellUnder(e.clientX, e.clientY);
-      $$('.cell', host).forEach(function (c) { c.classList.toggle('is-target', c === over); });
-      e.preventDefault();
-    }
-
-    function onCancel() { cleanup(); }
-
-    function onUp(e) {
-      var wasDragging = dragging, src = from, srcCell = fromCell;
-      var target = wasDragging ? cellUnder(e.clientX, e.clientY) : null;
-      cleanup();
-      if (wasDragging && target) {
-        var to = +target.dataset.cell;
-        if (srcCell != null) swapCells(srcCell, to); else placeCandy(src, to);
-        renderAll();
-      }
-    }
-
-    function cellUnder(x, y) {
-      var el = document.elementFromPoint(x, y);
-      return el ? el.closest('[data-cell]') : null;
-    }
-
-    host.addEventListener('pointerdown', onDown);
   }
 
   function quickMix() {
