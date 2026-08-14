@@ -965,8 +965,17 @@ body.modal-open { overflow: hidden; }
   margin: 0 auto; border-radius: var(--radius-l);
   filter: drop-shadow(0 24px 50px rgba(255, 30, 135, .28));
 }
+/* The width caps on .hero__art were sized for the tall SVG box, which ate
+   the screen on a phone. A wide photo is short, so it can be much bigger
+   without pushing the buttons under the fold — but only once it has
+   actually loaded, so the fallback keeps its own smaller cap. */
 @media (max-width: 900px) {
-  .hero__photo { max-width: min(420px, 88%); }
+  .hero__photo { max-width: 100%; }
+  .hero__art.has-photo { width: min(420px, 92%); }
+}
+@media (max-width: 560px) {
+  .hero__art.has-photo { width: min(380px, 94%); }
+  .hero__art.has-photo .float-badge { width: 72px; height: 72px; font-size: 9px; top: -6px; right: -4px; }
 }
 
 /* =========================================================

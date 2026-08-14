@@ -771,7 +771,10 @@
   margin: 0 auto; border-radius: var(--radius-l);
   filter: drop-shadow(0 24px 50px rgba(255, 30, 135, .28));
 }
-@media (max-width: 900px) {.yummyland .hero__photo { max-width: min(420px, 88%); }}
+@media (max-width: 900px) {.yummyland .hero__photo { max-width: 100%; }
+.yummyland .hero__art.has-photo { width: min(420px, 92%); }}
+@media (max-width: 560px) {.yummyland .hero__art.has-photo { width: min(380px, 94%); }
+.yummyland .hero__art.has-photo .float-badge { width: 72px; height: 72px; font-size: 9px; top: -6px; right: -4px; }}
 .yummyland .build2 { display: grid; gap: 22px; }
 @media (min-width: 900px) {.yummyland .build2 { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; }
 .yummyland .build2__tray { position: sticky; top: calc(var(--header-h) + 84px); }

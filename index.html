@@ -21,7 +21,7 @@
 <meta name="twitter:image" content="https://yummylandcandy.com/assets/img/og.png">
 <link rel="preload" href="assets/fonts/nunito.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/baloo2.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css?v=f086b254">
+<link rel="stylesheet" href="assets/css/style.css?v=4eb0b124">
 <!-- JSONLD:START -->
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://yummylandcandy.com/#org","name":"Yummyland Candy","url":"https://yummylandcandy.com/","logo":"https://yummylandcandy.com/assets/img/apple-touch-icon.png","image":"https://yummylandcandy.com/assets/img/og.png","description":"Custom candy boxes built by the customer, packed fresh and shipped across the USA.","email":"hello@yummylandcandy.com","telephone":"+1-833-986-6526","address":{"@type":"PostalAddress","addressLocality":"Los Angeles","addressRegion":"CA","addressCountry":"US"},"sameAs":["https://instagram.com/yummylandcandy","https://tiktok.com/@yummylandcandy","https://facebook.com/yummylandcandy"]},{"@type":"WebSite","@id":"https://yummylandcandy.com/#website","url":"https://yummylandcandy.com/","name":"Yummyland Candy","publisher":{"@id":"https://yummylandcandy.com/#org"}},{"@type":"Product","name":"Build Your Own Candy Box","description":"Choose your box size, pick from 66 candies, add a vibe and extras — packed fresh and shipped to your door.","image":["https://yummylandcandy.com/assets/img/og.png"],"brand":{"@type":"Brand","name":"Yummyland Candy"},"offers":{"@type":"AggregateOffer","priceCurrency":"USD","lowPrice":"22.99","highPrice":"79.99","offerCount":4,"availability":"https://schema.org/InStock","url":"https://yummylandcandy.com/"}}]}</script>
 <!-- JSONLD:END -->
@@ -46,9 +46,10 @@
       <div class="hero__proof" id="proof"></div>
     </div>
     <div class="hero__art">
-      <!-- Drop a photo at assets/img/hero-girl.png and it takes over the hero.
-           Until then the generated box stands in, so the page is never broken. -->
-      <img class="hero__photo" src="assets/img/hero-girl.png" alt="A packed Yummyland candy box, held and ready to share"
+      <!-- The hero photo. If it ever goes missing the generated box takes over,
+           so a broken asset can never leave the hero empty. -->
+      <img class="hero__photo" src="assets/img/hero-girl.jpg" width="1100" height="853" alt="A packed Yummyland candy box, held and ready to share"
+           onload="this.parentNode.classList.add('has-photo')"
            onerror="this.remove(); var b = document.getElementById('hero-box'); if (b) b.hidden = false;">
       <div id="hero-box" hidden></div>
       <div class="float-badge">Made<br>to share <span aria-hidden="true">♥</span></div>
