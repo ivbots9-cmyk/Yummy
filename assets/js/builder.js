@@ -10,6 +10,7 @@ window.YL = window.YL || {};
 
   var $ = YL.$, $$ = YL.$$;
   var box, filter = 'all', showAll = false, traits = [];
+  var trayOpen = true, heldCandy = null;
 
   var STEPS = [
     { id: 'step-size', t: 'Choose box', d: 'Small to party size' },
@@ -34,46 +35,73 @@ window.YL = window.YL || {};
 
   function persist() { YL.saveDraft(box); }
 
-  function addCandy(id, silent) {
-    if (left() <= 0) {
-      if (!silent) YL.toast('That is a full ' + oz(slots()) + ' — drop a scoop or size up.');
+  /* Every mutation goes through the cells, so the tray, the meter and the
+     price can never disagree about what is in the box. */
+  function cells() { return YL.boxCells(box); }
+  function writeCells(next) { YL.setBoxCells(box, next); persist(); }
+
+  function firstEmpty(list) {
+    for (var i = 0; i < list.length; i++) if (!list[i]) return i;
+    return -1;
+  }
+
+  /* Drop a scoop into a named cell, or into the first free one. */
+  function placeCandy(id, at, silent) {
+    var list = cells();
+    var i = (at == null || at < 0) ? firstEmpty(list) : at;
+    if (i < 0 || i >= list.length) {
+      if (!silent) YL.toast('That is a full ' + oz(slots()) + ' — empty a cell or size up.');
       return false;
     }
-    var found = false;
-    box.candies.forEach(function (c) { if (c.id === id) { c.qty++; found = true; } });
-    if (!found) box.candies.push({ id: id, qty: 1 });
-    persist();
+    list[i] = id;
+    writeCells(list);
     return true;
   }
 
+  function addCandy(id, silent) { return placeCandy(id, null, silent); }
+
+  function clearCell(i) {
+    var list = cells();
+    if (i < 0 || i >= list.length || !list[i]) return false;
+    list[i] = null;
+    writeCells(list);
+    return true;
+  }
+
+  /* Dragging a filled cell onto another one swaps them, which is what
+     everybody expects and costs nothing to support. */
+  function swapCells(a, b) {
+    var list = cells();
+    if (a === b || a < 0 || b < 0 || a >= list.length || b >= list.length) return false;
+    var t = list[a]; list[a] = list[b]; list[b] = t;
+    writeCells(list);
+    return true;
+  }
+
+  /* Removing by candy rather than by cell — used by the +/- controls and
+     the flavour picker, which think in quantities, not positions. Takes
+     the last cell holding it so the earlier arrangement survives. */
   function removeCandy(id, all) {
-    box.candies = box.candies.reduce(function (acc, c) {
-      if (c.id !== id) { acc.push(c); return acc; }
-      if (!all && c.qty > 1) { c.qty--; acc.push(c); }
-      return acc;
-    }, []);
-    persist();
+    var list = cells();
+    for (var i = list.length - 1; i >= 0; i--) {
+      if (list[i] === id) { list[i] = null; if (!all) break; }
+    }
+    writeCells(list);
   }
 
   /* Emptying the box without touching its size. Once a box is full every
      add is refused, and clearing it a scoop at a time is a dozen taps —
      this is the one button that gets you back to a blank box. */
   function clearCandies() {
-    box.candies = [];
-    persist();
+    writeCells(cells().map(function () { return null; }));
   }
 
   /* Shrinking the box (or dropping the extra-scoop add-on) trims the
      last scoops off the end rather than silently overfilling. */
   function trimToFit() {
-    var over = used() - slots();
-    while (over > 0 && box.candies.length) {
-      var last = box.candies[box.candies.length - 1];
-      var take = Math.min(last.qty, over);
-      last.qty -= take;
-      over -= take;
-      if (last.qty === 0) box.candies.pop();
-    }
+    /* boxCells already crops to the new capacity; writing it back drops
+       whatever fell off the end and rebuilds the candy list to match. */
+    writeCells(cells());
   }
 
   function setSize(id) {
@@ -88,14 +116,9 @@ window.YL = window.YL || {};
       var j = Math.floor(Math.random() * (i + 1));
       var t = list[i]; list[i] = list[j]; list[j] = t;
     }
-    box.candies = [];
-    var i2 = 0;
-    while (left() > 0) {
-      addCandy(list[i2 % list.length], true);
-      i2++;
-      if (i2 > 200) break;
-    }
-    persist();
+    var cap = slots(), next = [], i2 = 0;
+    while (next.length < cap && i2 < 400) { next.push(list[i2 % list.length]); i2++; }
+    writeCells(next);
   }
 
   /* ------------------------------------------------------------------ */
@@ -244,6 +267,9 @@ window.YL = window.YL || {};
         (used() > 0 ? '<button class="link-btn link-btn--reset" data-reset>' +
           YL.icon('x') + 'Start over</button>' : '')) +
       quickMix() +
+      '<div class="build2">' +
+      '<div class="build2__tray">' + renderTray() + '</div>' +
+      '<div class="build2__list">' +
       '<div class="filters">' + YL.CATEGORIES.map(function (c) {
         return '<button class="filter' + (c.id === filter ? ' is-on' : '') + '" data-filter="' + c.id + '">' + c.name + '</button>';
       }).join('') + '</div>' +
@@ -263,7 +289,8 @@ window.YL = window.YL || {};
       (list.length === 0 ? '<p class="center" style="color:var(--ink-40)">Nothing matches those filters — try clearing one.</p>' : '') +
       '<p class="candies__note">' + YL.icon('note') +
       ' Allergens change with the recipe, so we point you at the pack rather than guessing. ' +
-      'Tell us what to leave out in step 4 and we read it before we scoop.</p>';
+      'Tell us what to leave out in step 4 and we read it before we scoop.</p>' +
+      '</div></div>';
 
     $$('[data-preset]', host).forEach(function (b) {
       b.addEventListener('click', function () {
@@ -310,6 +337,22 @@ window.YL = window.YL || {};
     });
     var reset = $('[data-reset]', host);
     if (reset) reset.addEventListener('click', resetCandies);
+
+    /* The whole card is the target, not just the small Add button. Tapping
+       a candy is the primary way to fill a cell, so it should not require
+       aiming. Clicks that land on a real control are left to that control. */
+    $$('.candy[data-drag]', host).forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        if (addCandy(el.dataset.drag)) {
+          renderAll();
+          flash(el.dataset.candy);
+          if (YL.trackStep) YL.trackStep('candy', { candy: el.dataset.drag });
+        }
+      });
+    });
+
+    bindTray(host);
   }
 
   function resetCandies() {
@@ -344,7 +387,7 @@ window.YL = window.YL || {};
       : '<p class="candy__about">' + g.about + '</p>';
 
     return '<div class="candy candy--group' + (q ? ' is-on' : '') + (full && !q ? ' is-full' : '') +
-      '" data-candy="' + g.id + '">' +
+      '" data-candy="' + g.id + '" data-drag="' + (g.lead || members[0].id) + '">' +
       '<span class="candy__tag candy__tag--mint">' + (g.tag || members.length + ' flavours') + '</span>' +
       '<div class="candy__art">' + YL.groupTile(g, members) +
       '<span class="candy__scoop">' + YL.PRICING.scoopOz + ' oz scoop</span>' +
@@ -499,7 +542,8 @@ window.YL = window.YL || {};
         ' aria-label="Add another scoop of ' + YL.esc(c.name) + '">' + YL.icon('plus') + '</button></div>'
       : '<button class="candy__add" data-add="' + c.id + '">' + YL.icon('plus') + ' Add scoop' +
         (c.extra ? ' · +' + YL.money(c.extra) : '') + '</button>';
-    return '<div class="candy' + (q ? ' is-on' : '') + (full && !q ? ' is-full' : '') + '" data-candy="' + c.id + '">' +
+    return '<div class="candy' + (q ? ' is-on' : '') + (full && !q ? ' is-full' : '') +
+      '" data-candy="' + c.id + '" data-drag="' + c.id + '">' +
       tag + '<div class="candy__art">' + YL.candyTile(c) + scoop + '</div>' +
       '<b>' + c.name + '</b><small>' + c.flavor + '</small>' +
       (c.about ? '<p class="candy__about">' + c.about + '</p>' : '') + control + '</div>';
@@ -763,6 +807,158 @@ window.YL = window.YL || {};
      everything that overwhelmed them. It now sits directly above the
      grid, as one compact row, so the way out is visible exactly where
      the choice gets heavy. */
+  /* ------------------------------------------------------------------ */
+  /* the tray — the box, laid out as cells you can drop candy into        */
+  /* ------------------------------------------------------------------ */
+
+  /* Columns are chosen so the grid stays a tidy rectangle at every
+     capacity, including the odd numbers the Extra Scoop add-on creates.
+     Phones get fewer columns so a cell never drops below a thumb. */
+  function trayCols(n) {
+    if (n <= 4) return { d: 2, m: 2 };
+    if (n <= 6) return { d: 3, m: 2 };
+    if (n <= 9) return { d: 3, m: 3 };
+    if (n <= 12) return { d: 4, m: 3 };
+    if (n <= 16) return { d: 4, m: 4 };
+    return { d: 5, m: 4 };
+  }
+
+  function renderTray() {
+    var list = cells();
+    var cap = list.length;
+    var cols = trayCols(cap);
+    var size = YL.getSize(box.size);
+    var filled = used();
+
+    var grid = list.map(function (id, i) {
+      var c = id ? YL.getCandy(id) : null;
+      if (!c) {
+        return '<button class="cell" data-cell="' + i + '" aria-label="Empty cell ' + (i + 1) +
+          '"><span class="cell__ghost">' + YL.icon('plus') + '</span></button>';
+      }
+      /* The candy photo is the cell. That is the whole illusion — you are
+         looking into the box, not at a list of what is in it. */
+      return '<button class="cell is-filled" data-cell="' + i + '" data-has="' + c.id + '" ' +
+        'aria-label="' + YL.esc(c.name) + ' — tap to empty this cell">' +
+        '<span class="cell__art">' + YL.candyTile(c, { w: 96, h: 96, px: 200 }) + '</span>' +
+        '<span class="cell__name">' + YL.esc(c.name) + '</span>' +
+        '<span class="cell__x">' + YL.icon('x') + '</span></button>';
+    }).join('');
+
+    return '<div class="tray' + (trayOpen ? ' is-open' : ' is-closed') + '" data-tray>' +
+      '<div class="tray__bar">' +
+      '<div class="tray__toggle" role="group" aria-label="Box view">' +
+      '<button class="tray__tab' + (trayOpen ? '' : ' is-on') + '" data-tray-view="closed">Closed</button>' +
+      '<button class="tray__tab' + (trayOpen ? ' is-on' : '') + '" data-tray-view="open">Open</button>' +
+      '</div>' +
+      '<span class="tray__count">' + filled + ' of ' + cap + ' cells</span>' +
+      '</div>' +
+
+      '<div class="tray__stage">' +
+      /* closed: the parcel as it arrives, so the size means something */
+      '<div class="tray__closed">' +
+      YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'tray' }) +
+      '<span class="tray__closednote">' + size.name + ' · ' + YL.weightLabel(size.oz) + '</span>' +
+      '</div>' +
+      /* open: the grid you actually fill */
+      '<div class="tray__open">' +
+      '<div class="tray__lid"><b>YUMMYLAND</b><small>' + YL.weightLabel(size.oz) + ' · ' + cap + ' cells</small></div>' +
+      '<div class="tray__grid" style="--cols:' + cols.d + ';--cols-m:' + cols.m + '" data-grid>' + grid + '</div>' +
+      '</div>' +
+      '</div>' +
+
+      '<p class="tray__hint">' + YL.icon('sparkle') +
+      ' Tap a candy below to drop it in the next free cell, or drag it straight onto the cell you want.</p>' +
+      '</div>';
+  }
+
+  function bindTray(host) {
+    $$('[data-tray-view]', host).forEach(function (b) {
+      b.addEventListener('click', function () {
+        trayOpen = b.dataset.trayView === 'open';
+        renderCandy();
+      });
+    });
+    $$('[data-cell]', host).forEach(function (el) {
+      el.addEventListener('click', function () {
+        var i = +el.dataset.cell;
+        if (el.dataset.has) { clearCell(i); renderAll(); return; }
+        /* an empty cell is a target, so if something is already picked up
+           by tap it lands here rather than in the next free slot */
+        if (heldCandy) { placeCandy(heldCandy, i); heldCandy = null; renderAll(); }
+      });
+    });
+    bindDrag(host);
+  }
+
+  /* ---------------- drag and drop ----------------
+     Pointer Events rather than HTML5 drag-and-drop, because the latter
+     does not exist on touch and this has to work on a phone first. A
+     press that never moves is left alone and becomes a click. */
+  function bindDrag(host) {
+    /* #step-candy is re-filled, never replaced, so a listener added here
+       survives every render. Binding per render stacked them up and one
+       drag ran N times — two swaps in a row look like nothing happened. */
+    if (host.__dragBound) return;
+    host.__dragBound = true;
+    var ghost = null, from = null, fromCell = null, startX = 0, startY = 0, dragging = false;
+
+    function onDown(e) {
+      var src = e.target.closest('[data-drag]') || e.target.closest('.cell.is-filled');
+      if (!src || e.button > 0) return;
+      from = src.getAttribute('data-drag') || src.getAttribute('data-has');
+      fromCell = src.hasAttribute('data-cell') ? +src.dataset.cell : null;
+      if (!from) return;
+      startX = e.clientX; startY = e.clientY; dragging = false;
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+    }
+
+    function onMove(e) {
+      if (!from) return;
+      if (!dragging) {
+        if (Math.abs(e.clientX - startX) < 6 && Math.abs(e.clientY - startY) < 6) return;
+        dragging = true;
+        var candy = YL.getCandy(from);
+        ghost = document.createElement('div');
+        ghost.className = 'dragghost';
+        ghost.innerHTML = candy ? YL.candyDot(candy, 62) : '';
+        document.body.appendChild(ghost);
+        document.body.classList.add('is-dragging');
+      }
+      ghost.style.transform = 'translate(' + (e.clientX - 31) + 'px,' + (e.clientY - 31) + 'px)';
+      var over = cellUnder(e.clientX, e.clientY);
+      $$('.cell', host).forEach(function (c) { c.classList.toggle('is-target', c === over); });
+      e.preventDefault();
+    }
+
+    function onUp(e) {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      $$('.cell', host).forEach(function (c) { c.classList.remove('is-target'); });
+      if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      document.body.classList.remove('is-dragging');
+      ghost = null;
+      if (dragging) {
+        var target = cellUnder(e.clientX, e.clientY);
+        if (target) {
+          var to = +target.dataset.cell;
+          if (fromCell != null) swapCells(fromCell, to);
+          else placeCandy(from, to);
+          renderAll();
+        }
+      }
+      from = null; fromCell = null; dragging = false;
+    }
+
+    function cellUnder(x, y) {
+      var el = document.elementFromPoint(x, y);
+      return el ? el.closest('[data-cell]') : null;
+    }
+
+    host.addEventListener('pointerdown', onDown);
+  }
+
   function quickMix() {
     return '<div class="quickmix"><span class="quickmix__label">' + YL.icon('sparkle') +
       'In a hurry? Fill it with</span>' +

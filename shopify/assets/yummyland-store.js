@@ -42,6 +42,46 @@ window.YL = window.YL || {};
     return n;
   };
 
+  /* ---------- cells ----------
+     A cell is the visual form of a scoop, not a second unit: one cell
+     holds exactly one 4 oz scoop, so a Medium box is eight cells and the
+     weight on the scale still matches what is on screen. Everything that
+     prices or ships the box keeps reading `candies`; `cells` only adds
+     the one thing a flat list cannot express, which is *where* a scoop
+     sits, so it can be dragged from one place to another.
+
+     A box that has never been arranged (a ready-made box, a saved draft
+     from before cells existed) expands its candies in order, so nothing
+     has to be migrated. */
+  function cellsFromCandies(box) {
+    var cells = [];
+    box.candies.forEach(function (c) {
+      for (var i = 0; i < c.qty; i++) cells.push(c.id);
+    });
+    return cells;
+  }
+
+  YL.boxCells = function (box) {
+    var cap = YL.boxCapacity(box);
+    var cells = box.cells ? box.cells.slice(0, cap) : cellsFromCandies(box).slice(0, cap);
+    while (cells.length < cap) cells.push(null);
+    return cells;
+  };
+
+  /* The only way cells are written. Candies are recomputed from them, so
+     the two can never drift apart. */
+  YL.setBoxCells = function (box, cells) {
+    box.cells = cells.slice();
+    var out = [], seen = {};
+    cells.forEach(function (id) {
+      if (!id) return;
+      if (seen[id] == null) { seen[id] = out.length; out.push({ id: id, qty: 0 }); }
+      out[seen[id]].qty++;
+    });
+    box.candies = out;
+    return box;
+  };
+
   YL.boxOzUsed = function (box) { return YL.boxScoopsUsed(box) * YL.PRICING.scoopOz; };
   YL.boxOzCapacity = function (box) { return YL.boxCapacity(box) * YL.PRICING.scoopOz; };
 

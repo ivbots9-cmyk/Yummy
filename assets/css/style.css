@@ -957,6 +957,152 @@ body.modal-open { overflow: hidden; }
 @media (max-width: 900px) { .rcandies { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 420px) { .rcandies { grid-template-columns: 1fr; } }
 
+/* ---------- hero photo ----------
+   A real face beats generated artwork in the hero, so the photo wins when
+   it exists and the SVG box is the fallback that keeps the page whole. */
+.hero__photo {
+  display: block; width: 100%; height: auto; max-width: 560px;
+  margin: 0 auto; border-radius: var(--radius-l);
+  filter: drop-shadow(0 24px 50px rgba(255, 30, 135, .28));
+}
+@media (max-width: 900px) {
+  .hero__photo { max-width: min(420px, 88%); }
+}
+
+/* =========================================================
+   The tray — the box drawn as cells you drop candy into
+   ========================================================= */
+/* Two columns on a wide screen so the box and the candy list share it:
+   dragging onto a chosen cell only works if both ends are on screen at
+   once, and stacking them put half a page between them. */
+.build2 { display: grid; gap: 22px; }
+@media (min-width: 900px) {
+  .build2 { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; }
+  .build2__tray { position: sticky; top: calc(var(--header-h) + 84px); }
+  /* Beside the box the list becomes a palette, not a shelf of marketing
+     cards: you are picking from it repeatedly, and every extra pixel of
+     card height is another cell that scrolls out of drag range. */
+  .build2__list .candies { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .build2__list .candy { padding: 8px; }
+  .build2__list .candy__about { display: none; }
+  .build2__list .candy b { font-size: 11.5px; margin-top: 7px; }
+  .build2__list .candy small { font-size: 10px; }
+  .build2__list .candy__photo, .build2__list .candy__collage { aspect-ratio: 1; }
+  .build2__list .candy__add { margin-top: 7px; padding: 7px 8px; font-size: 10.5px; }
+  .build2__list .candy__scoop { font-size: 8px; padding: 2px 6px; left: 4px; bottom: 4px; }
+  .build2__list .qty { margin-top: 7px; gap: 5px; }
+  .build2__list .qty span { font-size: 11px; }
+}
+.build2__list { min-width: 0; }
+
+.tray { margin: 0 0 18px; }
+.tray__bar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.tray__toggle {
+  display: inline-flex; padding: 3px; gap: 2px;
+  background: var(--pink-50); border-radius: 999px;
+}
+.tray__tab {
+  border: 0; background: transparent; color: var(--ink-60);
+  border-radius: 999px; padding: 7px 16px;
+  font-size: 11.5px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase;
+  transition: .15s;
+}
+.tray__tab.is-on { background: #fff; color: var(--pink-700); box-shadow: 0 2px 8px rgba(0, 0, 0, .1); }
+.tray__count {
+  margin-left: auto; font-size: 11.5px; font-weight: 900;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--ink-40);
+}
+
+.tray__stage {
+  border-radius: var(--radius-l); background: var(--pink-50);
+  border: 1px solid #ffd2e6; padding: 14px;
+}
+.tray.is-open .tray__closed,
+.tray.is-closed .tray__open { display: none; }
+.tray__closed { display: grid; place-items: center; padding: 8px 0 4px; }
+.tray__closed svg { width: min(340px, 100%); height: auto; }
+.tray__closednote {
+  margin-top: 6px; font-size: 12px; font-weight: 900;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--pink-700);
+}
+
+/* the lid flap, so the grid below reads as the inside of a box */
+.tray__lid {
+  display: flex; align-items: baseline; justify-content: center; gap: 10px;
+  background: linear-gradient(180deg, var(--pink), var(--pink-700));
+  color: #fff; border-radius: 12px 12px 0 0; padding: 9px 14px;
+}
+.tray__lid b { font-family: var(--display); font-size: 15px; font-weight: 900; letter-spacing: .1em; }
+.tray__lid small { font-size: 10.5px; font-weight: 800; opacity: .82; letter-spacing: .04em; }
+
+.tray__grid {
+  display: grid; grid-template-columns: repeat(var(--cols, 4), 1fr); gap: 8px;
+  padding: 10px; background: #fff;
+  border: 2px solid var(--pink); border-top: 0; border-radius: 0 0 14px 14px;
+}
+
+.cell {
+  position: relative; aspect-ratio: 1; padding: 0; overflow: hidden;
+  border: 2px dashed #ffc2dd; border-radius: 12px; background: #fff8fb;
+  display: grid; place-items: center; transition: .15s;
+}
+.cell__ghost { display: grid; place-items: center; color: #ffb2d5; }
+.cell__ghost svg { width: 22px; height: 22px; }
+.cell.is-filled { border-style: solid; border-color: var(--pink); background: #fff; }
+.cell__art { position: absolute; inset: 0; }
+.cell__art img, .cell__art svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* the name sits on a scrim so it stays readable over any photo */
+.cell__name {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
+  padding: 12px 4px 4px;
+  background: linear-gradient(180deg, rgba(28, 8, 20, 0), rgba(28, 8, 20, .78));
+  color: #fff; font-size: 8.5px; font-weight: 900; line-height: 1.2;
+  text-align: center; letter-spacing: .01em;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.cell__x {
+  position: absolute; top: 3px; right: 3px; z-index: 2;
+  width: 18px; height: 18px; display: grid; place-items: center;
+  background: rgba(28, 8, 20, .62); color: #fff; border-radius: 50%;
+  opacity: 0; transition: opacity .15s;
+}
+.cell__x svg { width: 10px; height: 10px; }
+.cell.is-filled:hover .cell__x, .cell.is-filled:focus-visible .cell__x { opacity: 1; }
+/* on touch there is no hover, so the remove affordance is always there */
+@media (hover: none) { .cell__x { opacity: .9; } }
+.cell.is-target {
+  border-color: var(--pink); border-style: solid;
+  box-shadow: 0 0 0 4px rgba(255, 30, 135, .22); transform: scale(1.06);
+}
+
+.tray__hint {
+  display: flex; align-items: flex-start; gap: 7px;
+  margin: 10px 2px 0; font-size: 11.5px; line-height: 1.45; color: var(--ink-40);
+}
+.tray__hint svg { flex: none; width: 14px; height: 14px; color: var(--pink); margin-top: 1px; }
+
+/* the thing that follows your finger */
+.dragghost {
+  position: fixed; left: 0; top: 0; z-index: 300; pointer-events: none;
+  width: 62px; height: 62px; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 12px 30px rgba(28, 8, 20, .35); border: 3px solid #fff;
+  transform: translate(-100px, -100px);
+}
+.dragghost img, .dragghost svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+body.is-dragging { user-select: none; -webkit-user-select: none; touch-action: none; }
+body.is-dragging .candy { cursor: grabbing; }
+.candy[data-drag] { cursor: grab; }
+
+@media (max-width: 700px) {
+  .tray__grid { grid-template-columns: repeat(var(--cols-m, 3), 1fr); gap: 6px; padding: 8px; }
+  .tray__stage { padding: 10px; }
+  .cell { border-radius: 10px; }
+  .cell__name { font-size: 8px; padding: 10px 3px 3px; }
+  .tray__bar { gap: 8px; }
+  .tray__tab { padding: 6px 12px; font-size: 11px; }
+  .tray__count { font-size: 10.5px; }
+}
+
 /* ---------- start over ---------- */
 /* Deliberately quiet next to the meter: it is the escape hatch from a
    full box, not something to invite on the way in. */
