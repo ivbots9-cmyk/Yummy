@@ -653,12 +653,10 @@ window.YL = window.YL || {};
         if (hasExtra(id)) box.extras = box.extras.filter(function (x) { return x !== id; });
         else box.extras.push(id);
         var e = YL.getExtra(id);
-        if (e && e.addsScoop) {
-          trimToFit();                       /* dropping it shrinks the box */
-          YL.toast(hasExtra(id)
-            ? 'Room for one more scoop — you can now pack ' + oz(slots()) + '.'
-            : 'Back to ' + oz(slots()) + '.');
-        }
+        /* No toast either way: the bonus cell appears or disappears on the
+           box, and the gauge, the lid and the cell count all move with it
+           in the same frame. */
+        if (e && e.addsScoop) trimToFit();   /* dropping it shrinks the box */
         persist();
         renderAll();
       });

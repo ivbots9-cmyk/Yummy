@@ -211,8 +211,8 @@
   animation: bob 3.4s ease-in-out infinite;
 }
 @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-12px) rotate(-2deg); } }
-@media (max-width: 900px) {.yummyland .hero__in { grid-template-columns: 1fr; padding: 26px 0 26px; }
-.yummyland .hero__art { order: -1; width: min(300px, 74%); margin: 0 auto; }}
+@media (max-width: 900px) {.yummyland .hero__in { grid-template-columns: 1fr; --hero-pad-b: 26px; padding: 26px 0 var(--hero-pad-b); }
+.yummyland .hero__art { order: 0; width: min(300px, 74%); margin: 0 auto; }}
 @media (max-width: 720px) {.yummyland .header__in { gap: 10px; }
 .yummyland .logo__sub { display: none; }
 .yummyland .logo__txt { font-size: 22px; }
@@ -837,15 +837,19 @@
 }
 .yummyland .hero__art picture { display: block; }
 @media (max-width: 900px) {.yummyland .hero__photo { max-width: 100%; }
-.yummyland .hero__art.has-photo { width: min(420px, 92%); }}
-@media (max-width: 560px) {.yummyland .hero__art.has-photo { width: min(300px, 78%); }
-.yummyland .hero__art.has-photo .float-badge { width: 66px; height: 66px; font-size: 8.5px; top: -4px; right: -2px; }
+.yummyland .hero__art.has-photo {
+    width: min(430px, 100%);
+    display: flex; align-items: flex-end; justify-content: center;
+    margin: 2px auto calc(-1 * var(--hero-pad-b));
+  }}
+@media (max-width: 560px) {.yummyland .hero__art.has-photo { width: min(400px, 100%); }
+.yummyland .hero__art.has-photo .float-badge { width: 66px; height: 66px; font-size: 8.5px; top: 2px; right: 2px; }
 .yummyland .lede__more { display: none; }
-.yummyland .hero__in { padding: 22px 0 20px; gap: 18px; }
+.yummyland .hero__in { --hero-pad-b: 20px; padding: 22px 0 var(--hero-pad-b); gap: 10px; }
 .yummyland .hero p.lede { margin: 10px 0 16px; }
 .yummyland .hero__cta { gap: 9px; }
 .yummyland .hero__proof { margin-top: 12px; }}
-@media (max-width: 380px) {.yummyland .hero__art.has-photo { width: min(260px, 74%); }}
+@media (max-width: 380px) {.yummyland .hero__art.has-photo { width: 100%; }}
 .yummyland .build2 { display: grid; gap: 22px; }
 @media (min-width: 900px) {.yummyland .build2 { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; }
 .yummyland .build2__tray { position: sticky; top: calc(var(--header-h) + 84px); }

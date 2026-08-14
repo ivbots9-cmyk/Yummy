@@ -284,12 +284,17 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-12px) rotate(-2deg); } }
 
 @media (max-width: 900px) {
-  .hero__in { grid-template-columns: 1fr; padding: 26px 0 26px; }
+  .hero__in { grid-template-columns: 1fr; --hero-pad-b: 26px; padding: 26px 0 var(--hero-pad-b); }
   /* Art leads on a phone — it says "candy box" before a word is read —
      but it is capped so the headline and the button stay above the fold.
      An uncapped illustration ate 590px of an 844px screen and pushed the
      primary call to action off it entirely. */
-  .hero__art { order: -1; width: min(300px, 74%); margin: 0 auto; }
+  /* Below the copy, not above it. On top she pushed the headline, the
+     promise and both buttons down the screen, so the first thing a phone
+     showed was a picture and the pitch started below the fold. Under
+     them she reads as the payoff — and rises out of the guarantees bar
+     the same way she does on a wide screen. */
+  .hero__art { order: 0; width: min(300px, 74%); margin: 0 auto; }
 }
 @media (max-width: 720px) {
   .header__in { gap: 10px; }
@@ -1118,23 +1123,30 @@ body.modal-open { overflow: hidden; }
    actually loaded, so the fallback keeps its own smaller cap. */
 @media (max-width: 900px) {
   .hero__photo { max-width: 100%; }
-  .hero__art.has-photo { width: min(420px, 92%); }
+  /* Bottom-aligned and pulled down by exactly the row's bottom padding,
+     so her feet land on the guarantees bar's top edge — the same rule as
+     the wide layout, and it holds however the copy reflows. */
+  .hero__art.has-photo {
+    width: min(430px, 100%);
+    display: flex; align-items: flex-end; justify-content: center;
+    margin: 2px auto calc(-1 * var(--hero-pad-b));
+  }
 }
 /* On a phone the hero has one job: show her, say what this is, and put the
    button in reach — all without scrolling. So the photo is sized to leave
    room for the headline, two lines of lede, both buttons and the rating,
    rather than taking whatever it likes. */
 @media (max-width: 560px) {
-  .hero__art.has-photo { width: min(300px, 78%); }
-  .hero__art.has-photo .float-badge { width: 66px; height: 66px; font-size: 8.5px; top: -4px; right: -2px; }
+  .hero__art.has-photo { width: min(400px, 100%); }
+  .hero__art.has-photo .float-badge { width: 66px; height: 66px; font-size: 8.5px; top: 2px; right: 2px; }
   .lede__more { display: none; }
-  .hero__in { padding: 22px 0 20px; gap: 18px; }
+  .hero__in { --hero-pad-b: 20px; padding: 22px 0 var(--hero-pad-b); gap: 10px; }
   .hero p.lede { margin: 10px 0 16px; }
   .hero__cta { gap: 9px; }
   .hero__proof { margin-top: 12px; }
 }
 @media (max-width: 380px) {
-  .hero__art.has-photo { width: min(260px, 74%); }
+  .hero__art.has-photo { width: 100%; }
 }
 
 /* =========================================================
