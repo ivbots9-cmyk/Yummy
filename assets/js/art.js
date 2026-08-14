@@ -306,6 +306,35 @@ window.YL = window.YL || {};
     }).join('') + '</span>';
   };
 
+  /* ---------- the spill between the hero and the builder ----------
+     That seam was a flat band of pink doing nothing. Rather than decorate
+     the emptiness, this puts candy across the join so the marketing half
+     appears to spill into the tool half. Deliberately low contrast: it is
+     texture, not content, and it bobs rather than races. */
+  YL.seamCandy = function () {
+    var bits = [
+      { shape: 'bear', colors: { a: '#ff4757' }, x: 4, s: 30, d: 0 },
+      { shape: 'ring', colors: { a: '#ffb26b' }, x: 12, s: 24, d: 1.4 },
+      { shape: 'ball', colors: { a: '#3fb8ff' }, x: 19, s: 20, d: 2.7 },
+      { shape: 'worm', colors: { a: '#4cd964', b: '#ffd23f' }, x: 27, s: 32, d: .6 },
+      { shape: 'bean', colors: { a: '#a76bff' }, x: 35, s: 20, d: 3.1 },
+      { shape: 'ring', colors: { a: '#4bb9ff' }, x: 43, s: 26, d: 1.9 },
+      { shape: 'bear', colors: { a: '#ffd23f' }, x: 51, s: 28, d: 2.2 },
+      { shape: 'ball', colors: { a: '#ff2e8b' }, x: 59, s: 22, d: .3 },
+      { shape: 'worm', colors: { a: '#ff6fb0', b: '#3fb8ff' }, x: 67, s: 30, d: 2.9 },
+      { shape: 'bean', colors: { a: '#a8e05f' }, x: 75, s: 20, d: 1.1 },
+      { shape: 'ring', colors: { a: '#ff8f6b' }, x: 83, s: 26, d: 3.4 },
+      { shape: 'bear', colors: { a: '#4cd964' }, x: 91, s: 28, d: 1.7 },
+      { shape: 'ball', colors: { a: '#ffd23f' }, x: 97, s: 18, d: 2.4 }
+    ];
+    return bits.map(function (b, i) {
+      return '<span class="seam__bit" style="left:' + b.x + '%;animation-delay:-' + b.d + 's;' +
+        'animation-duration:' + (5.5 + (i % 4) * 1.3) + 's">' +
+        '<svg viewBox="-16 -16 32 32" width="' + b.s + '" height="' + b.s + '">' +
+        piece(b.shape, b.colors) + '</svg></span>';
+    }).join('');
+  };
+
   /* ---------- little round swatch (used in lists) ---------- */
   YL.candyDot = function (candy, size) {
     var s = size || 40;

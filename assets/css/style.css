@@ -207,13 +207,53 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 .hero__proof .proof { justify-content: flex-start; }
 /* The trust strip rides on the hero's own gradient so the fold reads as
    one screen you are scrolling through, not a second section. */
-.hero__trust { padding-bottom: 46px; }
+.hero__trust { padding-bottom: 28px; position: relative; z-index: 2; }
+
+/* ---------- the seam between the hero and the builder ----------
+   The hero and the builder already share a colour here, so the join was
+   never a hard edge — it was 72px of flat pink with nothing in it. The
+   candy straddles the boundary so the marketing half spills into the tool
+   half, and the negative margin lets it sit over both. */
+.seam {
+  position: relative; z-index: 1; height: 54px; margin-bottom: -18px;
+  overflow: hidden; pointer-events: none;
+}
+.seam__bit {
+  position: absolute; top: 50%; opacity: .5;
+  animation-name: seamBob; animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite; animation-direction: alternate;
+}
+.seam__bit svg { display: block; filter: drop-shadow(0 2px 4px rgba(196, 22, 104, .16)); }
+@keyframes seamBob {
+  from { transform: translate(-50%, -60%) rotate(-8deg); }
+  to   { transform: translate(-50%, -34%) rotate(10deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seam__bit { animation: none; transform: translate(-50%, -50%); }
+}
+@media (max-width: 700px) {
+  .seam { height: 40px; margin-bottom: -14px; }
+  .seam__bit:nth-child(even) { display: none; }
+}
 .hero__usps { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 34px; }
 .usp { display: flex; align-items: center; gap: 10px; }
 .usp svg { width: 30px; height: 30px; color: var(--pink); flex: none; }
 .usp b { display: block; font-size: 12.5px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
 .usp span { font-size: 12.5px; color: var(--ink-60); }
 .hero__art { position: relative; }
+/* On a wide screen the photo used to stop 130px above the guarantees bar
+   and leave a hole. It now sits on the bottom of its column and slides far
+   enough down that the bar crosses her, so she reads as standing behind it
+   rather than being cut off above it. */
+@media (min-width: 901px) {
+  .hero__art { display: flex; align-items: flex-end; justify-content: center; }
+  /* Wider than her column and pushed below it: the guarantees bar then
+     crosses her legs and she reads as standing behind it. .hero clips the
+     overflow, so the extra width bleeds toward the edge rather than
+     widening the page. */
+  .hero__art.has-photo { margin-bottom: -104px; }
+  .hero__art.has-photo .hero__photo { max-width: none; width: 116%; }
+}
 .hero__art .float-badge {
   position: absolute; top: 6%; right: 4%;
   width: 96px; height: 96px; border-radius: 50%;
@@ -244,7 +284,7 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 }
 
 /* ---------- builder ---------- */
-.builder { padding: 26px 0 80px; background: linear-gradient(180deg, #ffeef6 0%, #fff 260px); }
+.builder { padding: 16px 0 80px; background: linear-gradient(180deg, #ffeef6 0%, #fff 260px); }
 
 .steps {
   position: sticky; top: var(--header-h); z-index: 40;
@@ -988,7 +1028,11 @@ body.modal-open { overflow: hidden; }
   70%  { opacity: .95; }
   100% { transform: translate3d(14px, 300px, 0) rotate(190deg); opacity: 0; }
 }
-.hero__art > *:not(.hero__fall) { position: relative; z-index: 1; }
+/* Lift only the picture above the falling pieces. A blanket rule here also
+   hit the float badge and overrode its absolute positioning, which dropped
+   it out of the corner and into the flex row. */
+.hero__art > picture, .hero__art > #hero-box { position: relative; z-index: 1; }
+.hero__art > .float-badge { z-index: 3; }
 @media (prefers-reduced-motion: reduce) {
   .hero__fall { display: none; }
 }
