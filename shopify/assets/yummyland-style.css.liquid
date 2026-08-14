@@ -607,8 +607,12 @@
 .yummyland .candy b { font-size: 12.5px; }
 .yummyland .filters { gap: 6px; }
 .yummyland .filter { padding: 7px 12px; font-size: 11px; }
-.yummyland .filters:not(.filters--diet) { flex-wrap: nowrap; justify-content: space-between; }
-.yummyland .filters:not(.filters--diet) .filter { padding: 7px 9px; letter-spacing: .04em; white-space: nowrap; }
+.yummyland .filters:not(.filters--diet) {
+    flex-wrap: nowrap; justify-content: space-between;
+    overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+  }
+.yummyland .filters:not(.filters--diet)::-webkit-scrollbar { display: none; }
+.yummyland .filters:not(.filters--diet) .filter { padding: 7px 9px; letter-spacing: .04em; white-space: nowrap; flex: none; }
 .yummyland .vibes { grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .yummyland .extras { grid-template-columns: 1fr; }
 .yummyland .panel__body { padding: 16px; }
@@ -641,7 +645,9 @@
 .yummyland .vibes { grid-template-columns: repeat(2, 1fr); }
 .yummyland .chips { gap: 5px; }
 .yummyland .chip { font-size: 11.5px; }}
-@media (max-width: 400px) {.yummyland .sizes { grid-template-columns: 1fr 1fr; }
+@media (max-width: 400px) {.yummyland .filters:not(.filters--diet) { gap: 3px; }
+.yummyland .filters:not(.filters--diet) .filter { padding: 7px 5px; font-size: 9.5px; letter-spacing: 0; }
+.yummyland .sizes { grid-template-columns: 1fr 1fr; }
 .yummyland .candies { gap: 8px; }
 .yummyland .btn { padding: 12px 20px; font-size: 13px; }
 .yummyland .btn--lg { padding: 15px 24px; font-size: 14px; }}

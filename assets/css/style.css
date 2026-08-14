@@ -748,9 +748,16 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
   .filters { gap: 6px; }
   .filter { padding: 7px 12px; font-size: 11px; }
   /* The five category chips have to land on one line — a lone "Classics"
-     wrapping under the row reads as a stray button rather than a filter. */
-  .filters:not(.filters--diet) { flex-wrap: nowrap; justify-content: space-between; }
-  .filters:not(.filters--diet) .filter { padding: 7px 9px; letter-spacing: .04em; white-space: nowrap; }
+     wrapping under the row reads as a stray button rather than a filter.
+     overflow-x is the guard: below ~366px they simply do not fit, and
+     without it the row pushed the whole page sideways, which drags the
+     sticky header off to one side with it. */
+  .filters:not(.filters--diet) {
+    flex-wrap: nowrap; justify-content: space-between;
+    overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .filters:not(.filters--diet)::-webkit-scrollbar { display: none; }
+  .filters:not(.filters--diet) .filter { padding: 7px 9px; letter-spacing: .04em; white-space: nowrap; flex: none; }
 
   .vibes { grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .extras { grid-template-columns: 1fr; }
@@ -797,6 +804,10 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 }
 
 @media (max-width: 400px) {
+  /* tighten the chips enough that all five still fit a 320px screen */
+  .filters:not(.filters--diet) { gap: 3px; }
+  .filters:not(.filters--diet) .filter { padding: 7px 5px; font-size: 9.5px; letter-spacing: 0; }
+
   .sizes { grid-template-columns: 1fr 1fr; }
   .candies { gap: 8px; }
   .btn { padding: 12px 20px; font-size: 13px; }

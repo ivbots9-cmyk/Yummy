@@ -37,7 +37,6 @@ window.YL = window.YL || {};
       }).join('') +
       '</nav>' +
       '<div class="header__tools">' +
-      '<a class="icon-btn" href="boxes.html" aria-label="Search boxes">' + YL.icon('search') + '</a>' +
       '<a class="icon-btn" href="about.html" aria-label="Account">' + YL.icon('user') + '</a>' +
       '<a class="icon-btn" href="cart.html" aria-label="Cart">' + YL.icon('cart') +
       '<span class="cart-count" data-cart-count hidden>0</span></a>' +
