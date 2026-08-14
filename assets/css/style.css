@@ -987,9 +987,21 @@ body.modal-open { overflow: hidden; }
   .hero__photo { max-width: 100%; }
   .hero__art.has-photo { width: min(420px, 92%); }
 }
+/* On a phone the hero has one job: show her, say what this is, and put the
+   button in reach — all without scrolling. So the photo is sized to leave
+   room for the headline, two lines of lede, both buttons and the rating,
+   rather than taking whatever it likes. */
 @media (max-width: 560px) {
-  .hero__art.has-photo { width: min(380px, 94%); }
-  .hero__art.has-photo .float-badge { width: 72px; height: 72px; font-size: 9px; top: -6px; right: -4px; }
+  .hero__art.has-photo { width: min(300px, 78%); }
+  .hero__art.has-photo .float-badge { width: 66px; height: 66px; font-size: 8.5px; top: -4px; right: -2px; }
+  .lede__more { display: none; }
+  .hero__in { padding: 22px 0 20px; gap: 18px; }
+  .hero p.lede { margin: 10px 0 16px; }
+  .hero__cta { gap: 9px; }
+  .hero__proof { margin-top: 12px; }
+}
+@media (max-width: 380px) {
+  .hero__art.has-photo { width: min(260px, 74%); }
 }
 
 /* =========================================================

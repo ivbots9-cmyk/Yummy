@@ -780,8 +780,14 @@
 .yummyland .hero__art picture { display: block; }
 @media (max-width: 900px) {.yummyland .hero__photo { max-width: 100%; }
 .yummyland .hero__art.has-photo { width: min(420px, 92%); }}
-@media (max-width: 560px) {.yummyland .hero__art.has-photo { width: min(380px, 94%); }
-.yummyland .hero__art.has-photo .float-badge { width: 72px; height: 72px; font-size: 9px; top: -6px; right: -4px; }}
+@media (max-width: 560px) {.yummyland .hero__art.has-photo { width: min(300px, 78%); }
+.yummyland .hero__art.has-photo .float-badge { width: 66px; height: 66px; font-size: 8.5px; top: -4px; right: -2px; }
+.yummyland .lede__more { display: none; }
+.yummyland .hero__in { padding: 22px 0 20px; gap: 18px; }
+.yummyland .hero p.lede { margin: 10px 0 16px; }
+.yummyland .hero__cta { gap: 9px; }
+.yummyland .hero__proof { margin-top: 12px; }}
+@media (max-width: 380px) {.yummyland .hero__art.has-photo { width: min(260px, 74%); }}
 .yummyland .build2 { display: grid; gap: 22px; }
 @media (min-width: 900px) {.yummyland .build2 { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; }
 .yummyland .build2__tray { position: sticky; top: calc(var(--header-h) + 84px); }
