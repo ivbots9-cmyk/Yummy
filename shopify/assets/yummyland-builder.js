@@ -822,19 +822,19 @@ window.YL = window.YL || {};
   /* the tray — the box, laid out as cells you can drop candy into        */
   /* ------------------------------------------------------------------ */
 
-  /* Every row has to be full. Three columns turned the 8-cell medium box
-     into 3 + 3 + 2, and a short last row reads as candy that failed to
-     fit rather than as a box laid out on purpose. So the column count is
-     always an exact divisor of the capacity: 4 -> 2x2, 8 -> 2x4,
-     12 -> 4x3, 20 -> 5x4. */
+  /* Every row has to be full, and the box should be wider than it is
+     tall. Three columns turned the 8-cell medium box into 3 + 3 + 2,
+     and a short last row reads as candy that failed to fit rather than
+     as a box laid out on purpose; two columns fixed the rows but made
+     the box a long narrow tower. So: the widest divisor of the capacity
+     that still leaves at least two rows. 4 -> 2x2, 8 -> 4x2, 12 -> 4x3,
+     20 -> 5x4. */
   function trayCols(n) {
-    var c = 2;
-    if (n >= 20 && n % 5 === 0) c = 5;
-    else if (n >= 12 && n % 4 === 0) c = 4;
-    else if (n % 2 === 0) c = 2;
-    else if (n % 3 === 0) c = 3;
-    else c = Math.min(n, 4); /* a prime capacity cannot be tidy; stay narrow */
-    return { d: c, m: c };
+    for (var c = 5; c > 1; c--) {
+      if (n % c === 0 && n / c >= 2) return { d: c, m: c };
+    }
+    /* a prime capacity has no tidy rectangle; stay wide and accept it */
+    return { d: Math.min(n, 4), m: Math.min(n, 4) };
   }
 
   function renderTray() {
