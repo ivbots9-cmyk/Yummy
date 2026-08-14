@@ -267,10 +267,10 @@ window.YL = window.YL || {};
         '<span class="badge' + (full ? ' badge--full' : '') + '">' + oz(used()) + ' / ' + oz(slots()) + '</span>' +
         (used() > 0 ? '<button class="link-btn link-btn--reset" data-reset>' +
           YL.icon('x') + 'Start over</button>' : '')) +
-      quickMix() +
       '<div class="build2">' +
       '<div class="build2__tray">' + renderTray() + '</div>' +
       '<div class="build2__list">' +
+      quickMix() +
       '<div class="filters">' + YL.CATEGORIES.map(function (c) {
         return '<button class="filter' + (c.id === filter ? ' is-on' : '') + '" data-filter="' + c.id + '">' + c.name + '</button>';
       }).join('') + '</div>' +
@@ -816,12 +816,15 @@ window.YL = window.YL || {};
      capacity, including the odd numbers the Extra Scoop add-on creates.
      Phones get fewer columns so a cell never drops below a thumb. */
   function trayCols(n) {
+    /* Wider than tall on a phone. The box has to leave room for the candy
+       list underneath on a 390x844 screen, and a tall grid is what pushed
+       the list off the bottom. */
     if (n <= 4) return { d: 2, m: 2 };
-    if (n <= 6) return { d: 3, m: 2 };
+    if (n <= 6) return { d: 3, m: 3 };
     if (n <= 9) return { d: 3, m: 3 };
-    if (n <= 12) return { d: 4, m: 3 };
+    if (n <= 12) return { d: 4, m: 4 };
     if (n <= 16) return { d: 4, m: 4 };
-    return { d: 5, m: 4 };
+    return { d: 5, m: 5 };
   }
 
   function renderTray() {
@@ -869,7 +872,9 @@ window.YL = window.YL || {};
       '</div>' +
 
       '<p class="tray__hint">' + YL.icon('sparkle') +
-      ' Tap a candy below to drop it in the next free cell, or drag it straight onto the cell you want.</p>' +
+      '<span class="tray__hint--long">Tap a candy below to drop it in the next free cell, ' +
+      'or drag it straight onto the cell you want.</span>' +
+      '<span class="tray__hint--short">Tap a candy to drop it in. Tap a filled cell to empty it.</span></p>' +
       '</div>';
   }
 
@@ -896,6 +901,14 @@ window.YL = window.YL || {};
      Pointer Events rather than HTML5 drag-and-drop, because the latter
      does not exist on touch and this has to work on a phone first. A
      press that never moves is left alone and becomes a click. */
+  /* ---------------- drag, mouse only ----------------
+     Touch does not drag here, deliberately. A finger that starts on a card
+     and then scrolls makes the browser take the gesture and fire
+     pointercancel, not pointerup — which stranded the floating ghost on
+     screen, one per attempt, until the page was reloaded. Suppressing the
+     scroll to prevent that would cost more than the feature is worth on a
+     phone, where tapping already places a scoop in one go. So: mouse drags,
+     fingers tap, and nothing can be left behind. */
   function bindDrag(host) {
     /* #step-candy is re-filled, never replaced, so a listener added here
        survives every render. Binding per render stacked them up and one
@@ -904,15 +917,30 @@ window.YL = window.YL || {};
     host.__dragBound = true;
     var ghost = null, from = null, fromCell = null, startX = 0, startY = 0, dragging = false;
 
+    /* Belt and braces: whatever happens, no ghost outlives its drag. */
+    function cleanup() {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onCancel);
+      window.removeEventListener('blur', onCancel);
+      $$('.cell', host).forEach(function (c) { c.classList.remove('is-target'); });
+      $$('.dragghost').forEach(function (g) { if (g.parentNode) g.parentNode.removeChild(g); });
+      document.body.classList.remove('is-dragging');
+      ghost = null; from = null; fromCell = null; dragging = false;
+    }
+
     function onDown(e) {
+      if (e.pointerType === 'touch' || e.button > 0) return;
       var src = e.target.closest('[data-drag]') || e.target.closest('.cell.is-filled');
-      if (!src || e.button > 0) return;
+      if (!src) return;
       from = src.getAttribute('data-drag') || src.getAttribute('data-has');
-      fromCell = src.hasAttribute('data-cell') ? +src.dataset.cell : null;
       if (!from) return;
+      fromCell = src.hasAttribute('data-cell') ? +src.dataset.cell : null;
       startX = e.clientX; startY = e.clientY; dragging = false;
       document.addEventListener('pointermove', onMove);
       document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onCancel);
+      window.addEventListener('blur', onCancel);
     }
 
     function onMove(e) {
@@ -920,6 +948,7 @@ window.YL = window.YL || {};
       if (!dragging) {
         if (Math.abs(e.clientX - startX) < 6 && Math.abs(e.clientY - startY) < 6) return;
         dragging = true;
+        $$('.dragghost').forEach(function (g) { if (g.parentNode) g.parentNode.removeChild(g); });
         var candy = YL.getCandy(from);
         ghost = document.createElement('div');
         ghost.className = 'dragghost';
@@ -933,23 +962,17 @@ window.YL = window.YL || {};
       e.preventDefault();
     }
 
+    function onCancel() { cleanup(); }
+
     function onUp(e) {
-      document.removeEventListener('pointermove', onMove);
-      document.removeEventListener('pointerup', onUp);
-      $$('.cell', host).forEach(function (c) { c.classList.remove('is-target'); });
-      if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
-      document.body.classList.remove('is-dragging');
-      ghost = null;
-      if (dragging) {
-        var target = cellUnder(e.clientX, e.clientY);
-        if (target) {
-          var to = +target.dataset.cell;
-          if (fromCell != null) swapCells(fromCell, to);
-          else placeCandy(from, to);
-          renderAll();
-        }
+      var wasDragging = dragging, src = from, srcCell = fromCell;
+      var target = wasDragging ? cellUnder(e.clientX, e.clientY) : null;
+      cleanup();
+      if (wasDragging && target) {
+        var to = +target.dataset.cell;
+        if (srcCell != null) swapCells(srcCell, to); else placeCandy(src, to);
+        renderAll();
       }
-      from = null; fromCell = null; dragging = false;
     }
 
     function cellUnder(x, y) {
