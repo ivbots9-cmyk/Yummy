@@ -127,6 +127,9 @@ window.YL = window.YL || {};
        it goes) with nothing hidden off the edge. */
     host.innerHTML =
       '<div class="steps__now"><b data-now-n></b><span data-now-t></span>' +
+      /* The compact bar says where you are but not where you are going,
+         which on a phone is the only thing off screen. */
+      '<em class="steps__next" data-now-next></em>' +
       '<i class="steps__bar"><s data-now-bar></s></i></div>' +
       STEPS.map(function (s, i) {
         return '<button class="step-chip" data-goto="' + s.id + '" data-step="' + i + '">' +
@@ -169,6 +172,15 @@ window.YL = window.YL || {};
     if (n) n.textContent = 'Step ' + (active + 1) + ' of ' + STEPS.length;
     if (t) t.textContent = STEPS[active].t;
     if (bar) bar.style.width = ((active + 1) / STEPS.length * 100) + '%';
+
+    /* Review is the last step — there is nothing to promise after it, so
+       the hint goes rather than pointing at nothing. */
+    var nx = $('[data-now-next]');
+    if (nx) {
+      var after = STEPS[active + 1];
+      nx.textContent = after ? '\u2192 next (' + after.t + ')' : '';
+      nx.hidden = !after;
+    }
 
     /* On the widths where the chips do still scroll, keep the live one
        in view so the strip visibly follows along. */

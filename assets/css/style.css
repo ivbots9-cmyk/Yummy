@@ -309,8 +309,12 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
   position: sticky; top: var(--header-h); z-index: 40;
   display: flex; align-items: center; gap: 6px;
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius-l);
-  padding: 12px; margin-bottom: 26px; box-shadow: var(--shadow-s);
+  padding: 12px; margin: 0 auto 26px; box-shadow: var(--shadow-s);
   overflow-x: auto; scrollbar-width: none;
+  /* Same width as the cards it steps through. At full .wrap width it was
+     the same shape as the guarantees bar above it, so the two read as one
+     repeated element rather than as a header and its contents. */
+  max-width: 900px;
 }
 .steps::-webkit-scrollbar { display: none; }
 .step-chip {
@@ -331,6 +335,7 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 .step-chip.is-done .step-chip__n { background: var(--mint); color: #fff; }
 .steps__sep { flex: none; width: 26px; height: 2px; background: var(--line); border-radius: 2px; }
 .steps__now { display: none; }
+.steps__next { display: none; }
 @media (max-width: 780px) { .steps__sep { display: none; } }
 @media (max-width: 900px) {
   .steps { padding: 11px 14px; gap: 0; overflow: hidden; }
@@ -342,6 +347,12 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
     font-size: 11px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; color: var(--pink);
   }
   .steps__now span { font-size: 13.5px; font-weight: 800; }
+  /* Grey and quiet: it is a signpost, not a second title. */
+  .steps__next {
+    display: block; grid-column: 2; font-style: normal;
+    font-size: 11.5px; font-weight: 700; color: var(--ink-40); letter-spacing: .01em;
+  }
+  .steps__next[hidden] { display: none; }
   .steps__bar {
     grid-column: 1 / -1; margin-top: 7px;
     display: block; height: 5px; border-radius: 999px; background: var(--pink-100); overflow: hidden;
@@ -469,15 +480,22 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 .more-row { display: flex; justify-content: center; margin-top: 18px; }
 
 /* vibes */
-.vibes { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 12px; }
+/* Eight vibes. auto-fit at 104px fitted seven of them and dropped the
+   eighth onto a line of its own, wasting a whole row to say "Surprise
+   Me". The count is fixed instead, so a row is always full: eight across
+   once the card is wide enough, four and four below that. */
+.vibes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 941px) {
+  .vibes { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 9px; }
+}
 .vibe {
   border: 2px solid var(--line); border-radius: var(--radius); background: #fff;
-  padding: 14px 8px; text-align: center; transition: .16s;
+  padding: 14px 6px; text-align: center; transition: .16s;
 }
 .vibe:hover { border-color: #ffb2d5; transform: translateY(-3px); }
 .vibe.is-on { border-color: var(--pink); background: var(--pink-50); }
-.vibe svg { width: 30px; height: 30px; margin: 0 auto 8px; color: var(--pink); }
-.vibe b { font-size: 12px; font-weight: 900; }
+.vibe svg { width: 28px; height: 28px; margin: 0 auto 7px; color: var(--pink); }
+.vibe b { font-size: 12.5px; font-weight: 900; line-height: 1.25; }
 
 /* extras */
 .extras { display: grid; grid-template-columns: repeat(auto-fit, minmax(196px, 1fr)); gap: 12px; }
@@ -726,13 +744,27 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 .page-head p { color: var(--ink-60); max-width: 560px; margin: 12px auto 0; }
 
 .toast {
-  position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 130%);
+  position: fixed; left: 50%; bottom: var(--toast-bottom, 26px);
+  transform: translate(-50%, var(--toast-hide, 130%));
   background: var(--ink); color: #fff; border-radius: 999px; padding: 13px 24px;
   font-weight: 800; font-size: 14px; z-index: 200; box-shadow: var(--shadow-l);
   display: flex; align-items: center; gap: 10px; transition: transform .32s cubic-bezier(.2, .9, .3, 1.2);
   max-width: calc(100% - 40px);
 }
 .toast.is-on { transform: translate(-50%, 0); }
+/* A toast anchored to the bottom lands on top of anything else anchored
+   there — the mobile cart bar, and the flavour sheet's footer buttons,
+   which it covered completely. It clears the cart bar, and while a sheet
+   owns the screen it moves to the top instead, where a bottom sheet can
+   never reach it. */
+/* Only lift for the cart bar on the widths that actually have one. */
+@media (max-width: 1080px) {
+  body.has-mbar { --toast-bottom: calc(88px + env(safe-area-inset-bottom)); }
+}
+body.no-scroll .toast {
+  top: calc(var(--header-h) + 14px); bottom: auto; z-index: 220;
+  --toast-hide: -180%;
+}
 .toast svg { width: 20px; height: 20px; color: #6ee7c4; flex: none; }
 
 .pop { animation: pop .35s ease; }
@@ -1340,8 +1372,6 @@ body.modal-open { overflow: hidden; }
 
 /* ---------- the picker sheet ---------- */
 body.no-scroll { overflow: hidden; }
-/* the toast must clear the sheet's Done button, not hide under it */
-body.no-scroll .toast { bottom: 92px; z-index: 220; }
 .fsheet { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; }
 .fsheet__back { position: absolute; inset: 0; background: rgba(28, 8, 20, .55); backdrop-filter: blur(2px); }
 .fsheet__panel {
