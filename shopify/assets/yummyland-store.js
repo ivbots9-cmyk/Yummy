@@ -23,7 +23,11 @@ window.YL = window.YL || {};
 
   /* ---------- box model ---------- */
   YL.emptyBox = function () {
-    return { size: 'medium', candies: [], extras: [], color: 'pink', vibe: 'me', note: '', prefs: '' };
+    /* No vibe until one is picked. Defaulting to 'me' pre-selected a card
+       nobody had chosen and lit step 3 as done from the first render. The
+       step is optional, and everything that reads a vibe already copes
+       with there not being one. */
+    return { size: 'medium', candies: [], extras: [], color: 'pink', vibe: null, note: '', prefs: '' };
   };
 
   /* ---------- weight ----------

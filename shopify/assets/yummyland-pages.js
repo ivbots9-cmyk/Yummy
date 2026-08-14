@@ -63,7 +63,7 @@ window.YL = window.YL || {};
       size: pb.size,
       candies: YL.prebuiltScoops(pb),
       extras: (pb.extras || []).slice(),
-      color: pb.color, vibe: pb.vibe || 'me', note: '', prefs: '', title: pb.name
+      color: pb.color, vibe: pb.vibe || null, note: '', prefs: '', title: pb.name
     };
   };
 

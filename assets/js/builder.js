@@ -126,10 +126,12 @@ window.YL = window.YL || {};
        of 5" with a bar instead — same job (you are here, this is how far
        it goes) with nothing hidden off the edge. */
     host.innerHTML =
-      '<div class="steps__now"><b data-now-n></b><span data-now-t></span>' +
       /* The compact bar says where you are but not where you are going,
-         which on a phone is the only thing off screen. */
-      '<em class="steps__next" data-now-next></em>' +
+         which on a phone is the only thing off screen. The hint rides on
+         the same line as the step name — there is room to its right, and
+         a line of its own made the sticky bar taller than it needs. */
+      '<div class="steps__now"><b data-now-n></b>' +
+      '<span data-now-t></span><em class="steps__next" data-now-next></em>' +
       '<i class="steps__bar"><s data-now-bar></s></i></div>' +
       STEPS.map(function (s, i) {
         return '<button class="step-chip" data-goto="' + s.id + '" data-step="' + i + '">' +
@@ -178,7 +180,11 @@ window.YL = window.YL || {};
     var nx = $('[data-now-next]');
     if (nx) {
       var after = STEPS[active + 1];
-      nx.textContent = after ? '\u2192 next (' + after.t + ')' : '';
+      /* "next" is the first thing to go on a 320px screen — the arrow
+         already says it, and the step name is the part worth keeping. */
+      nx.innerHTML = after
+        ? '\u2192 <i>next </i>(' + YL.esc(after.t) + ')'
+        : '';
       nx.hidden = !after;
     }
 
@@ -239,7 +245,7 @@ window.YL = window.YL || {};
           '<span class="price">' + YL.money(s.price) + '</span></button>';
       }).join('') + '</div>' +
       '<div class="capacity">' +
-      '<b>' + size.name + ' · ' + YL.weightLabel(size.oz) + ' of candy</b>' +
+      '<b>' + size.name + ' · ' + oz(slots()) + ' of candy</b>' +
       '<span class="meter"><i style="width:' + pct + '%"></i></span>' +
       '<span class="count">' + oz(used()) + ' / ' + oz(slots()) + '</span></div>';
 
@@ -380,7 +386,9 @@ window.YL = window.YL || {};
     renderAll();
     var sheet = $('.fsheet');
     if (sheet) drawFlavors(YL.getGroup(sheet.getAttribute('data-group')));
-    YL.toast('Box emptied — pick your ' + oz(slots()) + ' again.');
+    /* No toast. The box goes visibly empty and the gauge drops to zero in
+       the same frame, so a banner over the buttons only repeats what the
+       screen already showed. */
   }
 
   /* ------------------------------------------------------------------ */
@@ -701,7 +709,7 @@ window.YL = window.YL || {};
       '<div class="review-grid" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px">' +
       '<div>' + YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'review' }) + '</div>' +
       '<div>' +
-      row('Box size', size.name + ' · ' + YL.weightLabel(size.oz) + ' · ' + size.serves, 'step-size') +
+      row('Box size', size.name + ' · ' + oz(slots()) + ' · ' + size.serves, 'step-size') +
       row('Fill weight', oz(used()) + ' of ' + oz(slots()) +
         (left() > 0 ? ' <span class="warn">— ' + oz(left()) + ' still empty</span>' : ' — packed full'), 'step-candy') +
       (used() ? rowBlock('Candies', reviewCandies(), 'step-candy')
@@ -778,7 +786,7 @@ window.YL = window.YL || {};
 
     host.innerHTML =
       '<div class="panel__head"><h3>Your box preview</h3>' +
-      '<span class="badge">' + YL.weightLabel(size.oz) + '</span></div>' +
+      '<span class="badge">' + oz(slots()) + '</span></div>' +
       '<div class="panel__stage">' + YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'panel' }) + '</div>' +
       '<div class="panel__body">' +
       '<div class="capacity" style="margin:0 0 14px"><b>' + oz(used()) + ' / ' + oz(slots()) + '</b>' +
@@ -848,12 +856,18 @@ window.YL = window.YL || {};
   function renderTray() {
     var list = cells();
     var cap = list.length;
-    var cols = trayCols(cap);
     var size = YL.getSize(box.size);
+    /* Columns come from the box's own scoop count, not from the total.
+       The Extra Scoop add-on pushes a Party box to 21, and no tidy
+       rectangle exists for 21 — laying the whole lot out together turned
+       every size into a ragged grid. The bought scoops keep their shape
+       and the add-on sits below as what it is: a bonus. */
+    var base = Math.min(size.scoops, cap);
+    var cols = trayCols(base);
     var filled = used();
     var pct = slots() ? Math.min(100, (used() / slots()) * 100) : 0;
 
-    var grid = list.map(function (id, i) {
+    function cellHtml(id, i) {
       var c = id ? YL.getCandy(id) : null;
       if (!c) {
         return '<button class="cell' + (armedCell === i ? ' is-armed' : '') +
@@ -868,7 +882,10 @@ window.YL = window.YL || {};
         '<span class="cell__art">' + YL.candyTile(c, { w: 96, h: 96, px: 200 }) + '</span>' +
         '<span class="cell__name">' + YL.esc(c.name) + '</span>' +
         '<span class="cell__x">' + YL.icon('x') + '</span></button>';
-    }).join('');
+    }
+
+    var grid = list.slice(0, base).map(cellHtml).join('');
+    var bonus = list.slice(base).map(function (id, i) { return cellHtml(id, base + i); }).join('');
 
     return '<div class="tray' + (trayOpen ? ' is-open' : ' is-closed') + '" data-tray>' +
       '<div class="tray__bar">' +
@@ -896,14 +913,19 @@ window.YL = window.YL || {};
           '<span class="tray__drawn" hidden>' +
           YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'tray' }) + '</span>'
         : YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'tray' })) +
-      '<span class="tray__closednote">' + size.name + ' · ' + YL.weightLabel(size.oz) + '</span>' +
+      '<span class="tray__closednote">' + size.name + ' · ' + oz(cap) + '</span>' +
       '</div>' +
       /* open: the grid you actually fill */
       /* The column count rides on .tray__open so the lid narrows with the
          grid — a 2-wide box has to look like a 2-wide box, lid included. */
       '<div class="tray__open" style="--cols:' + cols.d + ';--cols-m:' + cols.m + '">' +
-      '<div class="tray__lid"><b>YUMMYLAND</b><small>' + YL.weightLabel(size.oz) + ' · ' + cap + ' cells</small></div>' +
+      '<div class="tray__lid"><b>YUMMYLAND</b><small>' + oz(cap) + ' · ' + cap + ' cells</small></div>' +
       '<div class="tray__grid" data-grid>' + grid + '</div>' +
+      (bonus
+        ? '<div class="tray__bonus"><span class="tray__bonus__tag">' + YL.icon('sparkle') +
+          'Extra ' + oz(cap - base) + '</span>' +
+          '<div class="tray__bonus__cells">' + bonus + '</div></div>'
+        : '') +
       '</div>' +
       '</div>' +
 
@@ -1056,7 +1078,7 @@ window.YL = window.YL || {};
         box = YL.emptyBox();
         box.size = pb.size;
         box.color = pb.color === 'pink' ? 'pink' : pb.color;
-        box.vibe = pb.vibe || 'me';
+        box.vibe = pb.vibe || null;
         box.extras = (pb.extras || []).slice();
         box.title = pb.name;
         pb.candies.forEach(function (id) { addCandy(id, true); });

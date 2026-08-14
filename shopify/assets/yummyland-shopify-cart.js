@@ -76,7 +76,11 @@ window.YL = window.YL || {};
     var vibe = YL.VIBES.filter(function (v) { return v.id === box.vibe; })[0];
     /* The packing team works off these, so weights have to be explicit. */
     var props = {
-      'Box size': size.name + ' — ' + YL.weightLabel(size.oz) + ' (' + size.scoops + ' × 4 oz scoops)',
+      /* Capacity, not the size's own weight: with the Extra Scoop add-on
+         the customer paid for one more than the size card says, and this
+         line is what the packing team fills to. */
+      'Box size': size.name + ' — ' + YL.weightLabel(YL.boxCapacity(box) * YL.PRICING.scoopOz) +
+        ' (' + YL.boxCapacity(box) + ' × 4 oz scoops)',
       'Fill weight': YL.boxFillLabel(box),
       'Candy': box.candies.map(function (c) {
         var candy = YL.getCandy(c.id);
