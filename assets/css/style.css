@@ -307,9 +307,9 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 
 .steps {
   position: sticky; top: var(--header-h); z-index: 40;
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 2px;
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius-l);
-  padding: 12px; margin: 0 auto 26px; box-shadow: var(--shadow-s);
+  padding: 12px 10px; margin: 0 auto 26px; box-shadow: var(--shadow-s);
   overflow-x: auto; scrollbar-width: none;
   /* Same width as the cards it steps through. At full .wrap width it was
      the same shape as the guarantees bar above it, so the two read as one
@@ -317,14 +317,18 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
   max-width: 900px;
 }
 .steps::-webkit-scrollbar { display: none; }
+/* Five chips have to fit 900px without scrolling — the bar was capped to
+   the card width and the fifth one fell off the end. The room comes out
+   of the spacing between them rather than out of the type, which stays
+   the size it was. */
 .step-chip {
-  display: flex; align-items: center; gap: 10px; flex: 1 0 auto;
-  padding: 8px 14px; border: 0; border-radius: 999px; background: transparent; text-align: left;
+  display: flex; align-items: center; gap: 8px; flex: 1 0 auto;
+  padding: 8px 8px; border: 0; border-radius: 999px; background: transparent; text-align: left;
   transition: background .15s;
 }
 .step-chip:hover { background: var(--pink-50); }
 .step-chip__n {
-  width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 50%;
+  width: 27px; height: 27px; flex: none; display: grid; place-items: center; border-radius: 50%;
   background: var(--pink-100); color: var(--pink-700); font-weight: 900; font-size: 14px;
   transition: background .2s, color .2s, transform .2s;
 }
@@ -333,7 +337,7 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 .step-chip.is-active .step-chip__n { background: var(--pink); color: #fff; transform: scale(1.06); }
 .step-chip.is-active .step-chip__t { color: var(--pink); }
 .step-chip.is-done .step-chip__n { background: var(--mint); color: #fff; }
-.steps__sep { flex: none; width: 26px; height: 2px; background: var(--line); border-radius: 2px; }
+.steps__sep { flex: none; width: 12px; height: 2px; background: var(--line); border-radius: 2px; }
 .steps__now { display: none; }
 .steps__next { display: none; }
 @media (max-width: 780px) { .steps__sep { display: none; } }

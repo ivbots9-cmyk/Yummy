@@ -224,22 +224,22 @@
 .yummyland .builder { padding: 22px 0 80px; background: linear-gradient(180deg, #ffeef6 0%, #fff 260px); }
 .yummyland .steps {
   position: sticky; top: var(--header-h); z-index: 40;
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 2px;
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius-l);
-  padding: 12px; margin: 0 auto 26px; box-shadow: var(--shadow-s);
+  padding: 12px 10px; margin: 0 auto 26px; box-shadow: var(--shadow-s);
   overflow-x: auto; scrollbar-width: none;
   
   max-width: 900px;
 }
 .yummyland .steps::-webkit-scrollbar { display: none; }
 .yummyland .step-chip {
-  display: flex; align-items: center; gap: 10px; flex: 1 0 auto;
-  padding: 8px 14px; border: 0; border-radius: 999px; background: transparent; text-align: left;
+  display: flex; align-items: center; gap: 8px; flex: 1 0 auto;
+  padding: 8px 8px; border: 0; border-radius: 999px; background: transparent; text-align: left;
   transition: background .15s;
 }
 .yummyland .step-chip:hover { background: var(--pink-50); }
 .yummyland .step-chip__n {
-  width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 50%;
+  width: 27px; height: 27px; flex: none; display: grid; place-items: center; border-radius: 50%;
   background: var(--pink-100); color: var(--pink-700); font-weight: 900; font-size: 14px;
   transition: background .2s, color .2s, transform .2s;
 }
@@ -248,7 +248,7 @@
 .yummyland .step-chip.is-active .step-chip__n { background: var(--pink); color: #fff; transform: scale(1.06); }
 .yummyland .step-chip.is-active .step-chip__t { color: var(--pink); }
 .yummyland .step-chip.is-done .step-chip__n { background: var(--mint); color: #fff; }
-.yummyland .steps__sep { flex: none; width: 26px; height: 2px; background: var(--line); border-radius: 2px; }
+.yummyland .steps__sep { flex: none; width: 12px; height: 2px; background: var(--line); border-radius: 2px; }
 .yummyland .steps__now { display: none; }
 .yummyland .steps__next { display: none; }
 @media (max-width: 780px) {.yummyland .steps__sep { display: none; }}
