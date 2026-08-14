@@ -195,7 +195,13 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
     radial-gradient(900px 420px at 78% 30%, #ffd9ea 0%, rgba(255, 217, 234, 0) 70%),
     linear-gradient(180deg, #fff6fa 0%, #ffeef6 100%);
 }
-.hero__in { display: grid; grid-template-columns: 1.02fr .98fr; gap: 30px; align-items: center; padding: 54px 0 34px; }
+/* The bottom padding is a variable because the hero photo cancels it
+   exactly, so the two have to move together. */
+.hero__in {
+  --hero-pad-b: 34px;
+  display: grid; grid-template-columns: 1.02fr .98fr; gap: 30px;
+  align-items: center; padding: 54px 0 var(--hero-pad-b);
+}
 .hero h1 { font-size: clamp(40px, 6.2vw, 74px); text-transform: uppercase; letter-spacing: -.02em; }
 .hero h1 span { display: block; color: var(--pink); }
 .hero p.lede { font-size: 18px; color: var(--ink-60); max-width: 480px; margin: 18px 0 26px; }
@@ -241,18 +247,23 @@ h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.08; lett
 .usp b { display: block; font-size: 12.5px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
 .usp span { font-size: 12.5px; color: var(--ink-60); }
 .hero__art { position: relative; }
-/* On a wide screen the photo used to stop 130px above the guarantees bar
-   and leave a hole. It now sits on the bottom of its column and slides far
-   enough down that the bar crosses her, so she reads as standing behind it
-   rather than being cut off above it. */
+/* On a wide screen the photo has to land on the guarantees bar exactly:
+   its bottom edge on the bar's top edge, so she rises out of the bar with
+   neither a gap above it nor a slice of her hidden behind it.
+
+   Bottom-aligning her to the row and then cancelling the row's bottom
+   padding puts her margin box flush with the bar whichever column happens
+   to be taller, so the alignment holds as the copy reflows. */
 @media (min-width: 901px) {
-  .hero__art { display: flex; align-items: flex-end; justify-content: center; }
-  /* Wider than her column and pushed below it: the guarantees bar then
-     crosses her legs and she reads as standing behind it. .hero clips the
-     overflow, so the extra width bleeds toward the edge rather than
-     widening the page. */
-  .hero__art.has-photo { margin-bottom: -104px; }
-  .hero__art.has-photo .hero__photo { max-width: none; width: 116%; }
+  .hero__art.has-photo {
+    align-self: end;
+    display: flex; align-items: flex-end; justify-content: center;
+    margin-bottom: calc(-1 * var(--hero-pad-b));
+  }
+  /* She fills her own column and no more. Overflowing it did not centre
+     her — a flex item wider than its line pins to the start — so she sat
+     shunted right and clipped at the page edge. */
+  .hero__art.has-photo .hero__photo { max-width: 100%; }
 }
 .hero__art .float-badge {
   position: absolute; top: 6%; right: 4%;
@@ -1133,11 +1144,20 @@ body.modal-open { overflow: hidden; }
 /* the lid flap, so the grid below reads as the inside of a box */
 .tray__lid {
   display: flex; align-items: baseline; justify-content: center; gap: 10px;
+  /* A 2-wide box makes the lid narrow, so the weight drops to its own
+     centred line instead of breaking mid-phrase. */
+  flex-wrap: wrap; row-gap: 0;
   background: linear-gradient(180deg, var(--pink), var(--pink-700));
   color: #fff; border-radius: 12px 12px 0 0; padding: 9px 14px;
 }
 .tray__lid b { font-family: var(--display); font-size: 15px; font-weight: 900; letter-spacing: .1em; }
-.tray__lid small { font-size: 10.5px; font-weight: 800; opacity: .82; letter-spacing: .04em; }
+.tray__lid small { font-size: 10.5px; font-weight: 800; opacity: .82; letter-spacing: .04em; white-space: nowrap; }
+
+/* The box is only as wide as its columns need. Stretching two columns to
+   the width five would use is what made the medium box's cells twice the
+   size of the large box's — the cell has a maximum, and the box shape
+   follows from the grid. */
+.tray__open { max-width: calc(var(--cols, 4) * 86px + (var(--cols, 4) - 1) * 8px + 20px); margin: 0 auto; }
 
 .tray__grid {
   display: grid; grid-template-columns: repeat(var(--cols, 4), 1fr); gap: 8px;
@@ -1217,12 +1237,13 @@ body.is-dragging .candy { cursor: grabbing; }
 
 @media (max-width: 700px) {
   /* The whole point on a phone: the box and the candy list have to share
-     one screen. The grid gets a fixed height and the rows divide it, so a
-     20-cell party box is no taller than a 4-cell small one — it just has
-     smaller cells — and the list underneath always starts in the same place. */
+     one screen. Every cell is the same height at every size, so the row
+     count sets how tall the box is and the column count how wide — a 2x4
+     medium reads as a tall narrow box, not as four letterbox slots. */
+  .tray__open { max-width: calc(var(--cols-m, 3) * 96px + (var(--cols-m, 3) - 1) * 5px + 12px); }
   .tray__grid {
     grid-template-columns: repeat(var(--cols-m, 3), minmax(0, 1fr));
-    grid-auto-rows: 1fr; height: clamp(150px, 30vh, 260px);
+    grid-auto-rows: clamp(50px, 7.6vh, 70px); height: auto;
     gap: 5px; padding: 6px;
   }
   .cell { aspect-ratio: auto; border-radius: 9px; min-height: 0; }

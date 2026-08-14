@@ -821,19 +821,19 @@ window.YL = window.YL || {};
   /* the tray — the box, laid out as cells you can drop candy into        */
   /* ------------------------------------------------------------------ */
 
-  /* Columns are chosen so the grid stays a tidy rectangle at every
-     capacity, including the odd numbers the Extra Scoop add-on creates.
-     Phones get fewer columns so a cell never drops below a thumb. */
+  /* Every row has to be full. Three columns turned the 8-cell medium box
+     into 3 + 3 + 2, and a short last row reads as candy that failed to
+     fit rather than as a box laid out on purpose. So the column count is
+     always an exact divisor of the capacity: 4 -> 2x2, 8 -> 2x4,
+     12 -> 4x3, 20 -> 5x4. */
   function trayCols(n) {
-    /* Wider than tall on a phone. The box has to leave room for the candy
-       list underneath on a 390x844 screen, and a tall grid is what pushed
-       the list off the bottom. */
-    if (n <= 4) return { d: 2, m: 2 };
-    if (n <= 6) return { d: 3, m: 3 };
-    if (n <= 9) return { d: 3, m: 3 };
-    if (n <= 12) return { d: 4, m: 4 };
-    if (n <= 16) return { d: 4, m: 4 };
-    return { d: 5, m: 5 };
+    var c = 2;
+    if (n >= 20 && n % 5 === 0) c = 5;
+    else if (n >= 12 && n % 4 === 0) c = 4;
+    else if (n % 2 === 0) c = 2;
+    else if (n % 3 === 0) c = 3;
+    else c = Math.min(n, 4); /* a prime capacity cannot be tidy; stay narrow */
+    return { d: c, m: c };
   }
 
   function renderTray() {
@@ -874,9 +874,11 @@ window.YL = window.YL || {};
       '<span class="tray__closednote">' + size.name + ' · ' + YL.weightLabel(size.oz) + '</span>' +
       '</div>' +
       /* open: the grid you actually fill */
-      '<div class="tray__open">' +
+      /* The column count rides on .tray__open so the lid narrows with the
+         grid — a 2-wide box has to look like a 2-wide box, lid included. */
+      '<div class="tray__open" style="--cols:' + cols.d + ';--cols-m:' + cols.m + '">' +
       '<div class="tray__lid"><b>YUMMYLAND</b><small>' + YL.weightLabel(size.oz) + ' · ' + cap + ' cells</small></div>' +
-      '<div class="tray__grid" style="--cols:' + cols.d + ';--cols-m:' + cols.m + '" data-grid>' + grid + '</div>' +
+      '<div class="tray__grid" data-grid>' + grid + '</div>' +
       '</div>' +
       '</div>' +
 
