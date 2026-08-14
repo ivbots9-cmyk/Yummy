@@ -866,9 +866,10 @@
 .yummyland .tray__closed { display: grid; place-items: center; padding: 8px 0 4px; }
 .yummyland .tray__closed svg { width: min(340px, 100%); height: auto; }
 .yummyland .tray__photo {
-  display: block; width: min(340px, 100%); height: auto; border-radius: 12px;
-  filter: drop-shadow(0 10px 22px rgba(196, 22, 104, .18));
+  display: block; width: min(340px, 100%); height: auto;
+  filter: drop-shadow(0 12px 22px rgba(196, 22, 104, .22));
 }
+.yummyland .tray__drawn[hidden] { display: none; }
 .yummyland .tray__closednote {
   margin-top: 6px; font-size: 12px; font-weight: 900;
   letter-spacing: .05em; text-transform: uppercase; color: var(--pink-700);

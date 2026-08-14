@@ -875,9 +875,14 @@ window.YL = window.YL || {};
       '<div class="tray__stage">' +
       /* closed: the parcel as it arrives, so the size means something */
       '<div class="tray__closed">' +
+      /* The photo is the real thing, so it wins — but the drawn box ships
+         with it, hidden, and takes over if the file is missing or
+         blocked. A closed view with nothing in it is worse than art. */
       (YL.BOX_PHOTO
         ? '<img class="tray__photo" src="' + YL.esc(YL.BOX_PHOTO) + '" alt="A sealed Yummyland box" ' +
-          'loading="lazy" onerror="this.remove()">'
+          'onerror="this.hidden=true;var s=this.nextElementSibling; if(s)s.hidden=false;">' +
+          '<span class="tray__drawn" hidden>' +
+          YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'tray' }) + '</span>'
         : YL.boxArt({ color: box.color, recipe: recipeOrNull(), fill: fillRatio(), seed: 'tray' })) +
       '<span class="tray__closednote">' + size.name + ' · ' + YL.weightLabel(size.oz) + '</span>' +
       '</div>' +

@@ -38,6 +38,13 @@ Object.keys(JS).forEach((src) => {
 
   /* On Shopify the candy photos already live on the Shopify CDN, so the
      theme has no reason to look for the static site's local copies. */
+  /* The theme has no assets/ folder — every file is flat and reached
+     through asset_url — so the one local image the builder references
+     is rewritten to match. */
+  if (src === 'data.js') {
+    code = code.replace("'assets/img/box-closed.webp'", "(window.YL_BOX_PHOTO || '')");
+  }
+
   if (src === 'config.js') {
     const before = code;
     code = code.replace(/YL\.PHOTO_BASE == null \? '[^']*' : YL\.PHOTO_BASE;/,

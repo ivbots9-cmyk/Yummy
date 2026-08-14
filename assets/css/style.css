@@ -1144,10 +1144,14 @@ body.modal-open { overflow: hidden; }
 .tray.is-closed .tray__open { display: none; }
 .tray__closed { display: grid; place-items: center; padding: 8px 0 4px; }
 .tray__closed svg { width: min(340px, 100%); height: auto; }
+/* Cut out against transparency so the mailer stands on the pink stage
+   rather than in a white rectangle. No radius: the corners are the box's
+   own, and drop-shadow follows the alpha so the shadow hugs its edges. */
 .tray__photo {
-  display: block; width: min(340px, 100%); height: auto; border-radius: 12px;
-  filter: drop-shadow(0 10px 22px rgba(196, 22, 104, .18));
+  display: block; width: min(340px, 100%); height: auto;
+  filter: drop-shadow(0 12px 22px rgba(196, 22, 104, .22));
 }
+.tray__drawn[hidden] { display: none; }
 .tray__closednote {
   margin-top: 6px; font-size: 12px; font-weight: 900;
   letter-spacing: .05em; text-transform: uppercase; color: var(--pink-700);
