@@ -22,21 +22,16 @@ vm.runInContext(fs.readFileSync(path.join(ROOT, 'assets/js/data.js'), 'utf8'), s
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'assets/js/store.js'), 'utf8'), sandbox);
 const YL = sandbox.window.YL;
 
-const prices = YL.SIZES.map((s) => s.price);
-const boxPrice = (pb) => YL.boxPrice({
-  size: pb.size,
-  candies: pb.candies.map((id) => ({ id: id, qty: 1 })),
-  extras: pb.extras || []
-}).total.toFixed(2);
+const price = YL.BOX.price.toFixed(2);
 
 const org = {
   '@type': 'Organization',
   '@id': SITE + '/#org',
-  name: 'Yummyland Candy',
+  name: 'Yummyland',
   url: SITE + '/',
   logo: SITE + '/assets/img/apple-touch-icon.png',
-  image: SITE + '/assets/img/og.png',
-  description: 'Custom candy boxes built by the customer, packed fresh and shipped across the USA.',
+  image: SITE + '/assets/img/og.jpg',
+  description: 'Premium candy gift boxes: six cups of Albanese gummies and chocolate, with a lid printed for the occasion.',
   email: 'hello@yummylandcandy.com',
   telephone: '+1-833-986-6526',
   address: { '@type': 'PostalAddress', addressLocality: 'Los Angeles', addressRegion: 'CA', addressCountry: 'US' },
@@ -51,44 +46,40 @@ const website = {
   '@type': 'WebSite',
   '@id': SITE + '/#website',
   url: SITE + '/',
-  name: 'Yummyland Candy',
+  name: 'Yummyland',
   publisher: { '@id': SITE + '/#org' }
 };
 
 const builderProduct = {
   '@type': 'Product',
-  name: 'Build Your Own Candy Box',
-  description: 'Choose your box size, pick from ' + YL.CANDIES.length +
-    ' candies, add a vibe and extras — packed fresh and shipped to your door.',
-  image: [SITE + '/assets/img/og.png'],
-  brand: { '@type': 'Brand', name: 'Yummyland Candy' },
+  name: YL.BOX.name,
+  sku: YL.BOX.sku,
+  description: 'A ' + YL.BOX.size + ' gift box with ' + YL.BOX.cups +
+    ' sealed cups of candy you choose and a lid printed for the occasion — with your own photos if you like.',
+  image: [SITE + '/assets/img/hero-box.jpg', SITE + '/' + YL.BOX.photo],
+  brand: { '@type': 'Brand', name: 'Yummyland' },
   offers: {
-    '@type': 'AggregateOffer',
-    priceCurrency: 'USD',
-    lowPrice: Math.min.apply(null, prices).toFixed(2),
-    highPrice: Math.max.apply(null, prices).toFixed(2),
-    offerCount: YL.SIZES.length,
-    availability: 'https://schema.org/InStock',
-    url: SITE + '/'
+    '@type': 'Offer', priceCurrency: 'USD', price: price,
+    availability: 'https://schema.org/InStock', url: SITE + '/'
   }
 };
 
-const boxList = {
+const collectionList = {
   '@type': 'ItemList',
-  name: 'Yummyland ready-made candy boxes',
-  itemListElement: YL.PREBUILT.map((pb, i) => ({
+  name: 'Yummyland gift box collections',
+  itemListElement: YL.COLLECTIONS.map((c, i) => ({
     '@type': 'ListItem',
     position: i + 1,
     item: {
       '@type': 'Product',
-      name: pb.name,
-      description: pb.desc,
-      url: SITE + '/index.html?box=' + pb.id,
-      image: SITE + '/assets/img/og.png',
-      brand: { '@type': 'Brand', name: 'Yummyland Candy' },
+      name: c.name + ' — ' + YL.BOX.name,
+      description: c.desc,
+      url: SITE + '/index.html?collection=' + c.id,
+      image: SITE + '/' + YL.BOX.photo,
+      brand: { '@type': 'Brand', name: 'Yummyland' },
       offers: {
-        '@type': 'Offer', priceCurrency: 'USD', price: boxPrice(pb),
-        availability: 'https://schema.org/InStock', url: SITE + '/index.html?box=' + pb.id
+        '@type': 'Offer', priceCurrency: 'USD', price: price,
+        availability: 'https://schema.org/InStock', url: SITE + '/index.html?collection=' + c.id
       }
     }
   }))
@@ -105,8 +96,8 @@ const faqPage = {
 
 const PAGES = {
   'index.html': [org, website, builderProduct],
-  'boxes.html': [org, boxList],
-  'gifts.html': [org, boxList],
+  'boxes.html': [org, collectionList],
+  'gifts.html': [org, collectionList],
   'faq.html': [org, faqPage],
   'about.html': [org],
   'cart.html': [org]
@@ -136,12 +127,10 @@ const urls = [
   { loc: '/', priority: '1.0', freq: 'weekly' },
   { loc: '/boxes.html', priority: '0.9', freq: 'weekly' },
   { loc: '/gifts.html', priority: '0.9', freq: 'weekly' },
-  { loc: '/gifts.html?for=birthday', priority: '0.7', freq: 'monthly' },
-  { loc: '/gifts.html?for=holiday', priority: '0.7', freq: 'monthly' },
-  { loc: '/gifts.html?for=office', priority: '0.7', freq: 'monthly' },
   { loc: '/about.html', priority: '0.6', freq: 'monthly' },
   { loc: '/faq.html', priority: '0.6', freq: 'monthly' }
-].concat(YL.PREBUILT.map((pb) => ({ loc: '/index.html?box=' + pb.id, priority: '0.7', freq: 'monthly' })));
+].concat(YL.OCCASIONS.map((o) => ({ loc: '/gifts.html?for=' + o.id, priority: '0.7', freq: 'monthly' })))
+  .concat(YL.COLLECTIONS.map((c) => ({ loc: '/index.html?collection=' + c.id, priority: '0.7', freq: 'monthly' })));
 
 const today = new Date().toISOString().slice(0, 10);
 const sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n' +

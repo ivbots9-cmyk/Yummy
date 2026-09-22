@@ -1,14 +1,13 @@
 /* =========================================================
-   Yummyland — box pricing + cart persistence (localStorage)
+   Yummyland — box model, pricing, cart persistence (localStorage)
    ========================================================= */
 window.YL = window.YL || {};
 
 (function (YL) {
   'use strict';
 
-  var CART_KEY = 'yl.cart.v1';
-  var DRAFT_KEY = 'yl.draft.v1';
-  var SAVED_KEY = 'yl.saved.v1';
+  var CART_KEY = 'yl.cart.v2';
+  var DRAFT_KEY = 'yl.draft.v2';
 
   function read(key, fallback) {
     try {
@@ -16,201 +15,192 @@ window.YL = window.YL || {};
       return raw ? JSON.parse(raw) : fallback;
     } catch (e) { return fallback; }
   }
+  /* Returns false when the browser refused the write — uploaded photos
+     are the one thing big enough to hit the storage quota. */
   function write(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* private mode */ }
+    try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; }
   }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
-  /* ---------- box model ---------- */
+  /* ---------- box model ----------
+     occasion   id from YL.OCCASIONS (sets the lid design)
+     cups       exactly YL.BOX.cups candy ids, null for an empty cup,
+                in reading order: top row left→right, then bottom row
+     collection the collection it started from, if any (analytics only)
+     photos     [{ src: dataURL }, …] — only when the customer uploads
+     captions   the two lines under the polaroids (free to edit)
+     extras     ids from YL.EXTRAS
+     card       greeting card { to, from, message } */
   YL.emptyBox = function () {
-    /* No vibe until one is picked. Defaulting to 'me' pre-selected a card
-       nobody had chosen and lit step 3 as done from the first render. The
-       step is optional, and everything that reads a vibe already copes
-       with there not being one. */
-    return { size: 'medium', candies: [], extras: [], color: 'pink', vibe: null, note: '', prefs: '' };
+    var cups = [];
+    for (var i = 0; i < YL.BOX.cups; i++) cups.push(null);
+    return {
+      occasion: null, cups: cups, collection: null,
+      photos: [null, null], captions: null,
+      extras: [], card: { to: '', from: '', message: '' }
+    };
   };
 
-  /* ---------- weight ----------
-     Capacity is measured in 4 oz scoops. A box holds its size's scoops,
-     plus one more if the "Extra 4 oz Scoop" add-on is on. */
-  YL.boxScoopsUsed = function (box) {
-    return box.candies.reduce(function (n, c) { return n + c.qty; }, 0);
-  };
-
-  YL.boxCapacity = function (box) {
-    var n = YL.getSize(box.size).scoops;
-    box.extras.forEach(function (id) {
-      var e = YL.getExtra(id);
-      if (e && e.addsScoop) n += 1;
+  YL.normalizeBox = function (box) {
+    var b = YL.emptyBox();
+    if (!box) return b;
+    if (box.occasion && YL.getOccasion(box.occasion)) b.occasion = box.occasion;
+    (box.cups || []).slice(0, YL.BOX.cups).forEach(function (id, i) {
+      b.cups[i] = id && YL.getCandy(id) ? id : null;
     });
-    return n;
-  };
-
-  /* ---------- cells ----------
-     A cell is the visual form of a scoop, not a second unit: one cell
-     holds exactly one 4 oz scoop, so a Medium box is eight cells and the
-     weight on the scale still matches what is on screen. Everything that
-     prices or ships the box keeps reading `candies`; `cells` only adds
-     the one thing a flat list cannot express, which is *where* a scoop
-     sits, so it can be dragged from one place to another.
-
-     A box that has never been arranged (a ready-made box, a saved draft
-     from before cells existed) expands its candies in order, so nothing
-     has to be migrated. */
-  function cellsFromCandies(box) {
-    var cells = [];
-    box.candies.forEach(function (c) {
-      for (var i = 0; i < c.qty; i++) cells.push(c.id);
+    b.collection = box.collection || null;
+    if (box.photos) b.photos = [0, 1].map(function (i) {
+      var p = box.photos[i];
+      return p && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(p.src) ? { src: p.src } : null;
     });
-    return cells;
-  }
-
-  YL.boxCells = function (box) {
-    var cap = YL.boxCapacity(box);
-    var cells = box.cells ? box.cells.slice(0, cap) : cellsFromCandies(box).slice(0, cap);
-    while (cells.length < cap) cells.push(null);
-    return cells;
+    if (box.captions) b.captions = [String(box.captions[0] || ''), String(box.captions[1] || '')];
+    b.extras = (box.extras || []).filter(function (id) { return !!YL.getExtra(id); });
+    if (box.card) b.card = { to: box.card.to || '', from: box.card.from || '', message: box.card.message || '' };
+    return b;
   };
 
-  /* The only way cells are written. Candies are recomputed from them, so
-     the two can never drift apart. */
-  YL.setBoxCells = function (box, cells) {
-    box.cells = cells.slice();
-    var out = [], seen = {};
-    cells.forEach(function (id) {
-      if (!id) return;
-      if (seen[id] == null) { seen[id] = out.length; out.push({ id: id, qty: 0 }); }
-      out[seen[id]].qty++;
-    });
-    box.candies = out;
-    return box;
+  YL.boxFromCollection = function (col, occasion) {
+    var b = YL.emptyBox();
+    b.cups = col.cups.slice(0, YL.BOX.cups);
+    b.collection = col.id;
+    b.occasion = occasion || (col.occasions && col.occasions[0]) || null;
+    return b;
   };
 
-  YL.boxOzUsed = function (box) { return YL.boxScoopsUsed(box) * YL.PRICING.scoopOz; };
-  YL.boxOzCapacity = function (box) { return YL.boxCapacity(box) * YL.PRICING.scoopOz; };
+  YL.boxFilled = function (box) { return box.cups.filter(Boolean).length; };
+  YL.boxComplete = function (box) { return YL.boxFilled(box) === YL.BOX.cups; };
+  YL.hasOwnPhotos = function (box) { return !!(box.photos && box.photos[0] && box.photos[1]); };
+
+  /* the lid text for a box: occasion defaults, customer captions on top */
+  YL.boxLid = function (box) {
+    var occ = YL.getOccasion(box.occasion) || YL.OCCASIONS[0];
+    var caps = box.captions || occ.captions;
+    return {
+      occasion: occ,
+      headline: occ.headline,
+      side: occ.side,
+      captions: [caps[0] != null ? caps[0] : occ.captions[0], caps[1] != null ? caps[1] : occ.captions[1]],
+      photos: YL.hasOwnPhotos(box) && box.extras.indexOf('photos') > -1
+        ? [box.photos[0].src, box.photos[1].src]
+        : [YL.img('assets/img/lid/' + occ.id + '-1.webp'), YL.img('assets/img/lid/' + occ.id + '-2.webp')],
+      own: YL.hasOwnPhotos(box) && box.extras.indexOf('photos') > -1
+    };
+  };
 
   YL.boxPrice = function (box) {
-    var size = YL.getSize(box.size);
-    var premium = 0;
-    box.candies.forEach(function (c) {
-      var candy = YL.getCandy(c.id);
-      if (candy) premium += (candy.extra || 0) * c.qty;
-    });
     var extras = 0;
     box.extras.forEach(function (id) {
       var e = YL.getExtra(id);
       if (e) extras += e.price;
     });
-    return {
-      base: size.price,
-      premium: premium,
-      extras: extras,
-      total: size.price + premium + extras
-    };
+    return { base: YL.BOX.price, extras: extras, total: YL.BOX.price + extras };
   };
 
-  /* candy recipe for the artwork of a given box */
+  YL.boxLabel = function (box) {
+    var col = box.collection && YL.getCollection(box.collection);
+    var custom = col && col.cups.join() !== box.cups.join();
+    var occ = YL.getOccasion(box.occasion);
+    var name = col && !custom ? col.name : 'Custom Six';
+    return name + (occ ? ' · ' + occ.name : '');
+  };
+
+  /* candy recipe for the drawn art of a whole box */
   YL.boxRecipe = function (box) {
     var out = [];
-    box.candies.forEach(function (c) {
-      var candy = YL.getCandy(c.id);
-      if (!candy) return;
-      for (var q = 0; q < c.qty; q++) {
-        candy.recipe.forEach(function (r) { out.push(r); });
-      }
+    box.cups.forEach(function (id) {
+      var c = id && YL.getCandy(id);
+      if (c) c.recipe.forEach(function (r) { out.push(r); });
     });
     return out;
   };
 
-  /* "2 lb · Sour Power Rainbow Straws ×2, Peach Rings…" for carts and receipts */
-  YL.boxFillLabel = function (box) {
-    return YL.weightLabel(YL.boxOzUsed(box)) + ' of ' + YL.weightLabel(YL.boxOzCapacity(box));
+  /* ---------- draft (the box on the builder) ---------- */
+  YL.getDraft = function () { return YL.normalizeBox(read(DRAFT_KEY, null)); };
+  YL.saveDraft = function (box) {
+    if (write(DRAFT_KEY, box)) return true;
+    /* over quota: keep everything except the photos, which the
+       customer can re-upload, rather than losing the whole box */
+    var slim = clone(box); slim.photos = [null, null];
+    write(DRAFT_KEY, slim);
+    return false;
   };
-
-  YL.boxLabel = function (box) {
-    if (box.title) return box.title;
-    var size = YL.getSize(box.size);
-    var vibe = null;
-    for (var i = 0; i < YL.VIBES.length; i++) if (YL.VIBES[i].id === box.vibe) vibe = YL.VIBES[i];
-    if (vibe && vibe.id !== 'me') return vibe.name + ' Box · ' + size.name;
-    return 'Custom ' + size.name;
-  };
-
-  /* ---------- draft (the box currently on the builder) ---------- */
-  YL.getDraft = function () {
-    var d = read(DRAFT_KEY, null);
-    if (!d || !d.candies) return YL.emptyBox();
-    return d;
-  };
-  YL.saveDraft = function (box) { write(DRAFT_KEY, box); };
   YL.clearDraft = function () { write(DRAFT_KEY, YL.emptyBox()); };
 
-  /* ---------- saved boxes ("save my box") ---------- */
-  YL.getSaved = function () { return read(SAVED_KEY, []); };
-  YL.saveBox = function (box) {
-    var list = YL.getSaved();
-    list.unshift({ id: 'sb' + Date.now(), box: JSON.parse(JSON.stringify(box)), at: Date.now() });
-    write(SAVED_KEY, list.slice(0, 12));
+  /* ---------- cart ----------
+     Two kinds of line: a built box, or a standalone product. */
+  YL.getCart = function () {
+    return read(CART_KEY, []).filter(function (i) {
+      return i && (i.kind === 'product' ? !!YL.getProduct(i.product) : !!i.box);
+    }).map(function (i) {
+      if (i.kind !== 'product') i.box = YL.normalizeBox(i.box);
+      return i;
+    });
   };
-
-  /* ---------- cart ---------- */
-  YL.getCart = function () { return read(CART_KEY, []); };
 
   YL.cartCount = function () {
     return YL.getCart().reduce(function (n, i) { return n + i.qty; }, 0);
   };
 
-  /* Adds a box to whatever cart is configured. With an adapter installed
-     (Shopify, custom API) the local cart is bypassed entirely. */
+  YL.lineTotal = function (item) {
+    if (item.kind === 'product') return YL.getProduct(item.product).price * item.qty;
+    return YL.boxPrice(item.box).total * item.qty;
+  };
+
+  function newId() { return 'ci' + Date.now() + Math.floor(Math.random() * 1000); }
+
+  function saveCart(cart) {
+    var ok = write(CART_KEY, cart);
+    YL.emit('cart:change');
+    return ok;
+  }
+
+  /* With an adapter installed (Shopify) the local cart is bypassed. */
   YL.addToCart = function (box, qty) {
     if (YL.cartAdapter && typeof YL.cartAdapter.add === 'function') {
-      return YL.cartAdapter.add(JSON.parse(JSON.stringify(box)), qty || 1);
+      return YL.cartAdapter.add(clone(box), qty || 1);
     }
     var cart = YL.getCart();
-    cart.push({
-      id: 'ci' + Date.now() + Math.floor(Math.random() * 1000),
-      qty: qty || 1,
-      box: JSON.parse(JSON.stringify(box))
-    });
-    write(CART_KEY, cart);
-    YL.emit('cart:change');
+    cart.push({ id: newId(), kind: 'box', qty: qty || 1, box: clone(box) });
+    if (!saveCart(cart)) {
+      YL.toast && YL.toast('Your browser is out of space for photos — please re-upload them at checkout.');
+    }
+    return cart;
+  };
+
+  YL.addProductToCart = function (productId, qty) {
+    if (YL.cartAdapter && typeof YL.cartAdapter.addProduct === 'function') {
+      return YL.cartAdapter.addProduct(productId, qty || 1);
+    }
+    var cart = YL.getCart();
+    var line = cart.filter(function (i) { return i.kind === 'product' && i.product === productId; })[0];
+    if (line) line.qty = Math.min(99, line.qty + (qty || 1));
+    else cart.push({ id: newId(), kind: 'product', qty: qty || 1, product: productId });
+    saveCart(cart);
     return cart;
   };
 
   YL.updateCartQty = function (id, qty) {
-    var cart = YL.getCart().map(function (i) {
+    saveCart(YL.getCart().map(function (i) {
       if (i.id === id) i.qty = Math.max(1, Math.min(99, qty));
       return i;
-    });
-    write(CART_KEY, cart);
-    YL.emit('cart:change');
+    }));
   };
 
   YL.removeFromCart = function (id) {
-    write(CART_KEY, YL.getCart().filter(function (i) { return i.id !== id; }));
-    YL.emit('cart:change');
+    saveCart(YL.getCart().filter(function (i) { return i.id !== id; }));
   };
 
-  YL.clearCart = function () {
-    write(CART_KEY, []);
-    YL.emit('cart:change');
-  };
+  YL.clearCart = function () { saveCart([]); };
 
   YL.cartTotals = function (promoCode) {
     var cart = YL.getCart();
-    var subtotal = cart.reduce(function (n, i) { return n + YL.boxPrice(i.box).total * i.qty; }, 0);
+    var subtotal = cart.reduce(function (n, i) { return n + YL.lineTotal(i); }, 0);
     var promo = promoCode ? YL.PROMOS[String(promoCode).toUpperCase()] : null;
     var discount = 0;
     if (promo) discount = promo.off ? subtotal * promo.off : Math.min(promo.flat, subtotal);
-    var afterDiscount = subtotal - discount;
-    var shipping = cart.length === 0 || afterDiscount >= YL.SHIPPING.freeOver ? 0 : YL.SHIPPING.flat;
-    return {
-      subtotal: subtotal,
-      discount: discount,
-      promo: promo,
-      shipping: shipping,
-      total: afterDiscount + shipping,
-      freeShippingGap: Math.max(0, YL.SHIPPING.freeOver - afterDiscount)
-    };
+    var after = subtotal - discount;
+    var shipping = !cart.length || after >= YL.SHIPPING.freeOver ? 0 : YL.SHIPPING.flat;
+    return { subtotal: subtotal, discount: discount, promo: promo, shipping: shipping, total: after + shipping };
   };
 
   /* ---------- tiny event bus ---------- */

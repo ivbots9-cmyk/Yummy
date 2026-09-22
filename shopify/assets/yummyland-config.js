@@ -28,11 +28,21 @@ window.YL = window.YL || {};
 
   /* Where candy photos come from.
      Every candy carries `img` — its Shopify CDN url — and, once
-     `node tools/fetch-photos.js` has run, a `photo` filename too.
+     `node tools/fetch-photos.js` has run, a local file listed in
+     assets/js/photos.js.
      With PHOTO_BASE set, the local copy wins and the site has no
      external dependencies; the Shopify build sets it to '' so the
      theme keeps serving the same files off the Shopify CDN. */
   YL.PHOTO_BASE = YL.PHOTO_BASE == null ? '' : YL.PHOTO_BASE;   /* Shopify build: CDN photos */
+
+  /* Site images (lid photos, box shots). The static site serves them
+     from assets/img/…; a Shopify theme keeps every file flat in its own
+     assets folder, so the theme sets YL.ASSET_BASE and the same path
+     becomes <base>yummyland-lid-birthday-1.webp. */
+  YL.img = function (path) {
+    if (!YL.ASSET_BASE || /^(data:|https?:)/.test(path)) return path;
+    return YL.ASSET_BASE + 'yummyland-' + path.replace(/^assets\/img\//, '').replace(/\//g, '-');
+  };
 
   /* Store settings used by the price summary. */
   YL.CURRENCY = 'USD';

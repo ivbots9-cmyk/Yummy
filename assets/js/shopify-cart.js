@@ -1,17 +1,21 @@
 /* =========================================================
    Yummyland — Shopify cart adapter
-   Only loaded inside the Shopify theme. Turns a built box into
+   Only loaded inside the Shopify theme. Turns a built gift box into
    Shopify line items via the AJAX Cart API (/cart/add.js).
 
    Expects window.YL_SHOPIFY, rendered by the Liquid section:
    {
-     routes:   { cart: '/cart', cart_add: '/cart/add.js', builder: '/pages/build-your-box' },
-     variants: [{ title: 'Medium Box', id: 44444444, price: 3499 }, ...],   // box product
-     addons:   [{ handle: 'yl-extra-stickers', id: 55555555 }, ...],        // add-on collection
+     routes:  { cart: '/cart', cart_add: '/cart/add.js', builder: '/pages/build-your-box' },
+     box:     { id: 44444444, price: 5499 },            // the gift box variant
+     addons:  [{ sku: 'YL-ADD-PHOTOS', id: 555 }, …],   // add-ons + refill pouches
      goToCart: true
    }
-   Sizes are matched to variants by name (small / medium / large / party),
-   so the merchant never has to copy variant IDs by hand.
+
+   One box = the box variant carrying the whole order as line item
+   properties (occasion, lid text, six cups, card) + one line per paid
+   finishing touch. Customer photos travel as FILE properties — Shopify
+   stores uploads made through a multipart cart request and links them
+   on the order, so the print team downloads them from the order page.
    ========================================================= */
 window.YL = window.YL || {};
 
@@ -27,184 +31,138 @@ window.YL = window.YL || {};
 
   YL.PATHS = {
     builder: routes.builder || '/pages/build-your-box',
-    boxes: routes.boxes || '/collections/candy-boxes',
+    boxes: routes.boxes || '/collections/gift-boxes',
     cart: cartUrl
   };
 
-  /* ---- normalise whatever Liquid handed us into two lookup maps ---- */
-  var SIZE_MAP = (function () {
-    var map = {};
-    if (CFG.sizes && !Array.isArray(CFG.sizes)) return CFG.sizes;   /* explicit ids win */
-    (CFG.variants || []).forEach(function (v) {
-      var t = String(v.title || '').toLowerCase();
-      YL.SIZES.forEach(function (s) {
-        var key = s.id === 'party' ? 'party' : s.id;               /* small|medium|large|party */
-        if (!map[s.id] && t.indexOf(key) > -1) map[s.id] = v.id;
-      });
-    });
-    /* fall back to variant order if the titles do not say the size */
-    YL.SIZES.forEach(function (s, i) {
-      if (!map[s.id] && CFG.variants && CFG.variants[i]) map[s.id] = CFG.variants[i].id;
-    });
-    return map;
-  })();
+  /* add-ons are matched by SKU, so the merchant can rename products freely */
+  var BY_SKU = {};
+  (CFG.addons || []).forEach(function (a) {
+    if (a.sku) BY_SKU[String(a.sku).toUpperCase()] = a.id;
+  });
+  function variantFor(sku) { return BY_SKU[String(sku || '').toUpperCase()] || null; }
 
-  /* Add-ons are found by SKU first (YL-EXTRA-STICKERS), then by handle,
-     so the merchant is free to rename the products. */
-  var ADDON_MAP = (function () {
-    if (CFG.addons && !Array.isArray(CFG.addons)) return CFG.addons;
-    var map = {};
-    (CFG.addons || []).forEach(function (a) {
-      if (a.handle) map[String(a.handle).toLowerCase()] = a.id;
-      if (a.sku) map[String(a.sku).toLowerCase()] = a.id;
-    });
-    return map;
-  })();
-
-  function sizeVariant(sizeId) { return SIZE_MAP[sizeId] || null; }
-
-  function addonVariant(key) {
-    /* key looks like yl-extra-stickers or yl-premium-choc-almonds,
-       which is exactly the lower-cased SKU of the add-on product */
-    return ADDON_MAP[key] || null;
-  }
-
-  /* human-readable contents shown on the cart, checkout and packing slip */
+  /* human-readable order details — shown on the cart, the checkout and
+     the packing slip, and the packing team works from them */
   function properties(box) {
-    var size = YL.getSize(box.size);
-    var vibe = YL.VIBES.filter(function (v) { return v.id === box.vibe; })[0];
-    /* The packing team works off these, so weights have to be explicit. */
+    var lid = YL.boxLid(box);
     var props = {
-      /* Capacity, not the size's own weight: with the Extra Scoop add-on
-         the customer paid for one more than the size card says, and this
-         line is what the packing team fills to. */
-      'Box size': size.name + ' — ' + YL.weightLabel(YL.boxCapacity(box) * YL.PRICING.scoopOz) +
-        ' (' + YL.boxCapacity(box) + ' × 4 oz scoops)',
-      'Fill weight': YL.boxFillLabel(box),
-      'Candy': box.candies.map(function (c) {
-        var candy = YL.getCandy(c.id);
-        var w = ' — ' + YL.weightLabel(c.qty * YL.PRICING.scoopOz);
-        return candy ? candy.name + w : c.id + w;
-      }).join(', ')
+      'Occasion': lid.occasion.name,
+      'Lid headline': lid.headline,
+      'Photo captions': lid.captions[0] + ' / ' + lid.captions[1],
+      'Lid photos': lid.own ? 'Customer photos (attached)' : 'Yummyland photos for ' + lid.occasion.name
     };
-    if (vibe) props['Vibe'] = vibe.name;
-    if (box.extras.length) {
-      props['Extras'] = box.extras.map(function (id) {
-        var e = YL.getExtra(id);
-        return e ? e.name : id;
-      }).join(', ');
+    box.cups.forEach(function (id, i) {
+      var c = YL.getCandy(id);
+      props['Cup ' + (i + 1)] = c ? c.name : '—';
+    });
+    if (box.extras.indexOf('card') > -1) {
+      if (box.card.to) props['Card to'] = box.card.to;
+      if (box.card.from) props['Card from'] = box.card.from;
+      props['Card message'] = box.card.message;
     }
-    var theme = YL.BOX_THEMES.filter(function (t) { return t.id === box.color; })[0];
-    if (box.extras.indexOf('theme') > -1 && theme) props['Box colour'] = theme.name;
-    if (box.note) props['Gift note'] = box.note;
-    if (box.prefs) props['Candy preferences'] = box.prefs;
-    /* underscore-prefixed properties stay hidden from the customer */
-    props['_yl_payload'] = JSON.stringify(box);
+    if (box.extras.indexOf('wrap') > -1) props['Ribbon'] = 'Satin ribbon & gift tag';
     return props;
   }
 
-  /* one box = the size variant + one line item per paid add-on */
-  function buildItems(box, qty, group) {
-    var items = [];
-    var main = sizeVariant(box.size);
-    if (!main) throw new Error('No Shopify variant mapped for box size "' + box.size + '".');
-
-    var props = properties(box);
-    props['_yl_group'] = group;
-    items.push({ id: main, quantity: qty, properties: props });
-
-    box.extras.forEach(function (id) {
-      var extra = YL.getExtra(id);
-      if (!extra || !extra.price) return;
-      var vid = addonVariant('yl-extra-' + id);
-      if (!vid) return;
-      items.push({
-        id: vid, quantity: qty,
-        properties: { '_yl_group': group, '_yl_kind': 'extra', 'For box': YL.boxLabel(box) }
-      });
-    });
-
-    box.candies.forEach(function (c) {
-      var candy = YL.getCandy(c.id);
-      if (!candy || !candy.extra) return;
-      var vid = addonVariant('yl-premium-' + c.id);
-      if (!vid) return;
-      items.push({
-        id: vid, quantity: qty * c.qty,
-        properties: { '_yl_group': group, '_yl_kind': 'premium', 'For box': YL.boxLabel(box) }
-      });
-    });
-
-    return items;
+  function dataUrlToBlob(src) {
+    var parts = src.split(','), mime = /data:([^;]+)/.exec(parts[0])[1];
+    var bin = atob(parts[1]), buf = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+    return new Blob([buf], { type: mime });
   }
 
-  function missingAddons(box) {
-    var missing = [];
+  function post(body, isForm) {
+    return fetch(cartAdd, {
+      method: 'POST',
+      headers: isForm ? { 'Accept': 'application/json' } : { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: body
+    }).then(function (r) {
+      if (!r.ok) return r.json().then(function (j) { throw new Error(j.description || j.message || 'Cart error'); });
+      return r.json();
+    });
+  }
+
+  /* The box line goes first and alone, as multipart when it carries
+     photos (file properties only work that way); add-ons follow as one
+     JSON request, grouped to the box by a hidden property. */
+  function addBox(box, qty) {
+    if (!CFG.box || !CFG.box.id) return Promise.reject(new Error('No gift box variant configured.'));
+    var group = 'box-' + Date.now().toString(36);
+    var props = properties(box);
+    props._yl_group = group;
+    props._yl_payload = JSON.stringify({
+      occasion: box.occasion, cups: box.cups, captions: box.captions, extras: box.extras, card: box.card
+    });
+
+    var first;
+    if (YL.boxLid(box).own) {
+      var fd = new FormData();
+      fd.append('id', CFG.box.id);
+      fd.append('quantity', qty);
+      Object.keys(props).forEach(function (k) { fd.append('properties[' + k + ']', props[k]); });
+      fd.append('properties[Photo 1]', dataUrlToBlob(box.photos[0].src), 'photo-1.jpg');
+      fd.append('properties[Photo 2]', dataUrlToBlob(box.photos[1].src), 'photo-2.jpg');
+      first = post(fd, true);
+    } else {
+      first = post(JSON.stringify({ items: [{ id: CFG.box.id, quantity: qty, properties: props }] }));
+    }
+
+    var addons = [], missing = [];
     box.extras.forEach(function (id) {
       var e = YL.getExtra(id);
-      if (e && e.price && !addonVariant('yl-extra-' + id)) missing.push('yl-extra-' + id);
+      if (!e) return;
+      var vid = variantFor(e.sku);
+      if (!vid) { missing.push(e.sku); return; }
+      addons.push({ id: vid, quantity: qty, properties: { _yl_group: group, 'For box': YL.boxLabel(box) } });
     });
-    box.candies.forEach(function (c) {
-      var candy = YL.getCandy(c.id);
-      if (candy && candy.extra && !addonVariant('yl-premium-' + c.id)) missing.push('yl-premium-' + c.id);
+    if (missing.length) console.warn('[Yummyland] Add-on products missing, not charged:', missing.join(', '));
+
+    return first.then(function () {
+      return addons.length ? post(JSON.stringify({ items: addons })) : null;
     });
-    return missing;
+  }
+
+  function busy(on) {
+    YL.$$('[data-add-cart], [data-quick], [data-prod]').forEach(function (b) { b.disabled = on; });
+  }
+
+  function done(label) {
+    YL.toast('Added to cart — ' + label + '.');
+    if (CFG.goToCart !== false) setTimeout(function () { window.location.href = cartUrl; }, 700);
+    else refreshCount();
   }
 
   YL.cartAdapter = {
     add: function (box, qty) {
-      var group = 'box-' + Date.now().toString(36);
-      var items;
-      try {
-        items = buildItems(box, qty || 1, group);
-      } catch (e) {
-        console.error('[Yummyland]', e.message);
-        YL.toast('This box cannot be added yet — the store is still being set up.');
-        return Promise.reject(e);
-      }
-
-      var gaps = missingAddons(box);
-      if (gaps.length) {
-        console.warn('[Yummyland] Missing add-on products, their price will not be charged:', gaps.join(', '));
-      }
-
-      var btns = YL.$$('[data-add-cart]');
-      btns.forEach(function (b) { b.disabled = true; });
-
-      return fetch(cartAdd, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ items: items })
-      })
-        .then(function (r) {
-          if (!r.ok) return r.json().then(function (j) { throw new Error(j.description || j.message || 'Cart error'); });
-          return r.json();
-        })
+      busy(true);
+      return addBox(box, qty || 1)
         .then(function () {
-          YL.toast('Added to cart — ' + YL.boxLabel(box) + '.');
           document.dispatchEvent(new CustomEvent('yummyland:added', { detail: { box: box } }));
-          if (CFG.goToCart !== false) {
-            setTimeout(function () { window.location.href = cartUrl; }, 700);
-          } else {
-            refreshCount();
-          }
+          done(YL.boxLabel(box));
         })
         .catch(function (e) {
           console.error('[Yummyland] add to cart failed', e);
-          YL.toast('Sorry — could not add this box. Please try again.');
+          YL.toast('Sorry — we could not add this box. Please try again.');
         })
-        .then(function () {
-          btns.forEach(function (b) { b.disabled = false; });
-        });
+        .then(function () { busy(false); });
+    },
+    addProduct: function (productId, qty) {
+      var p = YL.getProduct(productId);
+      var vid = p && variantFor(p.sku);
+      if (!vid) { YL.toast('This item is not available yet.'); return Promise.resolve(); }
+      busy(true);
+      return post(JSON.stringify({ items: [{ id: vid, quantity: qty || 1 }] }))
+        .then(function () { done(p.name); })
+        .catch(function () { YL.toast('Sorry — we could not add that. Please try again.'); })
+        .then(function () { busy(false); });
     }
   };
 
   function refreshCount() {
     fetch('/cart.js', { headers: { Accept: 'application/json' } })
       .then(function (r) { return r.json(); })
-      .then(function (cart) {
-        document.dispatchEvent(new CustomEvent('yummyland:cart', { detail: cart }));
-      })
-      .catch(function () { /* theme will refresh on its own */ });
+      .then(function (cart) { document.dispatchEvent(new CustomEvent('yummyland:cart', { detail: cart })); })
+      .catch(function () { /* the theme refreshes on its own */ });
   }
 })(window.YL);

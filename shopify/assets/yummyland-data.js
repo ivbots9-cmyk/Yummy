@@ -3,12 +3,15 @@
    Yummyland — catalogue data
    Prices in USD.
 
-   Boxes are sold BY WEIGHT. The unit is one 4 oz scoop, which is what
-   the packing team actually measures out, so what the customer builds
-   on screen is what goes on the scale. Every candy below is a real
-   product from the Yummyland bulk line — `handle` is its Shopify
-   handle, `perLb` is its bulk shelf price per pound, and `img` is its
-   product photo. Candy "recipe" drives the generated box artwork.
+   One product, done properly: the Ruby Signature Gift Box. A rigid
+   burgundy mailer, 12.75 × 6.5 × 3.75 in, with six clear cups in a
+   3 × 2 grid and a printed lid that carries two photos. The customer
+   picks an occasion, fills the six cups, chooses whose photos go on
+   the lid and adds finishing touches. That is the whole product.
+
+   Everything a customer can change lives in this file: the box, the
+   candy range, the occasions and their lid designs, the ready-made
+   collections and the paid add-ons. The pages never hard-code any of it.
    ========================================================= */
 window.YL = window.YL || {};
 
@@ -16,1341 +19,678 @@ window.YL = window.YL || {};
   'use strict';
 
   /* ---------------------------------------------------------------
-     THE WEIGHT MODEL
+     THE BOX
      ---------------------------------------------------------------
-     1 scoop = 4 oz (113 g). Box sizes are whole numbers of scoops, so
-     the box is always packed to its nominal fill weight — never half
-     empty, never overstuffed:
+     A single size on purpose. The dieline, the cup tray and the lid
+     print are all built around it, so there is no "small" or "party"
+     to price, pack or photograph. Premium comes from the box, not from
+     a weight table.
 
-        Small   4 scoops = 1 lb
-        Medium  8 scoops = 2 lb
-        Large  12 scoops = 3 lb
-        Party  20 scoops = 5 lb
+     Economics (conservative, candy at bulk shelf price ~$11/lb):
+        6 cups × ~6 oz ≈ 2 lb 4 oz of candy        ≈ $25
+        rigid mailer + cup tray + lid print + card   ≈ $7–9
+        price                                         $54.99
+     Paid add-ons are almost pure margin: printing two photos costs
+     cents, a ribbon and tag under a dollar.
 
-     Pricing. `baseLb` below is the blended bulk shelf price per pound
-     across the standard range (median $10.99/lb, mean $11.34/lb over the
-     48 flavours in this file), so it is a deliberately conservative
-     stand-in for cost: the real landed cost per pound is lower than
-     what the same candy sells for loose on the shop shelf.
-
-     The single flavours are what pull that mean up: a hand-sorted pound
-     of one colour costs more than the assorted sack it came out of, and
-     nine of them sit above the base. Every one of those is a deliberate
-     choice by the customer inside the flavour picker, priced there, so
-     the default path through the builder stays surcharge-free.
-
-        size    fill    price     $/lb    merch @ baseLb    over merch
-        small   1 lb    $22.99   22.99         $11.00      $11.99  52%
-        medium  2 lb    $36.99   18.50         $22.00      $14.99  41%
-        large   3 lb    $52.99   17.66         $33.00      $19.99  38%
-        party   5 lb    $79.99   16.00         $55.00      $24.99  31%
-
-     Two things fall out of that table and both are doing real work:
-     the price per pound drops as the box grows (the reason to size up,
-     shown right on the size cards), and Large clears the $50 free
-     shipping threshold while Medium sits just under it.
-
-     Candy that costs materially more than baseLb per pound carries a
-     per-scoop surcharge instead of being priced into every box — see
-     YL.PRICING.tiers and YL.scoopExtra below. Single-flavour scoops
-     are the usual reason: they are hand-sorted, so they cost more.
+     `cupOz` is the working fill weight for one cup — change it here
+     if the tray you order holds more or less; every label on the site
+     reads from it.
      --------------------------------------------------------------- */
-  YL.PRICING = {
-    scoopOz: 4,
-    baseLb: 11.00,
-    /* per-scoop surcharge by the candy's own bulk price per pound */
-    tiers: [
-      { upToLb: 11.99, extra: 0.00 },
-      { upToLb: 15.99, extra: 1.25 },
-      { upToLb: 19.99, extra: 2.25 },
-      { upToLb: Infinity, extra: 3.50 }
-    ]
+  YL.BOX = {
+    id: 'ruby-signature',
+    name: 'Ruby Signature Gift Box',
+    short: 'Signature Box',
+    size: '12.75 × 6.5 × 3.75 in',
+    cups: 6,
+    cols: 3,
+    cupOz: 6,
+    price: 54.99,
+    sku: 'YL-RUBY-SIGNATURE',
+    photo: 'assets/img/box-open.webp',
+    closed: 'assets/img/box-closed.webp'
   };
 
-  YL.scoopExtra = function (perLb) {
-    var t = YL.PRICING.tiers;
-    for (var i = 0; i < t.length; i++) if (perLb <= t[i].upToLb) return t[i].extra;
-    return t[t.length - 1].extra;
-  };
-
-  /* oz -> "1 lb" / "1 lb 8 oz" / "12 oz" */
+  /* oz -> "2 lb 4 oz" / "12 oz" */
   YL.weightLabel = function (oz) {
     if (oz < 16) return oz + ' oz';
     var lb = Math.floor(oz / 16), rest = oz % 16;
     return lb + ' lb' + (rest ? ' ' + rest + ' oz' : '');
   };
 
-  YL.SIZES = [
-    { id: 'small', name: 'Small Box', serves: 'Serves 1–2', scoops: 4, oz: 16, price: 22.99, scale: 0.72 },
-    { id: 'medium', name: 'Medium Box', serves: 'Serves 3–5', scoops: 8, oz: 32, price: 36.99, scale: 0.86, popular: true },
-    { id: 'large', name: 'Large Box', serves: 'Serves 6–8', scoops: 12, oz: 48, price: 52.99, scale: 1 },
-    { id: 'party', name: 'Party Size', serves: 'Serves 10+', scoops: 20, oz: 80, price: 79.99, scale: 1.14 }
-  ];
-
-  /* Five chips, because they have to fit one row on a phone and because
-     a filter is only worth a tap if it removes a meaningful chunk of the
-     wall. The old eight split the same candies so finely that Nutty and
-     World held one tile each. */
-  YL.CATEGORIES = [
+  /* Two filter rows in the builder. Type is what people ask for first;
+     colour is how they build a box that looks designed — a red half and
+     a blue half, a rainbow row, all pink for a baby girl. */
+  YL.TYPES = [
     { id: 'all', name: 'All' },
     { id: 'gummies', name: 'Gummies' },
     { id: 'sour', name: 'Sour' },
-    { id: 'chewy', name: 'Chews' },
-    { id: 'classic', name: 'Classics' }
+    { id: 'chocolate', name: 'Chocolate' },
+    { id: 'hard', name: 'Hard candy' }
   ];
 
-  /* A second, independent filter row. These are things we can state as
-     plain fact about the pack — not allergen or dietary claims, which
-     belong on the manufacturer's label and in the FAQ. */
-  YL.TRAITS = [
-    { id: 'wrapped', name: 'Individually wrapped', icon: 'wrap' },
-    { id: 'single', name: 'Single flavour', icon: 'heart' },
-    { id: 'mix', name: 'Assorted mix', icon: 'sparkle' }
+  YL.COLORS = [
+    { id: 'red', name: 'Red', hex: '#c8102e' },
+    { id: 'pink', name: 'Pink', hex: '#f28bb0' },
+    { id: 'orange', name: 'Orange', hex: '#f08a24' },
+    { id: 'yellow', name: 'Yellow', hex: '#f4c430' },
+    { id: 'green', name: 'Green', hex: '#4caf50' },
+    { id: 'blue', name: 'Blue', hex: '#2f7fd6' },
+    { id: 'purple', name: 'Purple', hex: '#7b4bb3' },
+    { id: 'white', name: 'White', hex: '#f6efe4' },
+    { id: 'brown', name: 'Chocolate', hex: '#5a3521' },
+    { id: 'rainbow', name: 'Rainbow', hex: 'conic-gradient(#e53935,#fb8c00,#fdd835,#43a047,#1e88e5,#8e24aa,#e53935)' }
   ];
 
-  /* shorthand palettes */
-  var P = {
-    red: '#ff4757', orange: '#ff9f2e', yellow: '#ffd23f', green: '#4cd964', lime: '#a8e05f',
-    blue: '#3fb8ff', purple: '#a76bff', pink: '#ff6fb0', magenta: '#ff2e8b', white: '#fff4f8',
-    cocoa: '#7b4a2d', choc: '#4e2c18', milk: '#8d5a35', caramel: '#c98b45', cream: '#ffe9c9'
-  };
+  /* recipe shorthand for the drawn fallback art */
+  function rc(shape) {
+    var cols = Array.prototype.slice.call(arguments, 1);
+    return cols.map(function (c) {
+      var col = typeof c === 'string' ? { a: c } : c;
+      return { shape: shape, colors: col };
+    });
+  }
+  function sour(list) { list.forEach(function (r) { r.sour = true; }); return list; }
+
+  var CDN = 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/';
 
   /* ---------------------------------------------------------------
-     THE FILL RANGE
+     THE CANDY RANGE
      ---------------------------------------------------------------
-     Every entry here is a candy we can actually scoop out of a bulk
-     sack. That is the whole admission rule, and it is why the list is
-     shorter than the shop's catalogue: a 10 oz resealable bag or a
-     48-count box is a packet, and a packet cannot be portioned into a
-     4 oz scoop without opening it first. Those products still sell on
-     the shop — they just have no business in the builder.
+     Order is the order on the wall: Albanese gummies first — that is
+     the line a premium box is built on — then Albanese chocolate, then
+     a short list of other favourites and old-fashioned hard candy.
 
-     The range is deliberately capped at 29. Past roughly thirty tiles
-     a customer stops choosing and starts scrolling, and the old list
-     spent twelve of its slots on single-flavour Frooties and Jolly
-     Ranchers that read as the same tile five times over. One assorted
-     scoop of each replaces them; the flavours are still in the bag.
-
-     Order matters. The first four are the top picks and render as the
-     opening row, led by the 12 Flavor Gummi Bears — the Albanese line
-     is what people come to a bulk candy shop for.
-
-     `perLb` is the bulk shelf price per pound and drives the per-scoop
-     surcharge (see YL.PRICING.tiers). Items still in draft on Shopify
-     carry the house gummy price of $9.99–$11.99/lb, which is where the
-     already-live bulk gummies sit, so no scoop in the gummy core
-     charges the customer extra.
+     Fields
+       brand    shown on the card; 'Albanese' for the core line
+       type     one of YL.TYPES (sour candy is also a gummy: `types`)
+       colors   what the cup looks like, for the colour filter
+       label    the short name printed on the cup sticker
+       swatch   sticker / fallback colour
+       img      product photo (Shopify CDN). Empty = photo still to be
+                shot; the card draws the candy instead until it exists.
+       group    'bears' | 'jolly' — single-colour variants that share
+                one tile and open a colour picker
+       nuts     contains peanuts / tree nuts (shown on the card)
      --------------------------------------------------------------- */
   YL.CANDIES = [
-    /* ---------- the opening four ---------- */
+    /* ================= Albanese gummies ================= */
     {
-      id: 'gummy-bears-12', name: '12 Flavor Gummi Bears', flavor: '12 fruit flavours', group: 'bears',
-      cats: ['gummies'], traits: ['mix'],
-      perLb: 9.99, handle: '12-flavors-assorted-gummy-bears-bulk-candy-bag-soft-chewy-fruity-gummies-colorful-party-snack-bulk-candy-for-sharing',
-      tag: 'top pick',
-      about: 'The bear that built the bulk candy aisle — twelve flavours, soft chew, no two scoops alike. Start here if you are not sure.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/12_Flavor_Bears.webp',
-      bg: '#fff4e6',
-      recipe: [
-        { shape: 'bear', colors: { a: '#ff4757' } }, { shape: 'bear', colors: { a: '#ffd23f' } },
-        { shape: 'bear', colors: { a: '#4cd964' } }, { shape: 'bear', colors: { a: '#3fb8ff' } },
-        { shape: 'bear', colors: { a: '#ff9f2e' } }, { shape: 'bear', colors: { a: '#a76bff' } }
-      ]
+      id: 'gummy-bears-12', name: '12 Flavor Gummi Bears', label: 'Gummi Bears', brand: 'Albanese',
+      types: ['gummies'], colors: ['rainbow'], swatch: '#e8a33d', tag: 'Bestseller',
+      handle: '12-flavors-assorted-gummy-bears-bulk-candy-bag-soft-chewy-fruity-gummies-colorful-party-snack-bulk-candy-for-sharing',
+      img: CDN + '12_Flavor_Bears.webp',
+      about: 'The bear that made Albanese famous — twelve real-fruit flavours and a soft, clean chew.',
+      recipe: rc('bear', '#e53935', '#fdd835', '#43a047', '#1e88e5', '#fb8c00', '#8e24aa')
     },
     {
-      id: 'peach-rings', name: 'Gummi Peach Rings', flavor: 'Sweet peach, sugar coated',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'gummi-peach-rings',
-      tag: 'top pick',
-      about: 'Soft peach rings in a light sour-sugar coat — our single best-selling scoop.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/1_e66c821c-ebb6-4b66-87b8-d49dfab58255_1.jpg',
-      bg: '#fff3e8',
-      recipe: [
-        { shape: 'ring', colors: { a: '#ffb26b' }, sour: true }, { shape: 'ring', colors: { a: '#ff8f6b' }, sour: true },
-        { shape: 'ring', colors: { a: '#ffd08a' }, sour: true }
-      ]
+      id: 'peach-rings', name: 'Gummi Peach Rings', label: 'Peach Rings', brand: 'Albanese',
+      types: ['gummies'], colors: ['orange', 'yellow'], swatch: '#f6a15b', tag: 'Fan favourite',
+      handle: 'gummi-peach-rings', img: CDN + '1_e66c821c-ebb6-4b66-87b8-d49dfab58255_1.jpg',
+      about: 'Soft peach rings in a fine sugar coat. Sunset-coloured, so they light up any cup.',
+      recipe: rc('ring', '#ffb26b', '#ff8f6b', '#ffd08a')
     },
     {
-      id: 'sour-patch-kids', name: 'Sour Patch Kids', flavor: 'Sour then sweet',
-      cats: ['gummies', 'sour'], traits: ['mix'],
-      perLb: 11.99, handle: 'sour-patch-kids-5lb',
-      tag: 'top pick',
-      about: 'Sour first, sweet after. The one candy nobody needs explained — and the name people search for by itself.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/102415_1.png',
-      bg: '#f4fff0',
-      recipe: [
-        { shape: 'bean', colors: { a: '#ff4757' }, sour: true }, { shape: 'bean', colors: { a: '#ffd23f' }, sour: true },
-        { shape: 'bean', colors: { a: '#4cd964' }, sour: true }, { shape: 'bean', colors: { a: '#3fb8ff' }, sour: true }
-      ]
+      id: 'gummy-worms', name: 'Large Gummi Worms', label: 'Gummi Worms', brand: 'Albanese',
+      types: ['gummies'], colors: ['rainbow'], swatch: '#f1c232',
+      handle: 'large-assorted-fruit-gummi-worms-4', img: CDN + '50102_1.jpg',
+      about: 'Four-inch two-tone worms in assorted fruit flavours.',
+      recipe: rc('worm', { a: '#e53935', b: '#fdd835' }, { a: '#43a047', b: '#fb8c00' }, { a: '#1e88e5', b: '#f06292' })
     },
     {
-      id: 'gummy-sharks', name: 'Blue Raspberry Gummy Sharks', flavor: 'Fruity & fun',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'blue-gummi-sharks',
-      tag: 'top pick',
-      about: 'Soft shark-shaped gummies with a white belly and a big blue-raspberry hit. Kids pick these first.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/medium_1024x1024_28f675f8-8df7-4338-b357-e9bcf72ce661.webp',
-      bg: '#eef8ff',
-      recipe: [
-        { shape: 'shark', colors: { a: '#5ec8ff', b: '#ffffff' } },
-        { shape: 'shark', colors: { a: '#7fd8ff', b: '#ffe9f3' } }
-      ]
-    },
-
-    /* ---------- the gummy core ---------- */
-    {
-      id: 'gummy-worms', name: 'Large Gummi Worms', flavor: 'Assorted fruit, 4"', group: 'worms',
-      cats: ['gummies'], traits: ['mix'],
-      perLb: 9.99, handle: 'large-assorted-fruit-gummi-worms-4',
-      about: 'Four inches of two-tone chew. The scoop that photographs best and the one kids dangle before eating.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50102_1.jpg',
-      bg: '#fff2f7',
-      recipe: [
-        { shape: 'worm', colors: { a: '#ff4757', b: '#ffd23f' } },
-        { shape: 'worm', colors: { a: '#4cd964', b: '#3fb8ff' } },
-        { shape: 'worm', colors: { a: '#a76bff', b: '#ff6fb0' } }
-      ]
+      id: 'worm-mini', name: 'Mini Gummi Worms', label: 'Mini Worms', brand: 'Albanese',
+      types: ['gummies'], colors: ['rainbow'], swatch: '#f7b733',
+      handle: 'mini-assorted-fruit-gummi-worms-2', img: CDN + '50137_1.png',
+      about: 'Two-inch worms — more pieces per cup, easier to share.',
+      recipe: rc('worm', { a: '#e53935', b: '#fdd835' }, { a: '#43a047', b: '#fb8c00' })
     },
     {
-      id: 'sour-neon-worms', name: 'Sour Large Neon Worms', flavor: 'Sour neon, 4"', group: 'sour-worms',
-      cats: ['gummies', 'sour'], traits: ['mix'],
-      perLb: 10.99, handle: 'sour-large-neon-gummi-worms-4',
-      about: 'The same worm rolled in sour sugar and turned neon. Louder on camera, louder in the mouth.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50104_1.png',
-      bg: '#f3fff4',
-      recipe: [
-        { shape: 'worm', colors: { a: '#a8e05f', b: '#ffd23f' }, sour: true },
-        { shape: 'worm', colors: { a: '#3fb8ff', b: '#ff6fb0' }, sour: true },
-        { shape: 'worm', colors: { a: '#ff9f2e', b: '#4cd964' }, sour: true }
-      ]
+      id: 'gummy-sharks', name: 'Blue Raspberry Sharks', label: 'Blue Sharks', brand: 'Albanese',
+      types: ['gummies'], colors: ['blue', 'white'], swatch: '#3d8fe0',
+      handle: 'blue-gummi-sharks', img: CDN + 'medium_1024x1024_28f675f8-8df7-4338-b357-e9bcf72ce661.webp',
+      about: 'Blue-raspberry sharks with a white belly. The easiest way to make a cup blue.',
+      recipe: rc('shark', { a: '#3d8fe0', b: '#ffffff' }, { a: '#5aa9f0', b: '#f1f6ff' })
     },
     {
-      id: 'swedish-fish', name: 'Swedish Fish', flavor: 'Classic red berry',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 11.99, handle: 'swedish-fish-large-assorted-5lb',
-      about: 'Chewier than a gummy, unmistakably red-berry. A box without a fish scoop looks unfinished to most people.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/102404_1.jpg',
-      bg: '#fff0f0',
-      recipe: [
-        { shape: 'shark', colors: { a: '#e63946', b: '#ff6b6b' } },
-        { shape: 'shark', colors: { a: '#ff4757', b: '#ff8787' } }
-      ]
+      id: 'blue-raspberry-rings', name: 'Blue Raspberry Rings', label: 'Blue Rings', brand: 'Albanese',
+      types: ['gummies'], colors: ['blue'], swatch: '#2f7fd6',
+      handle: 'gummi-blue-raspberry-rings', img: CDN + '2594844-ezgif.com-webp-to-jpg-converter.jpg',
+      about: 'Sugar-sanded rings in a deep, glossy blue.',
+      recipe: sour(rc('ring', '#2f7fd6', '#4b9be8', '#1f65b8'))
     },
     {
-      id: 'sour-gummy-bears', name: 'Sour Gummi Bears', flavor: 'Sour sugar coated',
-      cats: ['gummies', 'sour'], traits: ['mix'],
-      perLb: 9.99, handle: 'sour-gummi-bears',
-      about: 'The twelve-flavour bear with a sour sugar jacket. Half our sour boxes start here.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50117_1.jpg',
-      bg: '#f7fff0',
-      recipe: [
-        { shape: 'bear', colors: { a: '#ff6fb0' }, sour: true }, { shape: 'bear', colors: { a: '#a8e05f' }, sour: true },
-        { shape: 'bear', colors: { a: '#ffd23f' }, sour: true }, { shape: 'bear', colors: { a: '#3fb8ff' }, sour: true }
-      ]
+      id: 'watermelon-slices', name: 'Gummi Watermelon Slices', label: 'Watermelon', brand: 'Albanese',
+      types: ['gummies'], colors: ['red', 'green'], swatch: '#e2475b',
+      handle: 'gummi-watermelon-slices', img: CDN + '50456_1.jpg',
+      about: 'Little watermelon wedges — red, green rind, sugar sparkle.',
+      recipe: rc('slice', { a: '#ff5a6e', b: '#3fbf6a' }, { a: '#ff7384', b: '#2fa85a' })
     },
     {
-      id: 'watermelon-slices', name: 'Gummi Watermelon Slices', flavor: 'Watermelon',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'gummi-watermelon-slices',
-      about: 'Sugared watermelon wedges with a green rind and seeds printed right in. One of Albanese’s own top sellers.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50456_1.jpg',
-      bg: '#f2fff4',
-      recipe: [
-        { shape: 'slice', colors: { a: '#ff4d6d', b: '#3fbf6a' }, sour: true },
-        { shape: 'slice', colors: { a: '#ff6b83', b: '#4cd964' }, sour: true }
-      ]
+      id: 'gummy-butterflies', name: 'Mini Gummi Butterflies', label: 'Butterflies', brand: 'Albanese',
+      types: ['gummies'], colors: ['rainbow', 'pink'], swatch: '#f08cc0',
+      handle: 'mini-gummi-butterflies', img: CDN + '50234_1.png',
+      about: 'Tiny two-tone butterflies. Pretty enough for a wedding or baby shower cup.',
+      recipe: rc('heart', '#f06292', '#ffd54f', '#81c784', '#64b5f6')
     },
     {
-      id: 'gummy-butterflies', name: 'Mini Gummi Butterflies', flavor: 'Assorted fruit',
-      cats: ['gummies'], traits: ['mix'],
-      perLb: 9.99, handle: 'mini-gummi-butterflies',
-      about: 'Two-tone butterflies, bite size. The prettiest scoop in the range and the one that lifts a gift box.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50234_1.png',
-      bg: '#fdf3ff',
-      recipe: [
-        { shape: 'heart', colors: { a: '#ff6fb0' } }, { shape: 'heart', colors: { a: '#a76bff' } },
-        { shape: 'heart', colors: { a: '#ffd23f' } }, { shape: 'heart', colors: { a: '#3fb8ff' } }
-      ]
+      id: 'gummy-frogs', name: 'Gummi Rainforest Frogs', label: 'Frogs', brand: 'Albanese',
+      types: ['gummies'], colors: ['rainbow', 'green'], swatch: '#6cc06a',
+      handle: 'gummi-rainforest-frogs', img: CDN + '50172_1.png',
+      about: 'Bright two-tone frogs in assorted fruit flavours.',
+      recipe: rc('bean', '#43a047', '#fdd835', '#e53935', '#1e88e5')
     },
     {
-      id: 'gummy-frogs', name: 'Gummi Rainforest Frogs', flavor: 'Assorted fruit',
-      cats: ['gummies'], traits: ['mix'],
-      perLb: 9.99, handle: 'gummi-rainforest-frogs',
-      about: 'Big soft frogs with a creamy white belly. Pure novelty, and they disappear fastest at kids’ parties.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50172_1.png',
-      bg: '#f1fff5',
-      recipe: [
-        { shape: 'bean', colors: { a: '#4cd964' } }, { shape: 'bean', colors: { a: '#a8e05f' } },
-        { shape: 'bean', colors: { a: '#3fb8ff' } }, { shape: 'bean', colors: { a: '#ff6fb0' } }
-      ]
+      id: 'gummy-berries', name: 'Mixed Gummi Berries', label: 'Sweet Berries', brand: 'Albanese',
+      types: ['gummies'], colors: ['red', 'purple'], swatch: '#c2185b',
+      handle: 'mixed-gummi-berries', img: CDN + '61nqKx8C8jL.jpg',
+      about: 'Raspberries and blackberries with a sugared, seedy finish.',
+      recipe: rc('ball', '#c2185b', '#6a1b9a', '#e53935')
     },
     {
-      id: 'blue-raspberry-rings', name: 'Blue Raspberry Rings', flavor: 'Bold blue raspberry',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'gummi-blue-raspberry-rings',
-      about: 'The blue-raspberry answer to the peach ring. Chewy, tangy, and it turns your tongue blue.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/2594844-ezgif.com-webp-to-jpg-converter.jpg',
-      bg: '#eef6ff',
-      recipe: [
-        { shape: 'ring', colors: { a: '#4bb9ff' }, sour: true }, { shape: 'ring', colors: { a: '#7fd0ff' }, sour: true },
-        { shape: 'ring', colors: { a: '#2f8fe0' }, sour: true }
-      ]
+      id: 'bear-cubs', name: 'Gummi Bear Cubs', label: 'Bear Cubs', brand: 'Albanese',
+      types: ['gummies'], colors: ['rainbow'], swatch: '#f3a64a',
+      handle: '12-flavor-gummi-bear-cubs™', img: CDN + '50235_1.jpg',
+      about: 'Mini bears, all twelve flavours. Twice the pieces in the same cup.',
+      recipe: rc('bear', '#e53935', '#fdd835', '#43a047', '#1e88e5')
     },
     {
-      id: 'gummy-berries', name: 'Mixed Gummi Berries', flavor: 'Assorted berry',
-      cats: ['gummies'], traits: ['mix'],
-      perLb: 9.99, handle: 'mixed-gummi-berries',
-      about: 'Berry-shaped gummies in raspberry, blackberry and strawberry — a soft, chewy crowd-pleaser.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/61nqKx8C8jL.jpg',
-      bg: '#fff0f6',
-      recipe: [
-        { shape: 'bean', colors: { a: '#ff2e8b' } }, { shape: 'bean', colors: { a: '#a76bff' } },
-        { shape: 'bean', colors: { a: '#ff4757' } }, { shape: 'bean', colors: { a: '#3fb8ff' } }
-      ]
+      id: 'bear-natural', name: '5 Natural Flavor Bears', label: 'Natural Bears', brand: 'Albanese',
+      types: ['gummies'], colors: ['rainbow'], swatch: '#e9a95b',
+      handle: '5-natural-flavor-gummi-bears™', img: CDN + '50270_1.jpg',
+      about: 'Coloured with fruit and vegetable juice — softer, pastel tones.',
+      recipe: rc('bear', '#f28b82', '#fbbc6b', '#fff176', '#aed581', '#ce93d8')
     },
     {
-      id: 'haribo-cola', name: 'Haribo Happy Cola', flavor: 'Cola bottles',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 11.99, handle: 'haribo-gummi-happy-cola-5lb',
-      about: 'The original cola bottle. Firmer chew than our house gummies and the flavour everyone recognises instantly.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/102323_1_1.png',
-      bg: '#fff6ec',
-      recipe: [
-        { shape: 'bottle', colors: { a: '#b5651d', b: '#ffe9c9' } },
-        { shape: 'bottle', colors: { a: '#8d4a12', b: '#ffdfae' } }
-      ]
-    },
-    {
-      id: 'haribo-peaches', name: 'Haribo Gummi Peaches', flavor: 'Sugared peach',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 11.99, handle: 'haribo-gummi-peaches-5lb',
-      about: 'Fuzzy sugar outside, two-tone peach inside. A softer, more perfumed peach than our rings.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/102314_1_1.png',
-      bg: '#fff2ec',
-      recipe: [
-        { shape: 'ball', colors: { a: '#ffb26b' }, sour: true },
-        { shape: 'ball', colors: { a: '#ff9a8b' }, sour: true }
-      ]
+      id: 'worm-natural-mini', name: '5 Natural Flavor Mini Worms', label: 'Natural Worms', brand: 'Albanese',
+      types: ['gummies'], colors: ['rainbow'], swatch: '#ecb06a',
+      handle: '5-natural-flavor-mini-gummi-worms-2', img: CDN + '50271_2.png',
+      about: 'Mini worms in soft, naturally coloured pastels.',
+      recipe: rc('worm', { a: '#f28b82', b: '#fff176' }, { a: '#aed581', b: '#ce93d8' })
     },
 
-    /* ---------- sour: belts, straws and rolls ---------- */
+    /* ---- single-colour Albanese bears: one tile, a colour picker ---- */
+    { id: 'bear-cherry', name: 'Wild Cherry Bears', label: 'Cherry Bears', brand: 'Albanese', group: 'bears',
+      types: ['gummies'], colors: ['red'], swatch: '#c8102e', handle: 'wild-cherry-gummi-bears', img: CDN + '50107_1.png',
+      about: 'All red, all wild cherry.', recipe: rc('bear', '#c8102e', '#e0243f') },
+    { id: 'bear-strawberry', name: 'Strawberry Bears', label: 'Strawberry', brand: 'Albanese', group: 'bears',
+      types: ['gummies'], colors: ['red'], swatch: '#e23a4b', handle: 'strawberry-gummi-bears', img: CDN + '50114_1.png',
+      about: 'Ruby-red strawberry bears.', recipe: rc('bear', '#e23a4b', '#f0515f') },
+    { id: 'bear-watermelon', name: 'Watermelon Bears', label: 'Watermelon', brand: 'Albanese', group: 'bears',
+      types: ['gummies'], colors: ['pink'], swatch: '#f06d8a', handle: 'watermelon-gummi-bears', img: CDN + '50188_1.png',
+      about: 'Rosy-pink watermelon bears.', recipe: rc('bear', '#f06d8a', '#f58aa2') },
+    { id: 'bear-grapefruit', name: 'Pink Grapefruit Bears', label: 'Grapefruit', brand: 'Albanese', group: 'bears',
+      types: ['gummies'], colors: ['pink'], swatch: '#f5a3b5', handle: 'pink-grapefruit-gummi-bears', img: CDN + '50176_1.png',
+      about: 'Soft blush-pink, gently tart.', recipe: rc('bear', '#f5a3b5', '#f8b8c6') },
+    { id: 'bear-orange', name: 'Orange Bears', label: 'Orange Bears', brand: 'Albanese', group: 'bears',
+      types: ['gummies'], colors: ['orange'], swatch: '#f08a24', handle: 'orange-gummi-bears', img: CDN + '50106_1.png',
+      about: 'Bright orange, sweet orange.', recipe: rc('bear', '#f08a24', '#f59c3c') },
+    { id: 'bear-mango', name: 'Mango Bears', label: 'Mango Bears', brand: 'Albanese', group: 'bears',
+      types: ['gummies'], colors: ['orange', 'yellow'], swatch: '#f4a62a', handle: 'mango-gummi-bears', img: CDN + '50112_1.png',
+      about: 'Golden-orange mango.', recipe: rc('bear', '#f4a62a', '#f7b84a') },
+    { id: 'bear-pineapple', name: 'Pineapple Bears', label: 'Pineapple', brand: 'Albanese', group: 'bears',
+      types: ['gummies'], colors: ['yellow'], swatch: '#f4d03f', handle: 'pineapple-gummi-bears', img: CDN + '50108_1.png',
+      about: 'Sunny yellow pineapple.', recipe: rc('bear', '#f4d03f', '#f7dc6f') },
+    { id: 'bear-green-apple', name: 'Green Apple Bears', label: 'Green Apple', brand: 'Albanese', group: 'bears',
+      types: ['gummies'], colors: ['green'], swatch: '#5cb85c', handle: 'green-apple-gummi-bears', img: CDN + '50105_1.png',
+      about: 'Crisp green apple.', recipe: rc('bear', '#5cb85c', '#72c472') },
+    { id: 'bear-blue-raspberry', name: 'Blue Raspberry Bears', label: 'Blue Bears', brand: 'Albanese', group: 'bears',
+      types: ['gummies'], colors: ['blue'], swatch: '#2f7fd6', handle: 'blue-raspberry-gummi-bears', img: CDN + '50123_1.png',
+      about: 'Deep blue raspberry.', recipe: rc('bear', '#2f7fd6', '#4b93e0') },
+    { id: 'bear-grape', name: 'Grape Bears', label: 'Grape Bears', brand: 'Albanese', group: 'bears',
+      types: ['gummies'], colors: ['purple'], swatch: '#7b4bb3', handle: 'grape-gummi-bears', img: CDN + '50109_1.png',
+      about: 'Royal purple grape.', recipe: rc('bear', '#7b4bb3', '#9063c4') },
+    { id: 'bear-banana', name: 'Strawberry-Banana Bears', label: 'Pearl Bears', brand: 'Albanese', group: 'bears',
+      types: ['gummies'], colors: ['white'], swatch: '#f3ead8', handle: 'white-strawberry-banana-gummi-bears', img: CDN + '50180_1.png',
+      about: 'Pearly white — the wedding and baby-shower bear.', recipe: rc('bear', '#f3ead8', '#fbf4e6') },
+
+    /* ================= Albanese sour ================= */
     {
-      id: 'sour-straws', name: 'Sour Power Rainbow Straws', flavor: 'Sour & chewy',
-      cats: ['sour'], traits: ['mix'],
-      perLb: 9.20, handle: 'sour-power-quattro-rainbow-candy-straws-2-5-lb-bulk-tub-soft-chewy-sour-rainbow-straws-assorted-fruit-flavored-candy-for-parties-candy-buffets-sharing',
-      about: 'Four fruit flavours of soft sour straws in a tangy sugar coat. The most-filmed candy we sell.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/sour-power-straws-tub-2-5lb-Candy-Funhouse-US.webp',
-      bg: '#f7fff2',
-      recipe: [
-        { shape: 'straw', colors: { a: '#ff4d6d' }, sour: true }, { shape: 'straw', colors: { a: '#5ad06b' }, sour: true },
-        { shape: 'straw', colors: { a: '#4bb9ff' }, sour: true }, { shape: 'straw', colors: { a: '#ffd23f' }, sour: true }
-      ]
+      id: 'sour-gummy-bears', name: 'Sour Gummi Bears', label: 'Sour Bears', brand: 'Albanese',
+      types: ['gummies', 'sour'], colors: ['rainbow'], swatch: '#9ccc65',
+      handle: 'sour-gummi-bears', img: CDN + '50117_1.jpg',
+      about: 'The same soft bear, rolled in sour sugar.',
+      recipe: sour(rc('bear', '#e53935', '#fdd835', '#43a047', '#fb8c00'))
     },
     {
-      id: 'sour-belts', name: 'Sour Power Rainbow Belts', flavor: 'Sour & tangy',
-      cats: ['sour'], traits: ['mix'],
-      perLb: 8.80, handle: 'sour-power-quattro-rainbow-candy-belts-2-5-lb-bulk-tub',
-      about: 'Wide rainbow belts, sour-sugar dusted. Rip them, stack them, or just eat the whole strip.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Sour-Power-Quattro-150-Count-42-3-Ounce_c87510f2-7358-4e1f-8411-6c11bdec8e8f.94b1481dcc27bd480602a6620014fe0e.avif',
-      bg: '#f2fff5',
-      recipe: [
-        { shape: 'belt', colors: { a: '#3fb8ff', b: '#ff4757', c: '#ffd23f' }, sour: true },
-        { shape: 'belt', colors: { a: '#4cd964', b: '#ffd23f', c: '#ff9f2e' }, sour: true },
-        { shape: 'belt', colors: { a: '#ff6fb0', b: '#a76bff', c: '#3fb8ff' }, sour: true }
-      ]
+      id: 'sour-neon-worms', name: 'Sour Neon Worms', label: 'Sour Worms', brand: 'Albanese',
+      types: ['gummies', 'sour'], colors: ['rainbow'], swatch: '#b5d334', tag: 'Fan favourite',
+      handle: 'sour-large-neon-gummi-worms-4', img: CDN + '50104_1.png',
+      about: 'Neon two-tone worms in a sparkling sour coat.',
+      recipe: sour(rc('worm', { a: '#ff4fa3', b: '#fff04f' }, { a: '#4fd1ff', b: '#9cff4f' }))
     },
     {
-      id: 'sour-mini-belts', name: 'Sour Power Mini Belts', flavor: 'Sour, bite size',
-      cats: ['sour'], traits: ['mix'],
-      perLb: 11.99, handle: 'sour-power®-snax®-mini-belt-quattro-19-8lb',
-      about: 'The same Quattro rainbow flavours cut short — easier to portion into a box and to share.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/103502_1_1.png',
-      bg: '#f4fff8',
-      recipe: [
-        { shape: 'belt', colors: { a: '#a8e05f', b: '#ffd23f', c: '#4cd964' }, sour: true },
-        { shape: 'belt', colors: { a: '#ff2e8b', b: '#ff6fb0', c: '#ff4757' }, sour: true }
-      ]
+      id: 'worm-sour-mini-neon', name: 'Sour Mini Neon Worms', label: 'Mini Sour Worms', brand: 'Albanese',
+      types: ['gummies', 'sour'], colors: ['rainbow'], swatch: '#c6e04a',
+      handle: 'sour-mini-neon-gummi-worms-2', img: CDN + '50124_1.jpg',
+      about: 'Mini neon worms, sour-sanded.',
+      recipe: sour(rc('worm', { a: '#ff4fa3', b: '#fff04f' }, { a: '#4fd1ff', b: '#9cff4f' }))
     },
     {
-      id: 'sour-bursts', name: 'Sour Power Bursts', flavor: 'Sour, filled centres',
-      cats: ['sour', 'gummies'], traits: ['mix'],
-      perLb: 11.99, handle: 'sour-power®-bursts®-6-6lb',
-      about: 'Chewy sour bites with a soft filled centre. Four assorted flavours in every scoop.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/104129_1.avif',
-      bg: '#fdf4ff',
-      recipe: [
-        { shape: 'ball', colors: { a: '#ff2e8b' }, sour: true }, { shape: 'ball', colors: { a: '#a8e05f' }, sour: true },
-        { shape: 'ball', colors: { a: '#3fb8ff' }, sour: true }, { shape: 'ball', colors: { a: '#ff9f2e' }, sour: true }
-      ]
-    },
-    {
-      id: 'pickle-belts', name: 'Sour Pickle Belts', flavor: 'Sour dill, seriously',
-      cats: ['sour'], traits: ['single'],
-      perLb: 11.99, handle: 'sour-power-pickle-candy-belts-bulk-bag-soft-chewy-sour-pickle-flavored-candy-strips-sweet-tangy-novelty-candy-for-parties-candy-buffets-sharing',
-      about: 'Yes, pickle. Sour dill candy belts that people buy as a dare and then finish the bag.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/818gZvFsXxL._SL1500.jpg',
-      bg: '#f3fbe9',
-      recipe: [
-        { shape: 'belt', colors: { a: '#7bbf3f', b: '#a8e05f', c: '#5f9c2a' }, sour: true },
-        { shape: 'belt', colors: { a: '#8fcf4f', b: '#c2e88a', c: '#6faa33' }, sour: true }
-      ]
-    },
-    {
-      id: 'smarties-sour', name: 'Smarties X-Treme Sour', flavor: 'Extremely sour', group: 'smarties',
-      cats: ['sour', 'classic'], traits: ['wrapped', 'mix'],
-      perLb: 12.99, handle: 'smarties-x-treme-sour-candy-rolls-bulk-bag',
-      about: 'Classic Smarties rolls turned up to eleven. Individually wrapped, so they travel well in a box.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91j1mV5653L._SL1500.jpg',
-      bg: '#f6f9ff',
-      recipe: [
-        { shape: 'wrapped', colors: { a: '#e9f7ff', b: '#3fb8ff' } },
-        { shape: 'wrapped', colors: { a: '#fff0f6', b: '#ff2e8b' } }
-      ]
+      id: 'worm-large-sour', name: 'Large Sour Fruit Worms', label: 'Sour Fruit Worms', brand: 'Albanese',
+      types: ['gummies', 'sour'], colors: ['rainbow'], swatch: '#f0b429',
+      handle: 'large-sour-assorted-fruit-gummi-worms-4', img: CDN + '50118_1.png',
+      about: 'Four-inch fruit worms with a sharp sour finish.',
+      recipe: sour(rc('worm', { a: '#e53935', b: '#fdd835' }, { a: '#43a047', b: '#fb8c00' }))
     },
 
-    /* ---------- chews ---------- */
+    /* ================= Albanese chocolate =================
+       Photos still to be shot — the cards draw the candy until then. */
     {
-      id: 'pink-strawberry-chews', name: 'All Pink Strawberry Chews', flavor: 'Strawberry only',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 14.99, extra: 0, handle: 'all-pink-strawberry-chewy-candy-1-lb-approx-90-pieces-bulk-bag-pink-individually-wrapped-candy-perfect-for-parties-events-candy-buffets-pink-party-favors-birthdays-weddings-baby-shower-candy-pack-by-yummyland-16-oz',
-      about: 'Nothing but the pink ones — about 90 strawberry chews to the pound. The single most requested pick we stock.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/Starburst-Pink-Strawberry-Chewy-Candy-1-LB-Approx-90-Pieces-Bulk-Bag-Pink-Individually-Wrapped-Candy-Perfect-Parties-Candy-Buffets-Pink-Party-Favors_bd113bcc-2707-4cd6-96b3-f51853448e.webp',
-      bg: '#fff0f6',
-      recipe: [
-        { shape: 'taffy', colors: { a: '#ff5d8f', b: '#ffd9ea' } },
-        { shape: 'taffy', colors: { a: '#ff7fa8', b: '#ffe4ef' } }
-      ],
-      pieces: 22
+      id: 'choc-nonpareils', name: 'Milk Chocolate Nonpareils', label: 'Nonpareils', brand: 'Albanese',
+      types: ['chocolate'], colors: ['brown', 'white'], swatch: '#5a3521',
+      handle: '', img: '',
+      about: 'Milk chocolate discs under a crunch of white sprinkles.',
+      recipe: rc('lentil', '#5a3521', '#6b4028')
     },
     {
-      id: 'fruit-chews-assorted', name: 'Starburst Assorted', flavor: 'Assorted fruit', group: 'starburst',
-      cats: ['chewy'], traits: ['wrapped', 'mix'],
-      perLb: 9.99, handle: 'starburst-original-assorted-fruit-chews-candy',
-      about: 'The square fruit chews everyone knows — strawberry, cherry, orange and lemon, individually wrapped.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/IMG000_19_1.jpg',
-      bg: '#fff5ec',
-      recipe: [
-        { shape: 'taffy', colors: { a: '#ff4757', b: '#ffd9ea' } }, { shape: 'taffy', colors: { a: '#ff9f2e', b: '#fff0c2' } },
-        { shape: 'taffy', colors: { a: '#ffd23f', b: '#fff6cf' } }, { shape: 'taffy', colors: { a: '#ff6fb0', b: '#ffd9ea' } }
-      ]
+      id: 'choc-malt-balls', name: 'Milk Chocolate Malt Balls', label: 'Choco Delights', brand: 'Albanese',
+      types: ['chocolate'], colors: ['brown'], swatch: '#4e2c18', tag: 'Fan favourite',
+      handle: '', img: '',
+      about: 'Light, crisp malt centres in smooth milk chocolate.',
+      recipe: rc('ball', '#4e2c18', '#6b4028', '#5a3521')
     },
     {
-      id: 'frooties-assorted', name: 'Frooties Assorted', flavor: '10 fruit flavours', group: 'frooties',
-      cats: ['chewy'], traits: ['wrapped', 'mix'],
-      perLb: 10.99, handle: 'tootsie-frooties-assorted-fruit-chewy-candy-10-flavors',
-      about: 'Ten Tootsie Frooties flavours in one scoop, each piece individually wrapped. Great value per pound.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/1_fdf35b62-37bc-4a35-974e-7441d1b43784.jpg',
-      bg: '#fff6ef',
-      recipe: [
-        { shape: 'wrapped', colors: { a: '#ffd9ea', b: '#ff5d8f' } }, { shape: 'wrapped', colors: { a: '#d8f5c0', b: '#69c35a' } },
-        { shape: 'wrapped', colors: { a: '#fff0c2', b: '#ffb400' } }, { shape: 'wrapped', colors: { a: '#d9ecff', b: '#3fa9f5' } }
-      ]
+      id: 'choc-pretzels', name: 'Milk Chocolate Pretzels', label: 'Choco Pretzels', brand: 'Albanese',
+      types: ['chocolate'], colors: ['brown'], swatch: '#6b4028',
+      handle: '', img: '',
+      about: 'Salty mini pretzels, fully coated in milk chocolate.',
+      recipe: rc('pretzel', '#6b4028', '#5a3521')
     },
     {
-      id: 'sour-fruit-chews', name: 'Sour Fruit Chews', flavor: 'Sour assorted fruit',
-      cats: ['chewy', 'sour'], traits: ['wrapped', 'mix'],
-      perLb: 10.99, handle: 'tootsie-fruit-chews-sour-tootsie-fruit-chews-sour-candy-2-lb-bag-approx-134-pieces-individually-wrapped-assorted-sour-fruit-flavored-chewy-candy-bulk-candy-for-parties-sharing',
-      about: 'Tootsie fruit chews with the sour turned on. Wrapped, so they hold up in a mixed box.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91LjTHcE1KL._SL1500.jpg',
-      bg: '#f8fff0',
-      recipe: [
-        { shape: 'wrapped', colors: { a: '#e8ffd0', b: '#7bbf3f' }, sour: true },
-        { shape: 'wrapped', colors: { a: '#ffe9f3', b: '#ff2e8b' }, sour: true },
-        { shape: 'wrapped', colors: { a: '#fff0c2', b: '#ffb400' }, sour: true }
-      ]
+      id: 'choc-gummi-bears', name: 'Chocolate Covered Gummi Bears', label: 'Choco Bears', brand: 'Albanese',
+      types: ['chocolate', 'gummies'], colors: ['brown'], swatch: '#5a3521', tag: 'New',
+      handle: '', img: '',
+      about: 'An Albanese gummi bear inside a milk chocolate shell.',
+      recipe: rc('bear', '#5a3521', '#6b4028')
     },
     {
-      id: 'hot-tamales', name: 'Hot Tamales', flavor: 'Cinnamon heat',
-      cats: ['chewy'], traits: ['mix'],
-      perLb: 9.99, handle: 'hot-tamales®-5lb',
-      about: 'Chewy cinnamon bites with real heat behind them. The one scoop in the range that is not a fruit flavour.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/102475_1_1.png',
-      bg: '#fff0ee',
-      recipe: [
-        { shape: 'bean', colors: { a: '#e63946' } }, { shape: 'bean', colors: { a: '#ff4757' } },
-        { shape: 'bean', colors: { a: '#c9262f' } }
-      ]
+      id: 'choc-peanuts', name: 'Milk Chocolate Peanuts', label: 'Choco Peanuts', brand: 'Albanese',
+      types: ['chocolate'], colors: ['brown'], swatch: '#6b4028', nuts: true,
+      handle: '', img: '',
+      about: 'Roasted peanuts in thick milk chocolate. Contains peanuts.',
+      recipe: rc('bean', '#6b4028', '#5a3521')
+    },
+    {
+      id: 'rainbow-bites', name: 'Rainbow Chocolate Bites', label: 'Rainbow Bites', brand: 'Candy-coated',
+      types: ['chocolate'], colors: ['rainbow'], swatch: '#e53935',
+      handle: '', img: '',
+      about: 'Candy-shelled chocolate beads in every colour. The cup everyone photographs.',
+      recipe: rc('ball', '#e53935', '#fdd835', '#43a047', '#1e88e5', '#fb8c00')
     },
 
-    /* ---------- classics ---------- */
+    /* ================= more favourites ================= */
     {
-      id: 'jolly-assorted', name: 'Jolly Rancher Assorted', flavor: '5 fruit flavours', group: 'jolly',
-      cats: ['classic'], traits: ['wrapped', 'mix'],
-      perLb: 7.99, handle: 'jolly-rancher-assorted-hard-candy',
-      about: 'Cherry, watermelon, green apple, blue raspberry and grape. The cheapest pound in the shop and it never sits still.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/91HWGWO064L._SL1500.jpg',
-      bg: '#fff6f2',
-      recipe: [
-        { shape: 'square', colors: { a: '#ff4757' } }, { shape: 'square', colors: { a: '#4cd964' } },
-        { shape: 'square', colors: { a: '#a76bff' } }, { shape: 'square', colors: { a: '#3fb8ff' } },
-        { shape: 'square', colors: { a: '#ff9f2e' } }
-      ]
+      id: 'swedish-fish', name: 'Swedish Fish', label: 'Swedish Fish', brand: 'Swedish Fish',
+      types: ['gummies'], colors: ['red'], swatch: '#d62828',
+      handle: 'swedish-fish-large-assorted-5lb', img: CDN + '102404_1.jpg',
+      about: 'The classic red berry fish.',
+      recipe: rc('shark', { a: '#d62828', b: '#e84545' })
     },
     {
-      id: 'caramel-cubes', name: 'Vanilla Caramel Cubes', flavor: 'Buttery & soft',
-      cats: ['classic', 'chewy'], traits: ['wrapped', 'single'],
-      perLb: 8.99, handle: 'caramel-cubes-candy-bulk-bag-individually-wrapped-vanilla-caramel-squares-old-fashioned-candy',
-      about: 'Soft vanilla caramels, individually wrapped. The quiet workhorse of a gift box.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81zqz8D8qbL.jpg',
-      bg: '#fff5e9',
-      recipe: [
-        { shape: 'cube', colors: { a: '#c98b45' } }, { shape: 'cube', colors: { a: '#b8783a' } },
-        { shape: 'cube', colors: { a: '#d9a05f' } }
-      ]
-    },
-    {
-      id: 'bit-o-honey', name: 'Bit-O-Honey', flavor: 'Honey almond taffy',
-      cats: ['classic', 'chewy'], traits: ['wrapped', 'single'],
-      perLb: 9.99, handle: 'bit-o-honey-candy-bulk-bag-individually-wrapped-honey-taffy-candy',
-      about: 'Honey-flavoured taffy with real almond bits. Contains almonds — worth knowing before you gift it.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/102599_2.png',
-      bg: '#fff9ea',
-      recipe: [
-        { shape: 'bar', colors: { a: '#f0c785' } }, { shape: 'bar', colors: { a: '#e0aa5c' } },
-        { shape: 'taffy', colors: { a: '#ffe9c9', b: '#e0aa5c' } }
-      ]
+      id: 'sour-patch-kids', name: 'Sour Patch Kids', label: 'Sour Patch', brand: 'Sour Patch Kids',
+      types: ['gummies', 'sour'], colors: ['rainbow'], swatch: '#f4d03f',
+      handle: 'sour-patch-kids-5lb', img: CDN + '102415_1.png',
+      about: 'Sour, then sweet. The one nobody needs explained.',
+      recipe: sour(rc('bean', '#e53935', '#fdd835', '#43a047', '#1e88e5'))
     },
 
-    /* ---------- single flavours, reached through the flavour picker ---------- */
+    /* ================= hard candy ================= */
     {
-      id: 'cherry-chews', name: 'Cherry Chews', flavor: 'Cherry only', group: 'starburst',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 14.99, handle: 'yummyland-cherry-chewy-candy-1-lb-single-flavor-red-soft-original-fruit-chews-candy-individually-wrapped-bulk-candies-16-oz',
-      about: 'Single-flavour red fruit chews. Pairs well with the all-pink strawberry scoop.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/8EEF34EC-87E1-41FA-A43E-15443FD88BB6.jpg',
-      bg: '#fff0f1',
-      recipe: [{ shape: 'taffy', colors: { a: '#e8324a', b: '#ffd2d7' } }, { shape: 'taffy', colors: { a: '#ff4d63', b: '#ffdde1' } }]
+      id: 'jolly-assorted', name: 'Jolly Rancher Assorted', label: 'Jolly Rancher', brand: 'Jolly Rancher',
+      types: ['hard'], colors: ['rainbow'], swatch: '#e0245e',
+      handle: 'jolly-rancher-assorted-hard-candy', img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/91HWGWO064L._SL1500.jpg',
+      about: 'Five bold fruit flavours, individually wrapped.',
+      recipe: rc('wrapped', '#e0245e', '#43a047', '#8e24aa', '#1e88e5', '#fb8c00')
+    },
+    { id: 'jolly-cherry', name: 'Jolly Rancher Cherry', label: 'Cherry Jolly', brand: 'Jolly Rancher', group: 'jolly',
+      types: ['hard'], colors: ['red'], swatch: '#c8102e', handle: 'jolly-rancher-cherry-hard-candy-1', img: CDN + 'JOLLYRANCHER_3.jpg',
+      about: 'All cherry, all red.', recipe: rc('wrapped', '#c8102e') },
+    { id: 'jolly-watermelon', name: 'Jolly Rancher Watermelon', label: 'Watermelon Jolly', brand: 'Jolly Rancher', group: 'jolly',
+      types: ['hard'], colors: ['pink'], swatch: '#f06d8a', handle: 'jolly-rancher-watermelon-hard-candy-1', img: CDN + 'JOLLYRANCHER_5.jpg',
+      about: 'All watermelon.', recipe: rc('wrapped', '#f06d8a') },
+    { id: 'jolly-green-apple', name: 'Jolly Rancher Green Apple', label: 'Apple Jolly', brand: 'Jolly Rancher', group: 'jolly',
+      types: ['hard'], colors: ['green'], swatch: '#43a047', handle: 'jolly-rancher-green-apple-hard-candy-1', img: CDN + 'A1ztBLaihxL._SL1500.jpg',
+      about: 'All green apple.', recipe: rc('wrapped', '#43a047') },
+    { id: 'jolly-blue-raspberry', name: 'Jolly Rancher Blue Raspberry', label: 'Blue Jolly', brand: 'Jolly Rancher', group: 'jolly',
+      types: ['hard'], colors: ['blue'], swatch: '#1e88e5', handle: 'jolly-rancher-blue-raspberry-hard-candy-1', img: CDN + 'JOLLYRANCHER_2.jpg',
+      about: 'All blue raspberry.', recipe: rc('wrapped', '#1e88e5') },
+    { id: 'jolly-grape', name: 'Jolly Rancher Grape', label: 'Grape Jolly', brand: 'Jolly Rancher', group: 'jolly',
+      types: ['hard'], colors: ['purple'], swatch: '#7b4bb3', handle: 'jolly-rancher-grape-hard-candy', img: CDN + 'JOLLYRANCHER_4_26d213be-7a4e-45f5-a045-6270ff2e019e.jpg',
+      about: 'All grape.', recipe: rc('wrapped', '#7b4bb3') },
+    {
+      id: 'starlight-mints', name: 'Starlight Peppermints', label: 'Starlight Mints', brand: 'Classic',
+      types: ['hard'], colors: ['red', 'white'], swatch: '#d62828',
+      handle: '', img: '',
+      about: 'Red-and-white pinwheel mints, individually wrapped.',
+      recipe: rc('swirl', { a: '#ffffff', b: '#d62828' })
     },
     {
-      id: 'lemon-chews', name: 'Lemon Chews', flavor: 'Lemon only', group: 'starburst',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 14.99, handle: 'yummyland-lemon-chewy-candy-1-lb-yellow-single-flavor-soft-original-fruit-chews-candy-individually-wrapped-bulk-candies-16-oz',
-      about: 'Sharp yellow lemon chews, one flavour all the way through the scoop.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/8BE508EC-B505-401A-BE38-053D68B5B4EF.jpg',
-      bg: '#fffaea',
-      recipe: [{ shape: 'taffy', colors: { a: '#ffd23f', b: '#fff3c4' } }, { shape: 'taffy', colors: { a: '#f7c00f', b: '#ffeeb0' } }]
+      id: 'butterscotch', name: 'Butterscotch Discs', label: 'Butterscotch', brand: 'Classic',
+      types: ['hard'], colors: ['yellow'], swatch: '#d9a23b',
+      handle: '', img: '',
+      about: 'Golden, buttery, wrapped in gold foil-look film.',
+      recipe: rc('wrapped', '#d9a23b')
     },
     {
-      id: 'orange-chews', name: 'Orange Chews', flavor: 'Orange only', group: 'starburst',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 14.99, handle: 'orange-chewy-candy-1-lb-single-flavor-soft-original-fruit-chews-candy-individually-wrapped-bulk-candies-16-oz',
-      about: 'Single-flavour orange fruit chews — the one people always dig for in a mixed bag.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/913B71CF-14E3-450F-A0E0-98100610187A.jpg',
-      bg: '#fff5e9',
-      recipe: [{ shape: 'taffy', colors: { a: '#ff9f2e', b: '#ffe3bd' } }, { shape: 'taffy', colors: { a: '#ff8412', b: '#ffdcae' } }]
+      id: 'root-beer-barrels', name: 'Root Beer Barrels', label: 'Root Beer', brand: 'Classic',
+      types: ['hard'], colors: ['brown'], swatch: '#7a4a24',
+      handle: '', img: '',
+      about: 'The candy-counter classic, individually wrapped.',
+      recipe: rc('wrapped', '#7a4a24')
     },
     {
-      id: 'frootie-blue-raspberry', name: 'Frooties Blue Raspberry', flavor: 'Blue raspberry only', group: 'frooties',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 10.99, handle: 'tootsie-frooties-blue-raspberry-fruit-chewy-candy-bulk',
-      about: 'Single-flavour blue raspberry Frooties — the colour that makes a box pop.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/GUEST_49bb116d-6eeb-4a1a-a295-c45eb538a286.webp',
-      bg: '#eef6ff',
-      recipe: [{ shape: 'wrapped', colors: { a: '#d9ecff', b: '#3fa9f5' } }, { shape: 'wrapped', colors: { a: '#c2e4ff', b: '#2f8fe0' } }]
+      id: 'cinnamon-discs', name: 'Cinnamon Discs', label: 'Cinnamon', brand: 'Classic',
+      types: ['hard'], colors: ['red'], swatch: '#b3122a',
+      handle: '', img: '',
+      about: 'Deep red, warm cinnamon heat.',
+      recipe: rc('lentil', '#b3122a', '#c8102e')
     },
     {
-      id: 'frootie-green-apple', name: 'Frooties Green Apple', flavor: 'Green apple only', group: 'frooties',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 10.99, handle: 'tootsie-frooties-green-apple-fruit-chewy-candy-bulk',
-      about: 'Tart green apple Frooties, one flavour only.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81X3NEOjx-L._SL1200.jpg',
-      bg: '#f2fbea',
-      recipe: [{ shape: 'wrapped', colors: { a: '#dcf5c4', b: '#69c35a' } }, { shape: 'wrapped', colors: { a: '#c9ee9f', b: '#4fa93f' } }]
-    },
-    {
-      id: 'frootie-watermelon', name: 'Frooties Watermelon', flavor: 'Watermelon only', group: 'frooties',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 10.99, handle: 'tootsie-frooties-watermelon-fruit-chewy-candy-bulk',
-      about: 'Summer-flavoured watermelon Frooties. Reliably the first single flavour to empty.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/817JU0l9FwL._SL1200.jpg',
-      bg: '#fff0f3',
-      recipe: [{ shape: 'wrapped', colors: { a: '#ffd4dc', b: '#ff5d73' } }, { shape: 'wrapped', colors: { a: '#ffe1e6', b: '#f0455f' } }]
-    },
-    {
-      id: 'frootie-mango', name: 'Frooties Mango', flavor: 'Mango only', group: 'frooties',
-      cats: ['chewy', 'world'], traits: ['wrapped', 'single'],
-      perLb: 10.99, handle: 'tootsie-frooties-mango-fruit-chewy-candy-bulk',
-      about: 'Sweet tropical mango Frooties — quietly one of the best flavours in the range.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/71LYHPKKIJL._SL1200.jpg',
-      bg: '#fff7e8',
-      recipe: [{ shape: 'wrapped', colors: { a: '#ffe3b0', b: '#ff9f2e' } }, { shape: 'wrapped', colors: { a: '#ffd695', b: '#f08300' } }]
-    },
-    {
-      id: 'frootie-pineapple', name: 'Frooties Pineapple', flavor: 'Pineapple only', group: 'frooties',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 10.99, handle: 'tootsie-frooties-pineapple-fruit-chewy-candy-bulk',
-      about: 'Bright tropical pineapple Frooties. The yellow that stops a box looking all red and pink.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/TR7855_2_1000x1000_crop_center_acdd332f-411a-45d0-85be-a2cac1b3590f.webp',
-      bg: '#fffbe8',
-      recipe: [{ shape: 'wrapped', colors: { a: '#fff3bf', b: '#ffcc33' } }]
-    },
-    {
-      id: 'frootie-strawberry', name: 'Frooties Strawberry', flavor: 'Strawberry only', group: 'frooties',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 10.99, handle: 'tootsie-frooties-strawberry-fruit-chewy-candy-bulk',
-      about: 'Classic red strawberry Frooties — the safest single flavour to put in a gift box.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81MawXIj50L._SL1200.jpg',
-      bg: '#fff0f4',
-      recipe: [{ shape: 'wrapped', colors: { a: '#ffd9e4', b: '#ff4d6d' } }]
-    },
-    {
-      id: 'frootie-strawberry-lemonade', name: 'Frooties Strawberry Lemonade', flavor: 'Strawberry lemonade', group: 'frooties',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 10.99, handle: 'tootsie-frooties-strawberry-lemonade-fruit-chewy-candy-bulk',
-      about: 'Pink and sharp at the same time. Strawberry lemonade Frooties, single flavour.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81lcj2xSL3L._SL1200.jpg',
-      bg: '#fff4f4',
-      recipe: [{ shape: 'wrapped', colors: { a: '#ffdfe4', b: '#ff6b7f' } }, { shape: 'wrapped', colors: { a: '#fff0c8', b: '#ffcc33' } }]
-    },
-    {
-      id: 'frootie-grape', name: 'Frooties Grape', flavor: 'Grape only', group: 'frooties',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 10.99, handle: 'tootsie-frooties-grape-fruit-chewy-candy-bulk',
-      about: 'Deep purple grape Frooties. Adds contrast to an otherwise very pink box.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81ROx8s4aFL._SL1200.jpg',
-      bg: '#f7f2ff',
-      recipe: [{ shape: 'wrapped', colors: { a: '#e4d5ff', b: '#8b5cf6' } }, { shape: 'wrapped', colors: { a: '#d3bcff', b: '#6f3fd6' } }]
-    },
-    {
-      id: 'frootie-fruit-punch', name: 'Frooties Fruit Punch', flavor: 'Fruit punch', group: 'frooties',
-      cats: ['chewy'], traits: ['wrapped', 'single'],
-      perLb: 10.99, handle: 'tootsie-frooties-fruit-punch-fruit-chewy-candy-bulk',
-      about: 'Mixed-berry fruit punch Frooties, individually wrapped.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91MRqOOi5oL._SL1500.jpg',
-      bg: '#fff2f0',
-      recipe: [{ shape: 'wrapped', colors: { a: '#ffd6cf', b: '#ff5a3c' } }, { shape: 'wrapped', colors: { a: '#ffc2b8', b: '#e8452c' } }]
-    },
-    {
-      id: 'frootie-sour-cherry', name: 'Frooties Sour Cherry', flavor: 'Sour cherry', group: 'frooties',
-      cats: ['chewy', 'sour'], traits: ['wrapped', 'single'],
-      perLb: 10.99, handle: 'tootsie-frooties-sour-cherry-fruit-chewy-candy-bulk',
-      about: 'Cherry Frooties with a sour edge — the only Frootie that bites back.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/81BPGW7lysS._SL1200.jpg',
-      bg: '#fff2f2',
-      recipe: [{ shape: 'wrapped', colors: { a: '#ffd6d6', b: '#e63946' }, sour: true }]
-    },
-    {
-      id: 'jolly-cherry', name: 'Jolly Rancher Cherry', flavor: 'Cherry only', group: 'jolly',
-      cats: ['hard'], traits: ['wrapped', 'single'],
-      perLb: 14.99, handle: 'jolly-rancher-cherry-hard-candy-1',
-      about: 'Single-flavour cherry Jolly Ranchers — the red box builder favourite.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/JOLLYRANCHER_3.jpg',
-      bg: '#fff0f1',
-      recipe: [{ shape: 'square', colors: { a: '#ff2e46' } }, { shape: 'square', colors: { a: '#e01f36' } }]
-    },
-    {
-      id: 'jolly-green-apple', name: 'Jolly Rancher Green Apple', flavor: 'Green apple only', group: 'jolly',
-      cats: ['hard'], traits: ['wrapped', 'single'],
-      perLb: 14.99, handle: 'jolly-rancher-green-apple-hard-candy-1',
-      about: 'Sharp green apple, hand-sorted into a single-flavour scoop.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/A1ztBLaihxL._SL1500.jpg',
-      bg: '#f1fbec',
-      recipe: [{ shape: 'square', colors: { a: '#4cd964' } }, { shape: 'square', colors: { a: '#3fbf55' } }]
-    },
-    {
-      id: 'jolly-watermelon', name: 'Jolly Rancher Watermelon', flavor: 'Watermelon only', group: 'jolly',
-      cats: ['hard'], traits: ['wrapped', 'single'],
-      perLb: 14.99, handle: 'jolly-rancher-watermelon-hard-candy-1',
-      about: 'Watermelon only. The flavour people fish out of the assorted bag anyway.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/JOLLYRANCHER_5.jpg',
-      bg: '#fff1f4',
-      recipe: [{ shape: 'square', colors: { a: '#ff5d73' } }, { shape: 'square', colors: { a: '#ff7d8f' } }]
-    },
-    {
-      id: 'jolly-blue-raspberry', name: 'Jolly Rancher Blue Raspberry', flavor: 'Blue raspberry only', group: 'jolly',
-      cats: ['hard'], traits: ['wrapped', 'single'],
-      perLb: 14.99, handle: 'jolly-rancher-blue-raspberry-hard-candy-1',
-      about: 'A whole scoop of nothing but the blue ones. Sorted by hand, so it costs a little more.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/JOLLYRANCHER_2.jpg',
-      bg: '#eef6ff',
-      recipe: [{ shape: 'square', colors: { a: '#3fb8ff' } }, { shape: 'square', colors: { a: '#5fc4ff' } }]
-    },
-    {
-      id: 'jolly-grape', name: 'Jolly Rancher Grape', flavor: 'Grape only', group: 'jolly',
-      cats: ['hard'], traits: ['wrapped', 'single'],
-      perLb: 9.99, handle: 'jolly-rancher-grape-hard-candy',
-      about: 'A full scoop of grape. Divisive, and its fans are loyal.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/JOLLYRANCHER_4_26d213be-7a4e-45f5-a045-6270ff2e019e.jpg',
-      bg: '#f6f1ff',
-      recipe: [{ shape: 'square', colors: { a: '#a76bff' } }, { shape: 'square', colors: { a: '#8b5cf6' } }]
-    },
-    {
-      id: 'smarties-tropical', name: 'Smarties Tropical Rolls', flavor: 'Tropical fruit', group: 'smarties',
-      cats: ['hard', 'retro'], traits: ['wrapped', 'mix'],
-      perLb: 9.99, handle: 'smarties-tropical-candy-rolls-bulk-bag',
-      about: 'Tropical-flavoured Smarties rolls. Nostalgic, cheap to add and easy to hand out.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/91R5Noswj8L._SL1500.jpg',
-      bg: '#fff7ee',
-      recipe: [{ shape: 'coil', colors: { a: '#ffd23f', b: '#ff9f2e' } }, { shape: 'coil', colors: { a: '#a8e05f', b: '#4cd964' } }]
-    },
-
-    /* ---------- the bear and worm benches ---------- */
-    {
-      id: 'bear-cubs', name: 'Gummi Bear Cubs', flavor: '12 flavours, mini', group: 'bears',
-      cats: ['gummies'], traits: ['mix'],
-      perLb: 9.99, handle: '12-flavor-gummi-bear-cubs™',
-      about: 'The same twelve flavours at half the size. More bears to the scoop and easier for small hands.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50235_1.jpg',
-      bg: '#fff2f7',
-      recipe: [{ shape: 'bear', colors: { a: '#ff6fb0' } }]
-    },
-    {
-      id: 'bear-natural', name: '5 Natural Flavor Bears', flavor: 'Colours from fruit & veg', group: 'bears',
-      cats: ['gummies'], traits: ['mix'],
-      perLb: 10.99, handle: '5-natural-flavor-gummi-bears™',
-      about: 'Five flavours coloured with fruit and vegetable juice instead of dyes. Softer, more muted colours on purpose.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50270_1.jpg',
-      bg: '#fff8ec',
-      recipe: [{ shape: 'bear', colors: { a: '#e8a33d' } }]
-    },
-    {
-      id: 'bear-papa', name: 'Gummi Papa Bears', flavor: 'Oversized, assorted', group: 'bears',
-      cats: ['gummies'], traits: ['mix'],
-      perLb: 10.99, handle: 'gummi-papa-bears',
-      about: 'Big bears, roughly four times the usual size. One is a mouthful and they make a box look generous.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50183_1.png',
-      bg: '#fff1ee',
-      recipe: [{ shape: 'bear', colors: { a: '#c0392b' } }]
-    },
-    {
-      id: 'bear-cherry', name: 'Wild Cherry Bears', flavor: 'Wild cherry only', group: 'bears',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'wild-cherry-gummi-bears',
-      about: 'Deep red, properly cherry. The single flavour people ask for most.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50107_1.png',
-      bg: '#fff0f1',
-      recipe: [{ shape: 'bear', colors: { a: '#e63946' } }]
-    },
-    {
-      id: 'bear-strawberry', name: 'Strawberry Bears', flavor: 'Strawberry only', group: 'bears',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'strawberry-gummi-bears',
-      about: 'Sweet red strawberry bears — the safe pick for a pink box or a baby shower.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50114_1.png',
-      bg: '#fff0f4',
-      recipe: [{ shape: 'bear', colors: { a: '#ff4d6d' } }]
-    },
-    {
-      id: 'bear-grapefruit', name: 'Pink Grapefruit Bears', flavor: 'Pink grapefruit only', group: 'bears',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'pink-grapefruit-gummi-bears',
-      about: 'Soft pink with a bittersweet citrus finish. The most grown-up bear in the range.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50176_1.png',
-      bg: '#fff2f5',
-      recipe: [{ shape: 'bear', colors: { a: '#ff8fa3' } }]
-    },
-    {
-      id: 'bear-orange', name: 'Orange Bears', flavor: 'Orange only', group: 'bears',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'orange-gummi-bears',
-      about: 'Bright citrus orange. Good contrast in a box that is otherwise all reds and pinks.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50106_1.png',
-      bg: '#fff6ea',
-      recipe: [{ shape: 'bear', colors: { a: '#ff9f2e' } }]
-    },
-    {
-      id: 'bear-mango', name: 'Mango Bears', flavor: 'Mango only', group: 'bears',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'mango-gummi-bears',
-      about: 'Ripe tropical mango — quietly one of the best flavours Albanese makes.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50112_1.png',
-      bg: '#fff8e9',
-      recipe: [{ shape: 'bear', colors: { a: '#ffb52e' } }]
-    },
-    {
-      id: 'bear-green-apple', name: 'Green Apple Bears', flavor: 'Green apple only', group: 'bears',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'green-apple-gummi-bears',
-      about: 'Tart green apple. The one flavour that cuts through a very sweet box.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50105_1.png',
-      bg: '#f4fff0',
-      recipe: [{ shape: 'bear', colors: { a: '#7bbf3f' } }]
-    },
-    {
-      id: 'bear-watermelon', name: 'Watermelon Bears', flavor: 'Watermelon only', group: 'bears',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'watermelon-gummi-bears',
-      about: 'Summer in a scoop. Reliably the first single flavour to run out at a party.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50188_1.png',
-      bg: '#fff1f2',
-      recipe: [{ shape: 'bear', colors: { a: '#ff5d73' } }]
-    },
-    {
-      id: 'bear-blue-raspberry', name: 'Blue Raspberry Bears', flavor: 'Blue raspberry only', group: 'bears',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'blue-raspberry-gummi-bears',
-      about: 'The blue ones, and only the blue ones. Nothing else makes a box pop like a full scoop of these.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50123_1.png',
-      bg: '#eef7ff',
-      recipe: [{ shape: 'bear', colors: { a: '#3fb8ff' } }]
-    },
-    {
-      id: 'bear-grape', name: 'Grape Bears', flavor: 'Grape only', group: 'bears',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'grape-gummi-bears',
-      about: 'Deep purple grape. Divisive, and the people who love it want a whole scoop.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50109_1.png',
-      bg: '#f7f1ff',
-      recipe: [{ shape: 'bear', colors: { a: '#a76bff' } }]
-    },
-    {
-      id: 'bear-pineapple', name: 'Pineapple Bears', flavor: 'Pineapple only', group: 'bears',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'pineapple-gummi-bears',
-      about: 'Sharp yellow pineapple — the brightest colour in the bear line.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50108_1.png',
-      bg: '#fffceb',
-      recipe: [{ shape: 'bear', colors: { a: '#ffd23f' } }]
-    },
-    {
-      id: 'bear-banana', name: 'Strawberry-Banana Bears', flavor: 'White strawberry-banana', group: 'bears',
-      cats: ['gummies'], traits: ['single'],
-      perLb: 9.99, handle: 'white-strawberry-banana-gummi-bears',
-      about: 'Creamy white bears that taste of strawberry and banana together. Unusual, and people come back for them.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50180_1.png',
-      bg: '#fffaf0',
-      recipe: [{ shape: 'bear', colors: { a: '#fff0d6' } }]
-    },
-    {
-      id: 'worm-mini', name: 'Mini Gummi Worms', flavor: 'Assorted fruit, 2"', group: 'worms',
-      cats: ['gummies'], traits: ['mix'],
-      perLb: 9.99, handle: 'mini-assorted-fruit-gummi-worms-2',
-      about: 'Half-length worms, same two-tone chew. They portion into a box far more neatly than the big ones.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50137_1.png',
-      bg: '#fff3f8',
-      recipe: [{ shape: 'worm', colors: { a: '#ff6fb0', b: '#ffd23f' } }]
-    },
-    {
-      id: 'worm-sour-mini-neon', name: 'Sour Mini Neon Worms', flavor: 'Sour neon, 2"', group: 'sour-worms',
-      cats: ['gummies', 'sour'], traits: ['mix'],
-      perLb: 10.99, handle: 'sour-mini-neon-gummi-worms-2',
-      about: 'Neon minis in sour sugar. The loudest colour in the range and the easiest sour to share out.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50124_1.jpg',
-      bg: '#f4fff2',
-      recipe: [{ shape: 'worm', colors: { a: '#a8e05f', b: '#3fb8ff' }, sour: true }]
-    },
-    {
-      id: 'worm-large-sour', name: 'Large Sour Fruit Worms', flavor: 'Sour assorted, 4"', group: 'sour-worms',
-      cats: ['gummies', 'sour'], traits: ['mix'],
-      perLb: 10.99, handle: 'large-sour-assorted-fruit-gummi-worms-4',
-      about: 'Full-size worms in the classic fruit colours, rolled in sour sugar rather than turned neon.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50118_1.png',
-      bg: '#fff4f2',
-      recipe: [{ shape: 'worm', colors: { a: '#ff4757', b: '#ffd23f' }, sour: true }]
-    },
-    {
-      id: 'worm-natural-mini', name: '5 Natural Flavor Mini Worms', flavor: 'Colours from fruit & veg, 2"', group: 'worms',
-      cats: ['gummies'], traits: ['mix'],
-      perLb: 10.99, handle: '5-natural-flavor-mini-gummi-worms-2',
-      about: 'Mini worms coloured with fruit and vegetable juice. Muted next to the neon, and that is the point.',
-      img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/files/50271_2.png',
-      bg: '#fff9ee',
-      recipe: [{ shape: 'worm', colors: { a: '#e8a33d', b: '#7bbf3f' } }]
+      id: 'lemon-drops', name: 'Sugared Lemon Drops', label: 'Lemon Drops', brand: 'Classic',
+      types: ['hard', 'sour'], colors: ['yellow'], swatch: '#f4d03f',
+      handle: '', img: '',
+      about: 'Sugar-sanded lemon drops, sweet then tart.',
+      recipe: sour(rc('lentil', '#f4d03f', '#f7dc6f'))
     }
   ];
 
-  YL.VIBES = [
-    { id: 'me', name: 'Just for Me', icon: 'heart' },
-    { id: 'gift', name: 'Gift', icon: 'gift' },
-    { id: 'birthday', name: 'Birthday', icon: 'cake' },
-    { id: 'office', name: 'Office', icon: 'briefcase' },
-    { id: 'movie', name: 'Movie Night', icon: 'film' },
-    { id: 'party', name: 'Party', icon: 'party' },
-    { id: 'holiday', name: 'Holiday', icon: 'tree' },
-    { id: 'surprise', name: 'Surprise Me', icon: 'question' }
-  ];
-
-  YL.EXTRAS = [
-    { id: 'note', name: 'Gift Note', desc: 'Hand-written on a Yummyland card', price: 0, icon: 'note', free: true },
-    { id: 'stickers', name: 'Sticker Pack', desc: 'Yummyland sticker sheet', price: 1.99, icon: 'sticker' },
-    { id: 'scoop', name: 'Extra 4 oz Scoop', desc: 'One more scoop over the box weight', price: 5.99, icon: 'candy', addsScoop: true },
-    { id: 'surprise', name: 'Surprise Candy', desc: 'We tuck in a secret treat', price: 2.99, icon: 'dice' },
-    { id: 'wrap', name: 'Premium Gift Wrap', desc: 'Ribbon, tissue and a sleeve', price: 4.99, icon: 'wrap' },
-    { id: 'theme', name: 'Color Theme', desc: 'Pick your box color', price: 1.99, icon: 'palette' }
-  ];
-
-  YL.BOX_THEMES = [
-    { id: 'pink', name: 'Yummy Pink', hex: '#ff2e8b' },
-    { id: 'purple', name: 'Grape Pop', hex: '#9b6bff' },
-    { id: 'blue', name: 'Blue Raspberry', hex: '#45b8ff' },
-    { id: 'mint', name: 'Mint Chill', hex: '#35c9a4' },
-    { id: 'gold', name: 'Golden Party', hex: '#ffc933' }
-  ];
-
-  /* One-click starting points. Each list is a pool — the auto-builder
-     scoops from it until the box hits its fill weight. */
-  YL.PRESETS = [
-    { id: 'gummy-lover', name: 'Gummy Lover', desc: 'Bears, worms and rings',
-      candies: ['gummy-bears-12', 'gummy-worms', 'peach-rings', 'gummy-sharks', 'gummy-berries', 'blue-raspberry-rings', 'gummy-butterflies', 'watermelon-slices'] },
-    { id: 'sour-lover', name: 'Sour Lover', desc: 'Straws, belts and the pickle dare',
-      candies: ['sour-patch-kids', 'sour-straws', 'sour-belts', 'sour-mini-belts', 'pickle-belts', 'sour-bursts', 'sour-neon-worms', 'smarties-sour'] },
-    { id: 'sweet-fruity', name: 'Sweet & Fruity', desc: 'Chews and fruit flavours',
-      candies: ['fruit-chews-assorted', 'frooties-assorted', 'pink-strawberry-chews', 'haribo-peaches', 'gummy-berries', 'gummy-bears-12', 'watermelon-slices', 'haribo-cola'] },
-    { id: 'retro-run', name: 'Retro Run', desc: 'The old candy-store counter',
-      candies: ['caramel-cubes', 'bit-o-honey', 'jolly-assorted', 'smarties-sour', 'hot-tamales', 'fruit-chews-assorted', 'caramel-cubes', 'bit-o-honey'] },
-    { id: 'random', name: 'Random Mix', desc: 'Let us surprise you', candies: null }
-  ];
-
-  /* Ready-made boxes. Every one is editable in the builder, and every
-     one is filled to exactly its size in 4 oz scoops — a repeated id
-     is a second scoop of the same candy. */
-  YL.PREBUILT = [
-    {
-      id: 'gummy-box', name: 'Gummy Lovers Box', tag: 'Gummies',
-      desc: 'Two pounds of nothing but gummies.',
-      goodFor: ['Gummy fans', 'Kids & teens', 'Content & sharing'],
-      about: 'Peach rings, blue raspberry rings, sharks, Swedish Fish, berries and the 12-flavour bears. No hard candy, no chews — just the squishy stuff, and it is the box people film.',
-      season: null, size: 'medium', color: 'pink',
-      candies: ['peach-rings', 'peach-rings', 'blue-raspberry-rings', 'gummy-sharks', 'gummy-sharks', 'gummy-berries', 'gummy-bears-12', 'swedish-fish'],
-      extras: ['stickers'], vibe: 'me'
-    },
-    {
-      id: 'sour-challenge', name: 'Sour Challenge Box', tag: 'Sour',
-      desc: 'For sour candy lovers and brave hearts.',
-      goodFor: ['Sour lovers', 'Dares & challenges', 'Teens'],
-      about: 'Two pounds of our most face-scrunching sours. Start on the peach rings, work up to the belts, and see who taps out before the pickle scoop.',
-      season: null, size: 'medium', color: 'mint',
-      candies: ['sour-straws', 'sour-straws', 'sour-belts', 'pickle-belts', 'pickle-belts', 'sour-bursts', 'smarties-sour', 'jolly-assorted'],
-      extras: ['stickers'], vibe: 'me'
-    },
-    {
-      id: 'movie-night', name: 'Movie Night Box', tag: 'Film Night',
-      desc: 'Three pounds of chewy, fruity and slow-burning.',
-      goodFor: ['Movie nights', 'Sharing', 'Long films'],
-      about: 'Built for the couch: hard candy that lasts a whole film, gummies to pick at, and chews to pass around while the credits roll.',
-      season: null, size: 'large', color: 'purple',
-      candies: ['peach-rings', 'peach-rings', 'gummy-berries', 'gummy-berries', 'frooties-assorted', 'frooties-assorted', 'jolly-assorted', 'jolly-assorted', 'caramel-cubes', 'sour-straws', 'fruit-chews-assorted', 'gummy-sharks'],
-      extras: ['scoop'], vibe: 'movie'
-    },
-    {
-      id: 'office-refill', name: 'Office Candy Refill', tag: 'Office Fave',
-      desc: 'Five pounds, mostly individually wrapped.',
-      goodFor: ['Offices', 'Break rooms', 'Big teams'],
-      about: 'Ten crowd-pleasers, two scoops each, weighted towards wrapped pieces so the bowl stays hygienic. Reorder it monthly and the snack station never runs dry.',
-      season: null, size: 'party', color: 'blue',
-      candies: ['jolly-assorted', 'jolly-assorted', 'frooties-assorted', 'frooties-assorted', 'fruit-chews-assorted', 'fruit-chews-assorted', 'sour-fruit-chews', 'sour-fruit-chews', 'caramel-cubes', 'caramel-cubes', 'bit-o-honey', 'bit-o-honey', 'smarties-sour', 'smarties-sour', 'peach-rings', 'peach-rings', 'gummy-bears-12', 'gummy-bears-12', 'gummy-berries', 'gummy-berries'],
-      extras: [], vibe: 'office'
-    },
-    {
-      id: 'birthday', name: 'Birthday Gift Box', tag: 'Perfect Gift',
-      desc: 'Two bright pounds with a hand-written note.',
-      goodFor: ['Birthdays', 'Kids & teens', 'Surprise gifts'],
-      about: 'A fruity, colourful mix with stickers, premium wrap and a card — it arrives looking like a present, not a parcel.',
-      size: 'medium', color: 'pink', season: null,
-      candies: ['peach-rings', 'peach-rings', 'gummy-sharks', 'sour-straws', 'frooties-assorted', 'gummy-berries', 'fruit-chews-assorted', 'gummy-bears-12'],
-      extras: ['note', 'stickers', 'wrap'], vibe: 'birthday'
-    },
-    {
-      id: 'party-box', name: 'Party Box', tag: 'Crowd Pleaser',
-      desc: 'Five pounds, ten different candies.',
-      goodFor: ['Parties', 'Celebrations', 'Big groups'],
-      about: 'Our biggest box: two scoops each of ten candies, so a room full of people all find something they like.',
-      season: null, size: 'party', color: 'pink',
-      candies: ['peach-rings', 'peach-rings', 'sour-straws', 'sour-straws', 'gummy-berries', 'gummy-berries', 'jolly-assorted', 'jolly-assorted', 'frooties-assorted', 'frooties-assorted', 'fruit-chews-assorted', 'fruit-chews-assorted', 'gummy-sharks', 'gummy-sharks', 'sour-belts', 'sour-belts', 'blue-raspberry-rings', 'blue-raspberry-rings', 'gummy-bears-12', 'gummy-bears-12'],
-      extras: ['scoop', 'stickers'], vibe: 'party'
-    },
-    {
-      id: 'thank-you', name: 'Thank You Box', tag: 'Say Thanks',
-      desc: 'A sweet thank-you that beats another bunch of flowers.',
-      goodFor: ['Thank-yous', 'Clients', 'Neighbours'],
-      about: 'A polite, safe two pounds — nothing too sour, nothing too weird — with a hand-written note and premium wrap.',
-      size: 'medium', color: 'gold', season: null,
-      candies: ['caramel-cubes', 'caramel-cubes', 'fruit-chews-assorted', 'frooties-assorted', 'caramel-cubes', 'peach-rings', 'gummy-berries', 'smarties-sour'],
-      extras: ['note', 'wrap'], vibe: 'gift'
-    },
-    {
-      id: 'get-well', name: 'Get Well Soon Box', tag: 'Feel Better',
-      desc: 'One gentle pound for someone having a rough week.',
-      goodFor: ['Get well', 'Cheering someone up', 'Care packages'],
-      about: 'Gummi bears, peach rings, soft caramels and a scoop of wrapped Frooties — nothing sour, nothing sharp, easy to snack on in bed. Comes with a note.',
-      size: 'small', color: 'mint', season: null,
-      candies: ['gummy-bears-12', 'peach-rings', 'caramel-cubes', 'frooties-assorted'],
-      extras: ['note'], vibe: 'gift'
-    },
-    {
-      id: 'congrats', name: 'Congrats Box', tag: 'Well Done',
-      desc: 'New job, new home, graduation — three pounds of it.',
-      goodFor: ['Graduations', 'Promotions', 'New homes'],
-      about: 'A bright celebration mix, heavy on the gummies, with a note and premium wrap so it feels like an occasion.',
-      size: 'large', color: 'purple', season: null,
-      candies: ['peach-rings', 'peach-rings', 'fruit-chews-assorted', 'fruit-chews-assorted', 'gummy-berries', 'gummy-berries', 'frooties-assorted', 'frooties-assorted', 'sour-straws', 'gummy-sharks', 'caramel-cubes', 'blue-raspberry-rings'],
-      extras: ['note', 'wrap', 'stickers'], vibe: 'gift'
-    },
-    {
-      id: 'love-box', name: 'Love You Box', tag: "Valentine's",
-      desc: 'Two pounds of pink and red, nothing else.',
-      goodFor: ["Valentine's Day", 'Anniversaries', 'Date nights'],
-      about: 'Three scoops of the all-pink strawberry chews, plus fruit chews, berries and gummi bears, in a pink box with a hand-written note.',
-      size: 'medium', color: 'pink', season: 'valentines',
-      candies: ['pink-strawberry-chews', 'pink-strawberry-chews', 'pink-strawberry-chews', 'fruit-chews-assorted', 'gummy-berries', 'gummy-bears-12', 'peach-rings', 'frooties-assorted'],
-      extras: ['note', 'wrap'], vibe: 'gift'
-    },
-    {
-      id: 'halloween-box', name: 'Trick or Treat Box', tag: 'Halloween',
-      desc: 'Five pounds, almost all individually wrapped.',
-      goodFor: ['Halloween', 'Trick-or-treaters', 'Class parties'],
-      about: 'Wrapped pieces kids actually recognise — Jolly Ranchers, Frooties, Smarties and fruit chews — in a party-size box, so you are not rationing by 8pm.',
-      size: 'party', color: 'purple', season: 'halloween',
-      candies: ['jolly-assorted', 'jolly-assorted', 'jolly-assorted', 'frooties-assorted', 'frooties-assorted', 'frooties-assorted', 'smarties-sour', 'smarties-sour', 'fruit-chews-assorted', 'fruit-chews-assorted', 'peach-rings', 'peach-rings', 'gummy-sharks', 'gummy-sharks', 'sour-straws', 'sour-straws', 'gummy-berries', 'gummy-berries', 'caramel-cubes', 'smarties-sour'],
-      extras: ['stickers'], vibe: 'party'
-    },
-    {
-      id: 'christmas-box', name: 'Christmas Stocking Box', tag: 'Holidays',
-      desc: 'Three pounds of caramel, taffy and retro.',
-      goodFor: ['Christmas', 'Stocking fillers', 'Secret Santa'],
-      about: 'Soft vanilla caramels, honey almond taffy and a handful of nostalgic wrapped picks — nearly all individually wrapped, so it can sit under the tree for a fortnight.',
-      size: 'large', color: 'mint', season: 'christmas',
-      candies: ['caramel-cubes', 'caramel-cubes', 'caramel-cubes', 'bit-o-honey', 'bit-o-honey', 'jolly-assorted', 'jolly-assorted', 'frooties-assorted', 'frooties-assorted', 'fruit-chews-assorted', 'smarties-sour', 'gummy-bears-12'],
-      extras: ['note', 'wrap'], vibe: 'holiday'
-    },
-    {
-      id: 'easter-box', name: 'Easter Hunt Box', tag: 'Easter',
-      desc: 'Three pounds of small, pastel, hideable pieces.',
-      goodFor: ['Easter', 'Kids', 'Family gatherings'],
-      about: 'Gummi bears, peach rings, berries and sharks — bright, small and easy to hide, which is exactly what you want in the garden.',
-      size: 'large', color: 'gold', season: 'easter',
-      candies: ['gummy-bears-12', 'gummy-bears-12', 'peach-rings', 'peach-rings', 'gummy-berries', 'gummy-berries', 'gummy-sharks', 'gummy-sharks', 'smarties-sour', 'frooties-assorted', 'jolly-assorted', 'blue-raspberry-rings'],
-      extras: ['stickers'], vibe: 'holiday'
-    },
-    {
-      id: 'kids-box', name: 'Kids Favourites Box', tag: 'For Kids',
-      desc: 'One pound of the stuff kids actually ask for.',
-      goodFor: ['Kids', 'Party bags', 'Rewards'],
-      about: 'No liquorice, no strong sours — sharks, rainforest frogs, 12-flavour bears and wrapped Frooties, all fruity and easy to like.',
-      size: 'small', color: 'blue', season: null,
-      candies: ['gummy-sharks', 'gummy-frogs', 'gummy-bears-12', 'frooties-assorted'],
-      extras: ['stickers'], vibe: 'birthday'
-    },
-    {
-      id: 'all-pink-box', name: 'All Pink Box', tag: 'Trending',
-      desc: 'Two pounds and not a single piece that is not pink.',
-      goodFor: ['Content & sharing', 'Birthdays', 'Bridal & baby showers'],
-      about: 'Built around the all-pink strawberry chews people hunt for, plus berries, fruit chews and gummi bears. It photographs better than anything else we pack.',
-      size: 'medium', color: 'pink', season: null,
-      candies: ['pink-strawberry-chews', 'pink-strawberry-chews', 'fruit-chews-assorted', 'fruit-chews-assorted', 'gummy-berries', 'gummy-bears-12', 'peach-rings', 'frooties-assorted'],
-      extras: ['stickers'], vibe: 'me'
-    },
-    {
-      id: 'retro-box', name: 'Retro Candy Store Box', tag: 'Nostalgia',
-      desc: 'Two pounds of the old five-and-dime counter.',
-      goodFor: ['Gifts for parents', 'Nostalgia', 'Anyone over 40'],
-      about: 'Bit-O-Honey, soft vanilla caramels, Smarties, Jolly Ranchers and a scoop of Hot Tamales — candy that has not changed since they last had it.',
-      size: 'medium', color: 'gold', season: null,
-      candies: ['caramel-cubes', 'caramel-cubes', 'bit-o-honey', 'bit-o-honey', 'smarties-sour', 'jolly-assorted', 'fruit-chews-assorted', 'hot-tamales'],
-      extras: ['note'], vibe: 'gift'
-    },
-    {
-      id: 'world-box', name: 'Bears & Worms Box', tag: 'New',
-      desc: 'Two pounds of the gummi line we are known for.',
-      goodFor: ['Gummy fans', 'Content & sharing', 'Kids & teens'],
-      about: 'Bears, worms, butterflies and watermelon slices — half of it sour-sugared. The whole gummi bench in one box, and the one people film when they open it.',
-      size: 'medium', color: 'blue', season: null,
-      candies: ['gummy-bears-12', 'gummy-bears-12', 'gummy-worms', 'gummy-worms', 'sour-gummy-bears', 'sour-neon-worms', 'gummy-butterflies', 'watermelon-slices'],
-      extras: ['stickers'], vibe: 'me'
-    }
-  ];
-
-  /* Seasonal boxes surface automatically in their window and step aside
-     the rest of the year. Months are 1-12 and ranges may wrap the year. */
-  YL.SEASONS = {
-    valentines: { name: "Valentine's", from: [1, 10], to: [2, 14] },
-    easter: { name: 'Easter', from: [3, 1], to: [4, 20] },
-    halloween: { name: 'Halloween', from: [9, 20], to: [10, 31] },
-    christmas: { name: 'Christmas', from: [11, 5], to: [12, 26] }
-  };
-
-  YL.inSeason = function (key, date) {
-    var s = YL.SEASONS[key];
-    if (!s) return false;
-    var d = date || new Date();
-    var md = (d.getMonth() + 1) * 100 + d.getDate();
-    var from = s.from[0] * 100 + s.from[1];
-    var to = s.to[0] * 100 + s.to[1];
-    return from <= to ? (md >= from && md <= to) : (md >= from || md <= to);
-  };
-
-  /* Boxes for the shop grid: everything, with out-of-season ones last. */
-  YL.boxesInOrder = function (date) {
-    var live = [], later = [];
-    YL.PREBUILT.forEach(function (pb) {
-      if (!pb.season || YL.inSeason(pb.season, date)) live.push(pb);
-      else later.push(pb);
-    });
-    return live.concat(later);
-  };
-
-
   /* ---------------------------------------------------------------
-     Social proof video wall.
-     Drop a real file in `src` (mp4/webm, self-hosted or a CDN link)
-     and the card plays it in place. Leave `src` empty and the card
-     still looks right and links out to the post instead — so the
-     section is presentable before the first UGC arrives.
-     --------------------------------------------------------------- */
-  YL.SOCIAL = [
-    {
-      id: 'unbox-1', handle: '@sweettoothsam', platform: 'tiktok',
-      caption: 'Unboxing the Party Box — 15 candies, no repeats',
-      views: '412K', color: 'pink', box: 'party-box', src: '', href: ''
-    },
-    {
-      id: 'unbox-2', handle: '@thesourchallenge', platform: 'tiktok',
-      caption: 'Sour Challenge Box vs my little brother',
-      views: '1.2M', color: 'mint', box: 'sour-challenge', src: '', href: ''
-    },
-    {
-      id: 'unbox-3', handle: '@giftsbymaya', platform: 'instagram',
-      caption: 'Sent this birthday box across the country',
-      views: '96K', color: 'purple', box: 'birthday', src: '', href: ''
-    },
-    {
-      id: 'unbox-4', handle: '@officesnackclub', platform: 'instagram',
-      caption: 'The office refill lasted exactly four days',
-      views: '58K', color: 'blue', box: 'office-refill', src: '', href: ''
-    },
-    {
-      id: 'unbox-5', handle: '@candyworldtour', platform: 'tiktok',
-      caption: 'Trying the World Tour Box for the first time',
-      views: '233K', color: 'gold', box: 'world-box', src: '', href: ''
-    },
-    {
-      id: 'unbox-6', handle: '@movienightmix', platform: 'tiktok',
-      caption: 'Movie night box = sweet and salty sorted',
-      views: '147K', color: 'purple', box: 'movie-night', src: '', href: ''
-    }
-  ];
-
-  /* Headline numbers shown next to the CTAs. Update as the real ones grow. */
-  YL.PROOF = {
-    rating: 4.9,
-    reviews: 1284,
-    boxesPacked: '38,000+',
-    line: 'boxes packed and shipped'
-  };
-
-
-  /* ---------------------------------------------------------------
-     Conversion content — all editable here, no markup changes needed
-     --------------------------------------------------------------- */
-  /* Rotating announcement bar. These four are the lines that reliably move
-     the needle: a shipping threshold (lifts basket size), a dispatch cut-off
-     (kills hesitation), risk reversal, and a first-order code. Reorder or
-     trim freely — the bar cycles through whatever is in this array. */
-  YL.ANNOUNCE = [
-    { icon: 'truck', text: '<b>Free shipping</b> on orders over $50',
-      link: 'boxes.html', linkText: 'Shop boxes' },
-    { icon: 'clock', text: 'Order before <b>2pm</b> and it ships today',
-      link: 'index.html', linkText: 'Build yours' },
-    { icon: 'gift', text: 'Free <b>hand-written note</b> on every gift box',
-      link: 'gifts.html', linkText: 'Send a gift' },
-    { icon: 'sparkle', text: 'New here? <b>YUMMY5</b> takes $5 off your first box',
-      link: 'index.html', linkText: 'Start building' }
-  ];
-
-  YL.ANNOUNCE_INTERVAL = 4800;
-
-  YL.TRUST = [
-    { icon: 'box', title: 'Sold by weight', text: 'Small 1 lb to party 5 lb' },
-    { icon: 'truck', title: 'Free over $50', text: 'Flat $4.99 under that' },
-    { icon: 'clock', title: 'Ships same day', text: 'Order before 2pm' },
-    { icon: 'shield', title: '100% happiness', text: '30 days to make it right' }
-  ];
-
-  /* Delayed email capture. Set enabled:false to switch it off. */
-  YL.EMAIL_OFFER = {
-    enabled: true,
-    delayMs: 18000,
-    title: 'Get $5 off your first box',
-    text: 'Join the Yummy Crew for sweet deals, new drops and the odd free upgrade.',
-    code: 'YUMMY5',
-    button: 'Send me the code'
-  };
-
-  /* Only the part the customer cannot see for themselves. Picking a box and
-     scooping it full is the builder sitting right above this block — writing
-     those two steps out again is instructions for something already done. */
-  YL.HOW = [
-    { icon: 'gift', title: 'We scoop it fresh', text: 'Your box is filled by hand the day it ships, out of the same bulk stock we sell by the pound.' },
-    { icon: 'truck', title: 'We weigh it & send it', text: 'On the scale before it is sealed, then out the door same day. 2–5 days across the USA.' },
-    { icon: 'shield', title: '100% happiness', text: "Anything not right within 30 days and we replace it or refund you. That's the whole policy." }
-  ];
-
-  YL.OCCASIONS = [
-    { icon: 'cake', name: 'Birthdays', text: 'Make their day sweeter' },
-    { icon: 'briefcase', name: 'Offices & teams', text: 'Snack happy, work happy' },
-    { icon: 'party', name: 'Events & parties', text: 'Treat your guests' },
-    { icon: 'tree', name: 'Holidays', text: 'Celebrate every season' }
-  ];
-
-  YL.REVIEWS = [
-    { text: 'The perfect gift! Everything was packed so beautifully and fresh. Will order again!', name: 'Jessica M.' },
-    { text: 'Our office loves the candy refill boxes. Fast delivery and the best selection.', name: 'Mark T.' },
-    { text: 'The sour challenge box is insane! So good and so much fun to share.', name: 'Emily R.' },
-    { text: 'Built a birthday box for my daughter — the preview made it so easy to get it right.', name: 'Daniel K.' }
-  ];
-
-  YL.FAQ = [
-    { q: 'How does the box builder work?', a: 'Pick a box, then scoop it full. One scoop is 4 oz of candy: Small takes 4 scoops (1 lb), Medium 8 (2 lb), Large 12 (3 lb) and Party Size 20 (5 lb). Add the same candy twice for a double scoop. Add extras, review and check out.' },
-    { q: 'How much candy actually comes in a box?', a: 'Exactly what the meter says. Boxes are filled by weight, not by piece count, so a Medium is two full pounds of candy whether you picked eight different things or four doubles. We weigh every box before it is sealed.' },
-    { q: 'Why do some candies cost extra per scoop?', a: 'Because they cost us more per pound. It is almost always a single-flavour scoop — all-pink strawberry chews, cherry Jolly Ranchers, grape Jolly Ranchers — which has to be sorted out of assorted stock by hand. The surcharge is printed on the candy before you add it, and most of the range carries none at all.' },
-    { q: 'How fresh is the candy?', a: 'Every box is scooped and packed to order the same day it ships, out of the same fast-moving bulk stock we sell by the pound. Nothing sits on a shelf waiting for you.' },
-    { q: 'How fast is shipping?', a: 'Orders placed before 2pm ship the same business day. Standard delivery is 2–5 business days across the USA, and shipping is free on orders over $50 — which a Large box clears on its own.' },
-    { q: 'Can I add a gift note?', a: 'Yes — the gift note is free. Add up to 200 characters in step 4 and we hand-write it onto a Yummyland card.' },
-    { q: 'Do you have allergen information?', a: 'We do not put dietary or allergen claims on the builder, because recipes change and the label on the pack is the only source worth trusting. What we can tell you: boxes are scooped and packed in a facility that handles nuts, milk, soy and wheat, and the only builder scoop with nuts in it is Bit-O-Honey, which contains almonds. Use the preferences box to tell us what to leave out and we will read it before we pack.' },
-    { q: 'Do you ship bulk or corporate orders?', a: 'We do. Office refills, event boxes and branded corporate gifting start at 10 boxes — tell us what you need on the Office & Events page.' },
-    { q: 'What is your happiness guarantee?', a: "If anything about your box is not right, message us within 30 days and we will replace it or refund you. That's it." }
-  ];
-
-  /* ---------------------------------------------------------------
-     FLAVOUR GROUPS
-     ---------------------------------------------------------------
-     Some products are one candy sold in many single flavours. Listing
-     each of them on the wall is what made the old catalogue feel like
-     a warehouse — five Jolly Rancher tiles that differ only by colour
-     read as noise, not as choice.
-
-     So they collapse. A group takes one tile on the wall, shows a
-     collage of its flavours, and opens a picker where each flavour has
-     its own photo, note and scoop counter. One tile, every flavour, and
-     the customer only meets the long list if they ask for it.
-
-     A group is purely a presentation layer: its members stay ordinary
-     entries in YL.CANDIES with their own id, handle and price, so the
-     box, the cart, the ready-made boxes and the Shopify line items all
-     work exactly as they did. `lead` is the member shown on the tile
-     and the one a plain click adds.
+     GROUPS — single-colour variants behind one tile
      --------------------------------------------------------------- */
   YL.GROUPS = [
     {
-      id: 'bears', name: 'Gummi Bears', lead: 'gummy-bears-12', tag: 'top pick',
-      flavor: '15 flavours to choose from', cats: ['gummies'], traits: ['single', 'mix'],
-      about: 'The whole bear bench: the twelve-flavour assortment, mini cubs, oversized Papa bears, and eleven single colours you can take a full scoop of.',
-      bg: '#fff4e6'
+      id: 'bears', name: 'Single-Colour Bears', brand: 'Albanese', swatch: '#c8102e',
+      about: 'Albanese bears sorted by colour — the building block of every colour-story box.',
+      pick: 'Pick a colour'
     },
     {
-      id: 'worms', name: 'Gummi Worms', lead: 'gummy-worms',
-      flavor: 'Long, mini and natural', cats: ['gummies'], traits: ['mix'],
-      about: 'Two-tone fruit worms in full length and mini, plus a version coloured with fruit and vegetable juice.',
-      bg: '#fff2f7'
-    },
-    {
-      id: 'sour-worms', name: 'Sour Gummi Worms', lead: 'sour-neon-worms',
-      flavor: 'Neon and sour-sugared', cats: ['gummies', 'sour'], traits: ['mix'],
-      about: 'The worms rolled in sour sugar — neon in long and mini, plus the classic fruit colours with the sour coat.',
-      bg: '#f4fff2'
-    },
-    {
-      id: 'starburst', name: 'Starburst Fruit Chews', lead: 'fruit-chews-assorted',
-      flavor: 'Assorted or one flavour', cats: ['chewy'], traits: ['wrapped', 'single', 'mix'],
-      about: 'The square fruit chews everyone knows. Take the assorted scoop, or pick a single colour — we sort those by hand.',
-      bg: '#fff5ec'
-    },
-    {
-      id: 'frooties', name: 'Tootsie Frooties', lead: 'frooties-assorted',
-      flavor: '11 flavours to choose from', cats: ['chewy'], traits: ['wrapped', 'single', 'mix'],
-      about: 'Small wrapped chews with the widest flavour range we stock — from mango and pineapple to sour cherry. Mix them or commit to one.',
-      bg: '#fff6ef'
-    },
-    {
-      id: 'jolly', name: 'Jolly Rancher Hard Candy', lead: 'jolly-assorted',
-      flavor: 'Assorted or one flavour', cats: ['classic'], traits: ['wrapped', 'single', 'mix'],
-      about: 'Long-lasting wrapped hard candy. The assorted scoop is the cheapest pound in the shop; single colours are hand-sorted.',
-      bg: '#fff6f2'
-    },
-    {
-      id: 'smarties', name: 'Smarties Candy Rolls', lead: 'smarties-sour',
-      flavor: 'Sour or tropical', cats: ['sour', 'classic'], traits: ['wrapped', 'mix'],
-      about: 'Wrapped rolls of pressed candy tablets, in the face-pulling X-Treme Sour or the milder tropical mix.',
-      bg: '#f6f9ff'
+      id: 'jolly', name: 'Jolly Rancher by Colour', brand: 'Jolly Rancher', swatch: '#e0245e',
+      about: 'One flavour, one colour, individually wrapped.',
+      pick: 'Pick a flavour'
     }
   ];
 
-  /* --------- helpers --------- */
+  /* ---------------------------------------------------------------
+     OCCASIONS — the "vibe" of the box
+     ---------------------------------------------------------------
+     An occasion decides what is printed inside the lid: the script
+     headline, the line on the right and — unless the customer pays to
+     print their own — the two photos. Photo files live in
+     assets/img/lid/<id>-1.webp and -2.webp; until one is generated the
+     lid draws an illustrated placeholder in the occasion's colours, so
+     nothing ever shows a broken image.
+     --------------------------------------------------------------- */
+  YL.OCCASIONS = [
+    {
+      id: 'just-because', name: 'Just Because', icon: 'heart',
+      headline: 'Life is Sweeter Together', side: 'Good people. Sweeter days.',
+      captions: ['Good People', 'Sweeter Moments'], tint: ['#e9c7a9', '#b98a67'],
+      blurb: 'For friends, family, anyone — no reason needed.', collection: 'signature'
+    },
+    {
+      id: 'birthday', name: 'Birthday', icon: 'cake',
+      headline: 'Make a Sweet Wish', side: 'Another year sweeter.',
+      captions: ['Birthday Magic', 'Make a Wish'], tint: ['#f6c1cf', '#e57f9c'],
+      blurb: 'Candles out, lid open, six cups of favourites.', collection: 'rainbow-row'
+    },
+    {
+      id: 'wedding', name: 'Wedding', icon: 'rings',
+      headline: 'Happily Ever After', side: 'Two hearts. One sweet story.',
+      captions: ['Mr & Mrs', 'Forever Starts Now'], tint: ['#f3e6d3', '#cdb28a'],
+      blurb: 'For the couple, the bridal party or every guest table.', collection: 'pearl-blush'
+    },
+    {
+      id: 'baby-shower', name: 'Baby Shower', icon: 'baby',
+      headline: 'Oh Baby!', side: 'Tiny toes. Big love.',
+      captions: ['Little One', 'Sweet Beginnings'], tint: ['#cfe3f5', '#f5cfe0'],
+      blurb: 'Pink, blue or a surprise — pastel cups for the parents-to-be.', collection: 'pearl-blush'
+    },
+    {
+      id: 'best-friend', name: 'Best Friend', icon: 'friends',
+      headline: 'Friends Make Life Sweeter', side: 'My person. My sweet spot.',
+      captions: ['My Person', 'Partners in Crime'], tint: ['#f9d5b8', '#e79a7a'],
+      blurb: 'The gift for the one who already knows your order.', collection: 'ruby-sapphire'
+    },
+    {
+      id: 'love', name: 'Love & Anniversary', icon: 'rose',
+      headline: 'Sweet on You', side: 'All my love, in six little cups.',
+      captions: ['You & Me', 'Always'], tint: ['#e7a0a8', '#9b1b30'],
+      blurb: 'Anniversaries, Valentine’s, or a Tuesday worth marking.', collection: 'ruby-romance'
+    },
+    {
+      id: 'thank-you', name: 'Thank You', icon: 'gift',
+      headline: 'Thank You Sweetly', side: 'Kindness deserves something sweet.',
+      captions: ['Grateful', 'For Everything'], tint: ['#efe1c6', '#c9a15a'],
+      blurb: 'For teachers, hosts, nurses, clients and neighbours.', collection: 'signature'
+    },
+    {
+      id: 'congrats', name: 'Congrats', icon: 'star',
+      headline: 'Cheers to You', side: 'Big moments. Sweeter memories.',
+      captions: ['You Did It', 'So Proud'], tint: ['#f7e3a3', '#d4a73a'],
+      blurb: 'Graduations, promotions, new homes, finish lines.', collection: 'gold-ruby'
+    }
+  ];
 
-  /* Per-scoop surcharge is derived from the candy's real bulk price per
-     pound, so adding a product to YL.CANDIES prices itself. Set `extra`
-     explicitly on a candy to override.
+  /* ---------------------------------------------------------------
+     COLLECTIONS — ready-made boxes
+     ---------------------------------------------------------------
+     A handful, not a hundred. Each one is six cup ids in reading order
+     (top row left→right, then bottom row) — the order matters because
+     colour stories are laid out by position. Every collection is the
+     same box at the same price; what the customer is buying is taste.
 
-     A flavour is never a surcharge. Cherry Jolly Ranchers cost us more per
-     pound than the assorted bag they were sorted out of, but to a customer
-     they are the same sweet in one colour, and charging for picking a
-     colour reads as a penalty for deciding. So anything that belongs to a
-     flavour group is priced as its group. As it stands nothing in the range
-     carries a surcharge at all; the tiers stay for genuinely premium stock
-     later, not for variations of what we already sell. */
-  YL.CANDIES.forEach(function (c) {
-    if (c.extra == null) c.extra = c.group ? 0 : YL.scoopExtra(c.perLb);
-  });
+     `photo` is the product shot for the listing — to be generated. The
+     card falls back to the live drawn box until the file exists.
+     --------------------------------------------------------------- */
+  YL.COLLECTIONS = [
+    {
+      id: 'signature', name: 'The Signature Six', tag: 'Bestseller', family: 'gummies',
+      desc: 'Our Albanese greatest hits: bears, peach rings, worms, sharks, butterflies and sour neon worms.',
+      cups: ['gummy-bears-12', 'peach-rings', 'gummy-worms', 'gummy-sharks', 'gummy-butterflies', 'sour-neon-worms'],
+      occasions: ['just-because', 'thank-you', 'birthday']
+    },
+    {
+      id: 'bear-bar', name: 'The Bear Bar', tag: 'All gummies', family: 'gummies',
+      desc: 'Six cups, nothing but Albanese bears — assorted, cubs, natural, sour and two single colours.',
+      cups: ['gummy-bears-12', 'bear-cubs', 'bear-cherry', 'bear-natural', 'sour-gummy-bears', 'bear-blue-raspberry'],
+      occasions: ['just-because', 'best-friend']
+    },
+    {
+      id: 'rainbow-row', name: 'Rainbow Row', tag: 'Colour story', family: 'colour',
+      desc: 'One colour per cup, cherry to grape. It looks like a paint box when the lid comes up.',
+      cups: ['bear-cherry', 'bear-orange', 'bear-pineapple', 'bear-green-apple', 'bear-blue-raspberry', 'bear-grape'],
+      occasions: ['birthday', 'congrats']
+    },
+    {
+      id: 'ruby-sapphire', name: 'Ruby & Sapphire', tag: 'Colour story', family: 'colour',
+      desc: 'Red on top, blue below — cherry, strawberry and Swedish Fish over sharks, blue rings and blue bears.',
+      cups: ['bear-cherry', 'bear-strawberry', 'swedish-fish', 'gummy-sharks', 'blue-raspberry-rings', 'bear-blue-raspberry'],
+      occasions: ['best-friend', 'birthday', 'congrats']
+    },
+    {
+      id: 'ruby-romance', name: 'Ruby Romance', tag: 'Reds & pinks', family: 'colour',
+      desc: 'Every shade of red and pink: cherry, strawberry, watermelon, grapefruit, berries and watermelon slices.',
+      cups: ['bear-cherry', 'bear-watermelon', 'gummy-berries', 'bear-strawberry', 'bear-grapefruit', 'watermelon-slices'],
+      occasions: ['love', 'wedding']
+    },
+    {
+      id: 'pearl-blush', name: 'Pearl & Blush', tag: 'Pastels', family: 'colour',
+      desc: 'Pearl-white and blush-pink bears, butterflies, natural pastels and peach rings. Made for showers and weddings.',
+      cups: ['bear-banana', 'bear-grapefruit', 'gummy-butterflies', 'bear-natural', 'worm-natural-mini', 'peach-rings'],
+      occasions: ['wedding', 'baby-shower']
+    },
+    {
+      id: 'sour-edit', name: 'The Sour Edit', tag: 'Sour', family: 'gummies',
+      desc: 'Six cups of pucker: sour bears, neon worms, mini neon worms, sour fruit worms, Sour Patch and lemon drops.',
+      cups: ['sour-gummy-bears', 'sour-neon-worms', 'worm-sour-mini-neon', 'worm-large-sour', 'sour-patch-kids', 'lemon-drops'],
+      occasions: ['best-friend', 'birthday']
+    },
+    {
+      id: 'chocolate-lounge', name: 'Chocolate Lounge', tag: 'Chocolate', family: 'chocolate',
+      desc: 'Albanese milk chocolate six ways — malt balls, nonpareils, pretzels, choco bears, peanuts and rainbow bites.',
+      cups: ['choc-malt-balls', 'choc-nonpareils', 'choc-pretzels', 'choc-gummi-bears', 'choc-peanuts', 'rainbow-bites'],
+      occasions: ['thank-you', 'love'], nuts: true
+    },
+    {
+      id: 'gold-ruby', name: 'Gold & Ruby', tag: 'Best of both', family: 'mixed',
+      desc: 'Half gummies, half chocolate: bears, peach rings and berries beside malt balls, nonpareils and choco bears.',
+      cups: ['gummy-bears-12', 'peach-rings', 'gummy-berries', 'choc-malt-balls', 'choc-nonpareils', 'choc-gummi-bears'],
+      occasions: ['congrats', 'thank-you', 'just-because']
+    },
+    {
+      id: 'candy-counter', name: 'The Candy Counter', tag: 'Hard candy', family: 'hard',
+      desc: 'Old-fashioned and individually wrapped: Jolly Rancher, starlight mints, butterscotch, root beer barrels, cinnamon and lemon drops.',
+      cups: ['jolly-assorted', 'starlight-mints', 'butterscotch', 'root-beer-barrels', 'cinnamon-discs', 'lemon-drops'],
+      occasions: ['thank-you', 'just-because']
+    }
+  ];
 
-  YL.getGroup = function (id) {
-    for (var i = 0; i < YL.GROUPS.length; i++) if (YL.GROUPS[i].id === id) return YL.GROUPS[i];
-    return null;
-  };
+  YL.COLLECTION_FAMILIES = [
+    { id: 'all', name: 'All collections' },
+    { id: 'gummies', name: 'Gummies' },
+    { id: 'colour', name: 'Colour stories' },
+    { id: 'chocolate', name: 'Chocolate' },
+    { id: 'mixed', name: 'Mixed' },
+    { id: 'hard', name: 'Hard candy' }
+  ];
 
-  /* `lead` first, then catalogue order. It is the flavour a customer is
-     most likely to want — the assorted scoop, where there is one — so it
-     opens the picker and takes the first pane of the collage. */
-  YL.groupMembers = function (id) {
-    var g = YL.getGroup(id);
-    var list = YL.CANDIES.filter(function (c) { return c.group === id; });
-    if (!g || !g.lead) return list;
-    return list.sort(function (a, b) {
-      return (a.id === g.lead ? -1 : 0) - (b.id === g.lead ? -1 : 0);
-    });
-  };
+  /* ---------------------------------------------------------------
+     FINISHING TOUCHES — the only paid add-ons
+     ---------------------------------------------------------------
+     Nothing here changes what fits in the box. No extra scoops, no
+     bigger cups: the tray is fixed and the box closes flat.
+     --------------------------------------------------------------- */
+  YL.EXTRAS = [
+    {
+      id: 'photos', name: 'Your Own Photos on the Lid', price: 5.99, icon: 'camera', sku: 'YL-ADD-PHOTOS',
+      desc: 'Upload two photos — we print them as polaroids and set them inside the lid. Without them, the lid carries our photos for your occasion.'
+    },
+    {
+      id: 'wrap', name: 'Satin Ribbon & Gift Tag', price: 6.99, icon: 'ribbon', sku: 'YL-ADD-RIBBON',
+      desc: 'Burgundy satin tied in a bow around the box, with a kraft tag in our handwriting.', img: 'assets/img/box-wrapped.webp'
+    },
+    {
+      id: 'card', name: 'Greeting Card with Your Message', price: 4.99, icon: 'note', sku: 'YL-ADD-CARD',
+      desc: 'A folded cream card, printed with your message and tucked on top of the cups.', img: 'assets/img/card.webp'
+    }
+  ];
 
-  /* The wall in tile order: a plain candy stays itself, and the first
-     member of a group is replaced by the group so it keeps that slot
-     rather than jumping to the end. */
-  YL.candyTiles = function () {
-    var seen = {}, out = [];
+  /* always in the box, never charged */
+  YL.INCLUDED = [
+    'Six sealed clear cups, labelled',
+    '“You found the sweet spot” insert card',
+    'Lid printed for your occasion',
+    'Gift-ready — no prices inside'
+  ];
+
+  /* ---------------------------------------------------------------
+     LITTLE EXTRAS — standalone products for the cart
+     --------------------------------------------------------------- */
+  YL.PRODUCTS = [
+    {
+      id: 'pouch-bears', name: 'Refill Pouch · 12 Flavor Gummi Bears', price: 14.99, sku: 'YL-POUCH-BEARS',
+      desc: '1 lb resealable pouch — for when the cups run out.', candy: 'gummy-bears-12'
+    },
+    {
+      id: 'pouch-peach', name: 'Refill Pouch · Peach Rings', price: 14.99, sku: 'YL-POUCH-PEACH',
+      desc: '1 lb resealable pouch of the fan favourite.', candy: 'peach-rings'
+    },
+    {
+      id: 'pouch-sour', name: 'Refill Pouch · Sour Neon Worms', price: 14.99, sku: 'YL-POUCH-SOUR',
+      desc: '1 lb resealable pouch, extra sour.', candy: 'sour-neon-worms'
+    },
+    {
+      id: 'pouch-choc', name: 'Refill Pouch · Chocolate Malt Balls', price: 16.99, sku: 'YL-POUCH-MALT',
+      desc: '1 lb resealable pouch of Albanese malt balls.', candy: 'choc-malt-balls'
+    }
+  ];
+
+  /* ---------------------------------------------------------------
+     MARKETING COPY
+     --------------------------------------------------------------- */
+  YL.ANNOUNCE = [
+    { icon: 'truck', text: 'Free shipping on every Signature Box' },
+    { icon: 'camera', text: 'Put your own photos inside the lid', link: 'index.html#builder', linkText: 'Build yours' },
+    { icon: 'gift', text: 'Gift-ready — no prices inside the box' }
+  ];
+  YL.ANNOUNCE_INTERVAL = 5200;
+
+  YL.TRUST = [
+    { icon: 'gift', title: 'Premium quality', text: 'Albanese candy, sealed cups' },
+    { icon: 'leaf', title: 'Freshness sealed', text: 'Packed the day it ships' },
+    { icon: 'heart', title: 'For any occasion', text: 'Eight lid designs' },
+    { icon: 'friends', title: 'Made to share', text: '2+ lb in six cups' }
+  ];
+
+  YL.HOW = [
+    { title: 'Choose the moment', text: 'Birthday, wedding, baby shower, best friend — the occasion sets the lid.' },
+    { title: 'Fill six cups', text: 'Start from a collection or pick every cup yourself, by type or by colour.' },
+    { title: 'Make it personal', text: 'Keep our lid photos or upload two of yours. Add a ribbon and a card.' },
+    { title: 'We pack it by hand', text: 'Sealed, labelled, boxed and shipped — free.' }
+  ];
+
+  /* Placeholder testimonials. Replace with real ones before running ads —
+     invented reviews cannot be used in advertising. */
+  YL.REVIEWS = [
+    { name: 'Placeholder review', text: 'Replace with a real customer quote about opening the box.', stars: 5 },
+    { name: 'Placeholder review', text: 'Replace with a real quote about the photos inside the lid.', stars: 5 },
+    { name: 'Placeholder review', text: 'Replace with a real quote about gifting for an occasion.', stars: 5 }
+  ];
+
+  YL.FAQ = [
+    { q: 'How big is the box and how much candy is inside?',
+      a: 'The Ruby Signature Gift Box is 12.75 × 6.5 × 3.75 in. It holds six sealed clear cups of about 6 oz each — a little over 2 lb of candy in total.' },
+    { q: 'What happens if I do not upload my own photos?',
+      a: 'The lid is printed with two photos we chose for your occasion, so the box always looks finished. Uploading your own two photos is $5.99 and we print them as polaroids.' },
+    { q: 'What photos work best?',
+      a: 'Bright, in-focus phone photos with faces near the middle. We crop them square-ish, so leave a little room around the edges.' },
+    { q: 'Can I add more candy or a bigger cup?',
+      a: 'No — the cup tray is made for this box, and overfilling stops the lid closing flat. Six cups is the design.' },
+    { q: 'Is there a price inside the box?',
+      a: 'Never. The packing slip is price-free and goes on the outside, so you can ship straight to the person you are gifting.' },
+    { q: 'Do you have nut-free options?',
+      a: 'Our gummies and hard candy contain no nuts, but they are packed in a facility that handles chocolate with nuts. Candy containing nuts is marked on its card. Check each manufacturer’s label for full allergen information.' },
+    { q: 'How fast does it ship?',
+      a: 'Boxes are packed within 1–2 business days and ship free across the USA.' }
+  ];
+
+  YL.SHIPPING = { flat: 0, freeOver: 0 };
+  YL.PROMOS = { SWEET10: { off: 0.10, label: '10% off' } };
+
+  /* ---------------------------------------------------------------
+     LOOKUPS
+     --------------------------------------------------------------- */
+  var byId = {};
+  YL.CANDIES.forEach(function (c) { byId[c.id] = c; });
+
+  YL.getCandy = function (id) { return byId[id] || null; };
+  YL.getGroup = function (id) { return YL.GROUPS.filter(function (g) { return g.id === id; })[0] || null; };
+  YL.groupMembers = function (id) { return YL.CANDIES.filter(function (c) { return c.group === id; }); };
+  YL.getOccasion = function (id) { return YL.OCCASIONS.filter(function (o) { return o.id === id; })[0] || null; };
+  YL.getCollection = function (id) { return YL.COLLECTIONS.filter(function (c) { return c.id === id; })[0] || null; };
+  YL.getExtra = function (id) { return YL.EXTRAS.filter(function (e) { return e.id === id; })[0] || null; };
+  YL.getProduct = function (id) { return YL.PRODUCTS.filter(function (p) { return p.id === id; })[0] || null; };
+
+  /* Tiles for the candy wall. With no colour filter, grouped variants
+     collapse into one tile; with a colour picked, the matching members
+     show directly — "blue" should put Blue Bears in front of you, not
+     behind a picker. */
+  YL.candyTiles = function (type, color) {
+    type = type || 'all';
+    var out = [], seenGroup = {};
     YL.CANDIES.forEach(function (c) {
-      if (!c.group) { out.push({ type: 'candy', id: c.id, candy: c }); return; }
-      if (seen[c.group]) return;
-      seen[c.group] = 1;
-      var g = YL.getGroup(c.group);
-      if (!g) { out.push({ type: 'candy', id: c.id, candy: c }); return; }
-      out.push({ type: 'group', id: g.id, group: g, members: YL.groupMembers(g.id) });
+      if (type !== 'all' && c.types.indexOf(type) < 0) return;
+      if (color && c.colors.indexOf(color) < 0) return;
+      if (c.group && !color) {
+        if (seenGroup[c.group]) return;
+        seenGroup[c.group] = true;
+        out.push({ type: 'group', group: YL.getGroup(c.group), members: YL.groupMembers(c.group) });
+        return;
+      }
+      out.push({ type: 'candy', candy: c });
     });
     return out;
   };
 
-  /* A group is filtered on what the group itself is, not on the union of
-     everything inside it. Matching any member meant one sour flavour buried
-     in a sweet range dragged the whole range into the Sour filter — which
-     is how peach rings ended up there. Sour is its own product line, with
-     its own tiles, so the filter can stay honest. */
-  YL.tileMatches = function (tile, cat, traits) {
-    var cats = tile.type === 'group' ? tile.group.cats : tile.candy.cats;
-    var tr = tile.type === 'group' ? tile.group.traits : tile.candy.traits;
-    if (cat && cat !== 'all' && cats.indexOf(cat) < 0) return false;
-    return (traits || []).every(function (t) { return (tr || []).indexOf(t) > -1; });
-  };
-
-  YL.getCandy = function (id) {
-    for (var i = 0; i < YL.CANDIES.length; i++) if (YL.CANDIES[i].id === id) return YL.CANDIES[i];
-    return null;
-  };
-  YL.getSize = function (id) {
-    for (var i = 0; i < YL.SIZES.length; i++) if (YL.SIZES[i].id === id) return YL.SIZES[i];
-    return YL.SIZES[1];
-  };
-  YL.getExtra = function (id) {
-    for (var i = 0; i < YL.EXTRAS.length; i++) if (YL.EXTRAS[i].id === id) return YL.EXTRAS[i];
-    return null;
-  };
-  YL.getPrebuilt = function (id) {
-    for (var i = 0; i < YL.PREBUILT.length; i++) if (YL.PREBUILT[i].id === id) return YL.PREBUILT[i];
-    return null;
-  };
   YL.money = function (n) { return '$' + (Math.round(n * 100) / 100).toFixed(2); };
-
-  /* The photo of the real mailer, shown as the closed-box preview. The
-     drawn box stays as the fallback, so a missing or blocked file costs
-     nothing. build-shopify rewrites this path for the theme, where
-     assets are not served from a folder. */
-  YL.BOX_PHOTO = (window.YL_BOX_PHOTO || '');
-
-  YL.SHIPPING = { flat: 4.99, freeOver: 50 };
-  YL.PROMOS = { SWEET10: { off: 0.10, label: '10% off' }, YUMMY5: { flat: 5, label: '$5 off' } };
 })(window.YL);

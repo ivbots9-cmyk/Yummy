@@ -3,38 +3,29 @@
     "builder": {
       "type": "yummyland-builder",
       "settings": {
-        "box_product": "build-your-own-candy-box",
-        "addons_collection": "box-add-ons",
+        "box_product": "ruby-signature-gift-box",
+        "addons_collection": "gift-box-add-ons",
         "show_hero": true,
-        "eyebrow": "Packed fresh · Shipped nationwide",
-        "heading": "Build your",
-        "heading_accent": "own box.",
-        "subheading": "Choose your size, pick your favourite candy, add fun extras — and we'll pack it fresh just for you.",
-        "cta_label": "Start building",
-        "secondary_label": "Shop ready-made boxes",
+        "eyebrow": "The Ruby Signature Gift Box",
+        "heading": "More than candy.",
+        "heading_accent": "It’s a moment.",
+        "subheading": "Six sealed cups of Albanese gummies and chocolate, a lid printed for the occasion and, if you like, two of your own photos inside.",
+        "cta_label": "Build your gift box",
+        "secondary_label": "Shop collections",
         "secondary_url": "shopify://collections/all",
-        "show_inspiration": true,
-        "go_to_cart": false
+        "go_to_cart": true
       }
     },
     "marketing": {
       "type": "yummyland-marketing",
       "blocks": {
-        "how": { "type": "how", "settings": {} },
-        "boxes": { "type": "boxes", "settings": { "limit": 4 } },
+        "collections": { "type": "collections", "settings": { "limit": 6 } },
         "occasions": { "type": "occasions", "settings": {} },
-        "banner": {
-          "type": "banner",
-          "settings": {
-            "title": "Candy boxes for offices, events & teams",
-            "text": "From small offices to big events, Yummyland has the perfect candy solution for your team, clients and guests.",
-            "label": "Learn more"
-          }
-        },
-        "reviews": { "type": "reviews", "settings": {} },
-        "faq": { "type": "faq", "settings": { "limit": 6 } }
+        "how": { "type": "how", "settings": {} },
+        "banner": { "type": "banner", "settings": {} },
+        "faq": { "type": "faq", "settings": { "limit": 5 } }
       },
-      "block_order": ["how", "boxes", "occasions", "banner", "reviews", "faq"],
+      "block_order": ["collections", "occasions", "how", "banner", "faq"],
       "settings": {}
     }
   },

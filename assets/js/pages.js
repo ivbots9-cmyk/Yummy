@@ -5,324 +5,126 @@ window.YL = window.YL || {};
 
 (function (YL) {
   'use strict';
-  var $ = YL.$;
+  var $ = YL.$, esc = YL.esc;
 
-  /* a generic mixed-candy recipe for decorative artwork */
-  YL.mixedRecipe = function (ids) {
-    var list = ids || ['peach-rings', 'sour-belts', 'gummy-berries', 'fruit-chews-assorted',
-      'gummy-sharks', 'blue-raspberry-rings', 'jolly-assorted', 'gummy-bears-12'];
-    var out = [];
-    list.forEach(function (id) {
-      var c = YL.getCandy(id);
-      if (c) c.recipe.forEach(function (r) { out.push(r); });
-    });
-    return out;
-  };
-
-  YL.prebuiltRecipe = function (pb) {
-    var out = [];
-    pb.candies.forEach(function (id) {
-      var c = YL.getCandy(id);
-      if (c) c.recipe.forEach(function (r) { out.push(r); });
-    });
-    return out;
-  };
-
-  /* A ready-made box lists one id per 4 oz scoop, so a repeated id means
-     a double scoop. Collapse that into the {id, qty} the builder uses. */
-  YL.prebuiltScoops = function (pb) {
-    var out = [], seen = {};
-    pb.candies.forEach(function (id) {
-      if (seen[id] == null) { seen[id] = out.length; out.push({ id: id, qty: 0 }); }
-      out[seen[id]].qty++;
-    });
-    return out;
-  };
-
-  YL.prebuiltPrice = function (pb) {
-    return YL.boxPrice({
-      size: pb.size,
-      candies: YL.prebuiltScoops(pb),
-      extras: pb.extras || []
-    }).total;
-  };
+  function link(params) {
+    var q = Object.keys(params).filter(function (k) { return params[k]; })
+      .map(function (k) { return k + '=' + encodeURIComponent(params[k]); }).join('&');
+    return YL.PATHS.builder + (q ? '?' + q : '') + '#builder';
+  }
+  YL.builderLink = link;
 
   /* ---------- how it works ---------- */
   YL.renderHow = function (sel) {
     var host = $(sel);
     if (!host) return;
-    host.innerHTML = '<div class="how">' + YL.HOW.map(function (s) {
-      return '<div class="how__item">' + YL.icon(s.icon) + '<b>' + s.title + '</b><p>' + s.text + '</p></div>';
-    }).join('') + '</div>';
+    host.innerHTML = '<ol class="how">' + YL.HOW.map(function (s, i) {
+      return '<li class="how__item"><span class="how__n">0' + (i + 1) + '</span>' +
+        '<b>' + s.title + '</b><p>' + s.text + '</p></li>';
+    }).join('') + '</ol>';
   };
 
-  /* a ready-made box turned into the shape the cart and builder expect */
-  YL.prebuiltBox = function (pb) {
-    return {
-      size: pb.size,
-      candies: YL.prebuiltScoops(pb),
-      extras: (pb.extras || []).slice(),
-      color: pb.color, vibe: pb.vibe || null, note: '', prefs: '', title: pb.name
-    };
-  };
-
-  function addPrebuilt(pb) {
-    var box = YL.prebuiltBox(pb);
-    if (YL.trackAdd) YL.trackAdd(box);
-    YL.addToCart(box, 1);
-    YL.toast(pb.name + ' added to cart.');
-  }
-
-  /* ---------- ready-made boxes ---------- */
-  YL.renderPrebuilt = function (sel, limit, list) {
+  /* ---------- collection cards ----------
+     The card shows the live drawn box — the real six cups in their real
+     order — until the product photo for that collection is shot. */
+  YL.renderCollections = function (sel, list, occasion) {
     var host = $(sel);
     if (!host) return;
-    var boxes = list || (limit ? YL.PREBUILT.slice(0, limit) : YL.PREBUILT);
-
-    if (!boxes.length) {
-      host.innerHTML = '<p class="center" style="color:var(--ink-40)">No boxes match that filter yet.</p>';
-      return;
-    }
-
-    host.innerHTML = '<div class="grid-cards">' + boxes.map(function (pb) {
-      return '<article class="pcard pcard--clickable" data-open="' + pb.id + '" tabindex="0" ' +
-        'role="button" aria-label="See what is inside the ' + YL.esc(pb.name) + '">' +
-        '<div class="pcard__art"><span class="pcard__tag">' + pb.tag + '</span>' +
-        YL.boxArt({ color: pb.color, recipe: YL.prebuiltRecipe(pb), fill: 1, seed: pb.id }) + '</div>' +
-        '<div class="pcard__body"><h3>' + pb.name + '</h3>' +
-        '<span class="pcard__weight">' + YL.icon('box') + YL.weightLabel(YL.getSize(pb.size).oz) + ' of candy</span>' +
-        '<p>' + pb.desc + '</p>' +
-        '<div class="pcard__price"><small>from </small>' + YL.money(YL.prebuiltPrice(pb)) + '</div>' +
-        '<div style="display:grid;gap:8px">' +
-        '<button class="btn btn--block" data-open="' + pb.id + '">See what&rsquo;s inside</button>' +
-        '<button class="btn btn--ghost btn--block" data-quick="' + pb.id + '">Add to cart</button>' +
-        '</div></div></article>';
+    list = list || YL.COLLECTIONS;
+    host.innerHTML = '<div class="cols">' + list.map(function (c) {
+      var box = YL.boxFromCollection(c, occasion);
+      return '<article class="col-card">' +
+        '<a class="col-card__art" href="' + link({ collection: c.id, occasion: occasion }) + '" aria-label="' + esc(c.name) + '">' +
+        YL.giftBox(box, { compact: true }) + '</a>' +
+        '<div class="col-card__body">' +
+        '<span class="eyebrow">' + esc(c.tag) + '</span>' +
+        '<h3>' + esc(c.name) + '</h3>' +
+        '<p>' + esc(c.desc) + '</p>' +
+        '<ul class="col-card__cups">' + c.cups.map(function (id) {
+          var k = YL.getCandy(id);
+          return k ? '<li><i style="background:' + k.swatch + '"></i>' + esc(k.label) + '</li>' : '';
+        }).join('') + '</ul>' +
+        '<div class="col-card__foot"><b class="price">' + YL.money(YL.BOX.price) + '</b>' +
+        '<div class="col-card__btns">' +
+        '<button type="button" class="btn btn--sm btn--gold" data-quick="' + c.id + '">Add to cart</button>' +
+        '<a class="btn btn--sm btn--line" href="' + link({ collection: c.id, occasion: occasion }) + '">Personalise</a>' +
+        '</div></div></div></article>';
     }).join('') + '</div>';
 
-    YL.$$('[data-quick]', host).forEach(function (b) {
-      b.addEventListener('click', function (e) {
-        e.stopPropagation();
-        addPrebuilt(YL.getPrebuilt(b.dataset.quick));
-      });
+    host.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-quick]');
+      if (!b) return;
+      var col = YL.getCollection(b.getAttribute('data-quick'));
+      var box = YL.boxFromCollection(col, occasion);
+      YL.addToCart(box, 1);
+      YL.trackAdd && YL.trackAdd(box);
+      YL.toast(col.name + ' added — lid designed for ' + YL.getOccasion(box.occasion).name + '.');
     });
-
-    YL.$$('.pcard--clickable', host).forEach(function (card) {
-      card.addEventListener('click', function () { YL.openBoxModal(YL.getPrebuilt(card.dataset.open)); });
-      card.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          YL.openBoxModal(YL.getPrebuilt(card.dataset.open));
-        }
-      });
-    });
-  };
-
-  /* ---------- box detail modal ---------- */
-  var modal, lastFocus;
-
-  function ensureModal() {
-    if (modal) return modal;
-    modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    modal.hidden = false;
-    document.body.appendChild(modal);
-
-    modal.addEventListener('click', function (e) {
-      if (e.target === modal || e.target.closest('[data-close]')) YL.closeBoxModal();
-    });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && modal.classList.contains('is-open')) YL.closeBoxModal();
-    });
-    return modal;
-  }
-
-  YL.closeBoxModal = function () {
-    if (!modal) return;
-    modal.classList.remove('is-open');
-    document.body.classList.remove('modal-open');
-    if (lastFocus && lastFocus.focus) lastFocus.focus();
-  };
-
-  YL.openBoxModal = function (pb) {
-    if (!pb) return;
-    if (YL.trackViewBox) YL.trackViewBox(pb);
-    var m = ensureModal();
-    lastFocus = document.activeElement;
-
-    var box = YL.prebuiltBox(pb);
-    var size = YL.getSize(pb.size);
-    var price = YL.boxPrice(box);
-    var extras = (pb.extras || []).map(function (id) {
-      var e = YL.getExtra(id);
-      return e ? e.name + (e.price ? ' (+' + YL.money(e.price) + ')' : ' (free)') : id;
-    });
-    var scoops = YL.prebuiltScoops(pb);
-    var premium = scoops.filter(function (s) {
-      var c = YL.getCandy(s.id);
-      return c && c.extra;
-    }).length;
-
-    m.innerHTML =
-      '<div class="modal__box" role="document">' +
-      '<button class="modal__close" data-close aria-label="Close">' + YL.icon('x') + '</button>' +
-      '<div class="modal__grid">' +
-      '<div class="modal__art">' +
-      YL.boxArt({ color: pb.color, recipe: YL.prebuiltRecipe(pb), fill: 1, seed: pb.id }) +
-      '</div>' +
-      '<div class="modal__body">' +
-      '<span class="badge">' + pb.tag + '</span>' +
-      '<h2>' + pb.name + '</h2>' +
-      '<p class="modal__lede">' + (pb.about || pb.desc) + '</p>' +
-
-      '<div class="modal__meta">' +
-      '<span class="tag">' + YL.weightLabel(size.oz) + ' of candy</span>' +
-      '<span class="tag">' + size.serves + '</span>' +
-      '<span class="tag">' + scoops.length + ' candies · ' + size.scoops + ' scoops</span>' +
-      (premium ? '<span class="tag">' + premium + ' premium pick' + (premium > 1 ? 's' : '') + '</span>' : '') +
-      '</div>' +
-
-      '<h3>What&rsquo;s inside</h3>' +
-      '<div class="modal__inside">' + scoops.map(function (s) {
-        var c = YL.getCandy(s.id);
-        if (!c) return '';
-        return '<div>' + YL.candyDot(c, 30) + '<span>' + c.name +
-          ' <small>' + YL.weightLabel(s.qty * YL.PRICING.scoopOz) + '</small>' +
-          (c.extra ? ' <small style="color:var(--pink)">+' + YL.money(c.extra * s.qty) + '</small>' : '') +
-          '</span></div>';
-      }).join('') + '</div>' +
-
-      (extras.length ? '<h3>Comes with</h3><div class="chips">' +
-        extras.map(function (n) { return '<span class="chip">' + n + '</span>'; }).join('') + '</div>' : '') +
-
-      (pb.goodFor ? '<h3>Perfect for</h3><div class="chips">' +
-        pb.goodFor.map(function (n) { return '<span class="chip">' + n + '</span>'; }).join('') + '</div>' : '') +
-
-      '<div class="lines">' +
-      '<div class="line"><span>Box (' + YL.weightLabel(size.oz) + ')</span><b>' + YL.money(price.base) + '</b></div>' +
-      '<div class="line"><span>Premium scoops</span><b>' + (price.premium ? YL.money(price.premium) : '$0.00') + '</b></div>' +
-      '<div class="line"><span>Extras</span><b>' + (price.extras ? YL.money(price.extras) : '$0.00') + '</b></div>' +
-      '<div class="line line--total"><span>Total</span><b>' + YL.money(price.total) + '</b></div>' +
-      '</div>' +
-
-      '<div class="modal__cta">' +
-      '<button class="btn btn--lg" data-modal-add>' + YL.icon('cart') + ' Add this box to cart</button>' +
-      '<a class="btn btn--ghost" href="' + YL.PATHS.builder + '?box=' + pb.id + '">' +
-      YL.icon('candy') + ' Open in builder &amp; tweak it</a>' +
-      '</div>' +
-      '<p style="font-size:12px;color:var(--ink-40);text-align:center;margin:12px 0 0">' +
-      'Swap anything you like in the builder — the box stays yours.</p>' +
-
-      '</div></div></div>';
-
-    m.querySelector('[data-modal-add]').addEventListener('click', function () {
-      addPrebuilt(pb);
-      YL.closeBoxModal();
-    });
-
-    document.body.classList.add('modal-open');
-    requestAnimationFrame(function () {
-      m.classList.add('is-open');
-      var close = m.querySelector('.modal__close');
-      if (close) close.focus();
-    });
-  };
-
-
-  /* ---------- social video wall ---------- */
-  YL.renderSocial = function (sel, limit) {
-    var host = $(sel);
-    if (!host) return;
-    var list = limit ? YL.SOCIAL.slice(0, limit) : YL.SOCIAL;
-
-    host.innerHTML = '<div class="social">' + list.map(function (v) {
-      var pb = YL.getPrebuilt(v.box);
-      var art = pb
-        ? YL.boxArt({ color: v.color || pb.color, recipe: YL.prebuiltRecipe(pb), fill: 1, seed: 'v' + v.id })
-        : YL.boxArt({ color: v.color || 'pink', recipe: YL.mixedRecipe(), fill: 1, seed: 'v' + v.id });
-      return '<button class="vcard" data-video="' + v.id + '" aria-label="Play: ' + YL.esc(v.caption) + '">' +
-        '<span class="vcard__art">' + art + '</span>' +
-        '<span class="vcard__shade"></span>' +
-        '<span class="vcard__top">' + YL.icon(v.platform === 'instagram' ? 'instagram' : 'tiktok') +
-        YL.esc(v.handle) + '<span class="vcard__views">' + YL.esc(v.views) + '</span></span>' +
-        '<span class="vcard__play">' + playIcon() + '</span>' +
-        '<span class="vcard__cap">' + YL.esc(v.caption) +
-        (pb ? '<b>' + YL.esc(pb.name) + '</b>' : '') + '</span>' +
-        '</button>';
-    }).join('') + '</div>';
-
-    YL.$$('[data-video]', host).forEach(function (b) {
-      b.addEventListener('click', function () {
-        var v = YL.SOCIAL.filter(function (x) { return x.id === b.dataset.video; })[0];
-        openVideo(v);
-      });
-    });
-  };
-
-  function playIcon() {
-    return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
-  }
-
-  function openVideo(v) {
-    if (!v) return;
-    var m = ensureModal();
-    lastFocus = document.activeElement;
-    var pb = YL.getPrebuilt(v.box);
-
-    m.innerHTML = '<div class="modal__box" role="document" style="background:transparent;box-shadow:none;overflow:visible;width:auto">' +
-      '<button class="modal__close" data-close aria-label="Close">' + YL.icon('x') + '</button>' +
-      '<div class="vplayer">' +
-      (v.src
-        ? '<video src="' + YL.esc(v.src) + '" controls autoplay playsinline></video>'
-        : '<div style="background:#fff;border-radius:var(--radius-l);overflow:hidden">' +
-          (pb ? YL.boxArt({ color: v.color || pb.color, recipe: YL.prebuiltRecipe(pb), fill: 1, seed: 'p' + v.id }) : '') +
-          '<p style="padding:16px 18px;margin:0;font-size:14px;color:var(--ink-60)">' +
-          '<b style="color:var(--ink)">' + YL.esc(v.handle) + '</b><br>' + YL.esc(v.caption) + '</p></div>') +
-      '<p class="vplayer__note">' +
-      (v.href ? 'Watch it on ' + (v.platform === 'instagram' ? 'Instagram' : 'TikTok') +
-        ': <a href="' + YL.esc(v.href) + '" target="_blank" rel="noopener">open the post</a>'
-        : 'Video coming soon — tag us and yours could land here.') +
-      (pb ? ' &nbsp;·&nbsp; <a href="' + YL.PATHS.builder + '?box=' + pb.id + '">Build this box</a>' : '') +
-      '</p></div></div>';
-
-    document.body.classList.add('modal-open');
-    requestAnimationFrame(function () {
-      m.classList.add('is-open');
-      var c = m.querySelector('.modal__close');
-      if (c) c.focus();
-    });
-  }
-
-  /* ---------- headline proof strip ---------- */
-  YL.renderProof = function (sel) {
-    var host = $(sel);
-    if (!host) return;
-    var p = YL.PROOF;
-    host.innerHTML = '<div class="proof"><span class="proof__stars">★★★★★</span>' +
-      '<span><b>' + p.rating + '/5</b> from <b>' + p.reviews.toLocaleString('en-US') + '</b> reviews</span>' +
-      '<span aria-hidden="true">·</span><span><b>' + p.boxesPacked + '</b> ' + p.line + '</span></div>';
   };
 
   /* ---------- occasions ---------- */
-  YL.renderOccasions = function (sel) {
+  YL.renderOccasions = function (sel, base) {
     var host = $(sel);
     if (!host) return;
-    host.innerHTML = '<div class="occasions">' + YL.OCCASIONS.map(function (o) {
-      return '<a class="occasion" href="boxes.html">' + YL.icon(o.icon) +
-        '<span><b>' + o.name + '</b><small>' + o.text + '</small></span></a>';
+    host.innerHTML = '<div class="occs">' + YL.OCCASIONS.map(function (o) {
+      return '<a class="occ-card" href="' + (base ? base + '?for=' + o.id : link({ occasion: o.id })) + '">' +
+        '<span class="occ-card__pola">' +
+        '<img src="' + YL.img('assets/img/lid/' + o.id + '-1.webp') + '" alt="" loading="lazy" data-occ="' + o.id + '" data-n="1" onerror="YL.lidFallback(this)">' +
+        '</span>' +
+        '<span class="occ-card__ico">' + YL.icon(o.icon) + '</span>' +
+        '<b>' + o.name + '</b><span class="occ-card__script">' + esc(o.headline) + '</span></a>';
     }).join('') + '</div>';
+  };
+
+  /* ---------- little extras (refill pouches) ---------- */
+  YL.renderProducts = function (sel) {
+    var host = $(sel);
+    if (!host) return;
+    host.innerHTML = '<div class="prods">' + YL.PRODUCTS.map(function (p) {
+      var c = YL.getCandy(p.candy);
+      return '<article class="prod"><div class="prod__art">' + (c ? YL.candyTile(c) : '') + '</div>' +
+        '<div class="prod__body"><b>' + esc(p.name) + '</b><p>' + esc(p.desc) + '</p>' +
+        '<div class="prod__foot"><span class="price">' + YL.money(p.price) + '</span>' +
+        '<button type="button" class="btn btn--sm btn--line" data-prod="' + p.id + '">Add</button></div></div></article>';
+    }).join('') + '</div>';
+    host.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-prod]');
+      if (!b) return;
+      YL.addProductToCart(b.getAttribute('data-prod'), 1);
+      YL.toast('Added to your cart.');
+    });
+  };
+
+  /* ---------- the full candy range, read-only ---------- */
+  YL.renderCandyWall = function (sel) {
+    var host = $(sel);
+    if (!host) return;
+    var type = 'all';
+    function draw() {
+      var list = YL.CANDIES.filter(function (c) { return type === 'all' || c.types.indexOf(type) > -1; });
+      host.innerHTML = '<div class="filters filters--center">' + YL.TYPES.map(function (t) {
+        return '<button type="button" class="chip' + (t.id === type ? ' is-on' : '') + '" data-t="' + t.id + '">' + t.name + '</button>';
+      }).join('') + '</div>' +
+        '<div class="wall">' + list.map(function (c) {
+          return '<div class="wall__item"><span class="wall__art">' + YL.candyTile(c, { px: 300, density: 4 }) + '</span>' +
+            '<b>' + esc(c.name) + '</b><small>' + esc(c.brand) + (c.nuts ? ' · contains nuts' : '') + '</small></div>';
+        }).join('') + '</div>';
+    }
+    host.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-t]');
+      if (b) { type = b.getAttribute('data-t'); draw(); }
+    });
+    draw();
   };
 
   /* ---------- reviews ---------- */
   YL.renderReviews = function (sel, limit) {
     var host = $(sel);
     if (!host) return;
-    var list = limit ? YL.REVIEWS.slice(0, limit) : YL.REVIEWS;
-    host.innerHTML = '<div class="reviews">' + list.map(function (r) {
-      return '<figure class="review" style="margin:0"><div class="stars">★★★★★</div>' +
-        '<blockquote style="margin:0"><p>“' + r.text + '”</p></blockquote>' +
-        '<figcaption><b>— ' + r.name + '</b></figcaption></figure>';
+    host.innerHTML = '<div class="reviews">' + YL.REVIEWS.slice(0, limit || 3).map(function (r) {
+      return '<figure class="review-card"><span class="stars" aria-label="' + r.stars + ' stars">' +
+        new Array(r.stars + 1).join('★') + '</span>' +
+        '<blockquote>' + esc(r.text) + '</blockquote><figcaption>' + esc(r.name) + '</figcaption></figure>';
     }).join('') + '</div>';
   };
 
@@ -330,9 +132,8 @@ window.YL = window.YL || {};
   YL.renderFaq = function (sel, limit) {
     var host = $(sel);
     if (!host) return;
-    var list = limit ? YL.FAQ.slice(0, limit) : YL.FAQ;
-    host.innerHTML = '<div class="faq">' + list.map(function (f, i) {
-      return '<details' + (i === 0 ? ' open' : '') + '><summary>' + f.q + '</summary><p>' + f.a + '</p></details>';
+    host.innerHTML = '<div class="faq">' + YL.FAQ.slice(0, limit || YL.FAQ.length).map(function (f) {
+      return '<details><summary>' + esc(f.q) + YL.icon('chevron') + '</summary><p>' + esc(f.a) + '</p></details>';
     }).join('') + '</div>';
   };
 })(window.YL);

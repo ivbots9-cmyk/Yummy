@@ -8,21 +8,20 @@ window.YL = window.YL || {};
   'use strict';
 
   var NAV = [
-    { href: 'index.html', label: 'Build Your Box', key: 'build' },
-    { href: 'boxes.html', label: 'Candy Boxes', key: 'boxes' },
-    { href: 'gifts.html', label: 'Gifts', key: 'gifts' },
-    { href: 'about.html#office', label: 'Office & Events', key: 'office' },
-    { href: 'faq.html', label: 'FAQ', key: 'faq' },
-    { href: 'about.html', label: 'About', key: 'about' }
+    { href: 'index.html#builder', label: 'Build a Gift Box', key: 'build' },
+    { href: 'boxes.html', label: 'Collections', key: 'boxes' },
+    { href: 'gifts.html', label: 'Occasions', key: 'gifts' },
+    { href: 'about.html#corporate', label: 'Corporate', key: 'office' },
+    { href: 'faq.html', label: 'FAQ', key: 'faq' }
   ];
 
   YL.$ = function (sel, root) { return (root || document).querySelector(sel); };
   YL.$$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
 
   function logo(href) {
-    return '<a class="logo" href="' + href + '" aria-label="Yummyland Candy — home">' + YL.logoMark() +
-      '<span><span class="logo__txt">YUMMYLAND</span>' +
-      '<span class="logo__sub">Candy that turns any moment into a party</span></span></a>';
+    return '<a class="logo" href="' + href + '" aria-label="Yummyland — home">' +
+      '<span class="logo__txt">YUMMYLAND<sup>®</sup></span>' +
+      '<span class="logo__sub">A little happiness inside</span></a>';
   }
 
   YL.renderHeader = function (active) {
@@ -38,7 +37,6 @@ window.YL = window.YL || {};
       }).join('') +
       '</nav>' +
       '<div class="header__tools">' +
-      '<a class="icon-btn" href="about.html" aria-label="Account">' + YL.icon('user') + '</a>' +
       '<a class="icon-btn" href="cart.html" aria-label="Cart">' + YL.icon('cart') +
       '<span class="cart-count" data-cart-count hidden>0</span></a>' +
       '<button class="icon-btn burger" id="burger" aria-label="Menu" aria-expanded="false">' + YL.icon('burger') + '</button>' +
@@ -71,41 +69,41 @@ window.YL = window.YL || {};
     host.innerHTML =
       '<div class="wrap"><div class="footer__grid">' +
       '<div class="footer__brand">' + logo('index.html') +
-      '<p>Custom candy boxes made to share. Packed fresh, shipped fast, guaranteed to make someone smile.</p>' +
+      '<p>Premium candy gift boxes, filled by hand with Albanese gummies and chocolate. More than candy — it’s a moment.</p>' +
       '<div class="socials">' +
       ['instagram', 'tiktok', 'facebook', 'pinterest'].map(function (s) {
         return '<a href="#" aria-label="' + s + '">' + YL.icon(s) + '</a>';
       }).join('') + '</div></div>' +
 
       col('Shop', [
-        ['index.html', 'Build Your Box'], ['boxes.html', 'Candy Boxes'],
-        ['gifts.html', 'Candy Gifts'], ['boxes.html#bulk', 'Bulk Candy']
+        ['index.html#builder', 'Build a Gift Box'], ['boxes.html', 'Collections'],
+        ['gifts.html', 'Occasions'], ['boxes.html#extras', 'Refill Pouches']
       ]) +
       col('Help', [
-        ['faq.html', 'FAQ'], ['faq.html#shipping', 'Shipping & Delivery'],
-        ['faq.html#returns', 'Returns'], ['about.html#contact', 'Contact Us']
+        ['faq.html', 'FAQ'], ['faq.html#shipping', 'Shipping'],
+        ['faq.html#returns', 'Returns'], ['about.html#contact', 'Contact']
       ]) +
       col('Company', [
-        ['about.html', 'Our Story'], ['about.html#office', 'Office & Events'],
-        ['about.html#quality', 'Quality & Ingredients'], ['about.html#contact', 'Careers']
+        ['about.html', 'Our Story'], ['about.html#corporate', 'Corporate Gifting'],
+        ['about.html#quality', 'Our Candy']
       ]) +
 
-      '<div><h4>Join the Yummy Crew</h4>' +
-      '<p style="font-size:13.5px;opacity:.92;margin:0">Get sweet deals, new drops and candy inspo.</p>' +
+      '<div><h4>Sweet letters</h4>' +
+      '<p class="footer__note">New collections and seasonal lids, a few times a year.</p>' +
       '<form class="subscribe" data-subscribe>' +
-      '<input type="email" required placeholder="Enter your email" aria-label="Email">' +
+      '<input type="email" required placeholder="Your email" aria-label="Email">' +
       '<button type="submit">Join</button></form></div>' +
 
       '</div><div class="footer__bottom">' +
       '<span>© ' + new Date().getFullYear() + ' Yummyland Candy Co. All rights reserved.</span>' +
-      '<nav><a href="faq.html">Terms of Service</a><a href="faq.html">Privacy Policy</a><a href="faq.html">Accessibility</a></nav>' +
+      '<nav><a href="faq.html">Terms</a><a href="faq.html">Privacy</a><a href="faq.html">Accessibility</a></nav>' +
       '</div></div>';
 
     var form = YL.$('[data-subscribe]', host);
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       form.reset();
-      YL.toast('You are on the list! Sweet deals incoming.');
+      YL.toast('You are on the list.');
     });
   };
 
@@ -194,54 +192,6 @@ window.YL = window.YL || {};
     }).join('') + '</div>';
   };
 
-  /* ---------- delayed email offer ---------- */
-  var OFFER_KEY = 'yl.offer.seen';
-
-  YL.initEmailOffer = function () {
-    var o = YL.EMAIL_OFFER;
-    if (!o || !o.enabled) return;
-    try { if (localStorage.getItem(OFFER_KEY)) return; } catch (e) { return; }
-
-    var timer = setTimeout(show, o.delayMs || 15000);
-    /* leaving for the tab bar is the other honest moment to ask */
-    document.addEventListener('mouseleave', function onLeave(e) {
-      if (e.clientY <= 0) { clearTimeout(timer); document.removeEventListener('mouseleave', onLeave); show(); }
-    });
-
-    function seen() { try { localStorage.setItem(OFFER_KEY, '1'); } catch (e) { /* private mode */ } }
-
-    function show() {
-      if (document.querySelector('.offer')) return;
-      if (document.body.classList.contains('modal-open')) return;
-      var el = document.createElement('div');
-      el.className = 'offer';
-      el.innerHTML = '<div class="offer__box" role="dialog" aria-label="' + YL.esc(o.title) + '">' +
-        '<button class="modal__close" data-off aria-label="Close">' + YL.icon('x') + '</button>' +
-        '<div class="offer__art">' + YL.boxArt({ color: 'pink', recipe: YL.mixedRecipe(), fill: 1, seed: 'offer' }) + '</div>' +
-        '<h3>' + o.title + '</h3><p>' + o.text + '</p>' +
-        '<form class="offer__form"><input type="email" required placeholder="you@email.com" aria-label="Email">' +
-        '<button class="btn" type="submit">' + o.button + '</button></form>' +
-        '<button class="link-btn" data-off style="margin-top:12px">No thanks, I&rsquo;ll pay full price</button>' +
-        '</div>';
-      document.body.appendChild(el);
-      requestAnimationFrame(function () { el.classList.add('is-on'); });
-
-      el.addEventListener('click', function (e) {
-        if (e.target === el || e.target.closest('[data-off]')) { seen(); el.remove(); }
-      });
-      el.querySelector('form').addEventListener('submit', function (e) {
-        e.preventDefault();
-        seen();
-        el.querySelector('.offer__box').innerHTML =
-          '<div class="offer__art">' + YL.boxArt({ color: 'mint', recipe: YL.mixedRecipe(), fill: 1, seed: 'offer2' }) + '</div>' +
-          '<h3>You&rsquo;re in!</h3><p>Use code <b class="pink">' + o.code + '</b> at checkout for $5 off your first box.</p>' +
-          '<a class="btn btn--lg" href="' + YL.PATHS.builder + '">Start building</a>';
-        YL.emit('offer:signup', { code: o.code });
-        setTimeout(function () { el.classList.remove('is-on'); setTimeout(function () { el.remove(); }, 300); }, 6000);
-      });
-    }
-  };
-
   /* ---------- shared page bootstrap ----------
      Page bootstraps are a flat list of independent render calls. Left
      bare, the first one that throws takes every section below it with
@@ -263,6 +213,5 @@ window.YL = window.YL || {};
     YL.boot('announce bar', function () { YL.renderAnnounce(); });
     YL.boot('header', function () { YL.renderHeader(active); });
     YL.boot('footer', function () { YL.renderFooter(); });
-    YL.boot('email offer', function () { YL.initEmailOffer(); });
   };
 })(window.YL);

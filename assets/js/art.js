@@ -1,7 +1,8 @@
 /* =========================================================
-   Yummyland — generated vector art
-   Every candy, box and icon on the site is drawn in code,
-   so previews can react to what the customer picks.
+   Yummyland — art
+   Candy pieces are drawn in code so every candy has a picture
+   before its photo is shot; the gift box preview is built from
+   HTML so it can react to every choice the customer makes.
    ========================================================= */
 window.YL = window.YL || {};
 
@@ -188,294 +189,216 @@ window.YL = window.YL || {};
     return out.join('');
   }
 
-  /* ---------- candy tile used on catalogue cards ----------
-     Real product photos win when a candy has one (they are the actual
-     Shopify product images); the generated pile is the fallback, and
-     still does all the work inside the box preview. */
-  YL.candyTile = function (candy, opts) {
-    opts = opts || {};
-    var w = opts.w || 150, h = opts.h || 104;
-    if (candy.img && !opts.vector) {
-      return '<img class="candy__photo" src="' + esc(photoUrl(candy, opts.px || 420)) + '" ' +
-        'alt="' + esc(candy.name) + '" loading="lazy" decoding="async" ' +
-        'onerror="YL.photoFallback(this)" data-candy-id="' + esc(candy.id) + '" ' +
-        'style="background:' + (candy.bg || '#fff2f8') + '">';
-    }
-    var recipe = candy.recipe || [{ shape: 'bean', colors: { a: '#ff5ea8' } }];
-    return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" role="img" aria-label="' + esc(candy.name) + '">' +
-      '<rect width="' + w + '" height="' + h + '" fill="' + (candy.bg || '#fff2f8') + '"/>' +
-      pile({
-        seed: candy.id, recipe: recipe,
-        w: w + 34, h: h + 34, x: -17, y: -17,
-        cols: 5, rows: 4, scale: (opts.scale || 1) * 1.35
-      }) + '</svg>';
-  };
 
-  /* ---------- a flavour group, drawn as a collage of its members ----------
-     A group tile has to say "several things live in here" at a glance,
-     which one photo cannot do. So the tile is split into up to four
-     panes, each showing a different flavour, and a "+N" chip counts the
-     rest. Photos are used when they exist and generated pieces fill in
-     when they do not, so the collage never comes out half empty. */
-  YL.groupTile = function (group, members, opts) {
-    opts = opts || {};
-    var list = (members || []).slice(0, 4);
-    if (!list.length) return '';
-    var extra = (members || []).length - list.length;
-    var cells = list.length === 1 ? [[0, 0, 100, 100]]
-      : list.length === 2 ? [[0, 0, 50, 100], [50, 0, 50, 100]]
-        : list.length === 3 ? [[0, 0, 50, 100], [50, 0, 50, 50], [50, 50, 50, 50]]
-          : [[0, 0, 50, 50], [50, 0, 50, 50], [0, 50, 50, 50], [50, 50, 50, 50]];
-
-    var html = '<span class="candy__collage" style="background:' + esc(group.bg || '#fff2f8') + '">';
-    list.forEach(function (c, i) {
-      var box = cells[i];
-      var style = 'left:' + box[0] + '%;top:' + box[1] + '%;width:' + box[2] + '%;height:' + box[3] + '%;' +
-        'background:' + (c.bg || '#fff2f8');
-      html += '<span class="candy__cell" style="' + style + '">' +
-        (c.img && !opts.vector
-          ? '<img src="' + esc(photoUrl(c, opts.px || 300)) + '" alt="" loading="lazy" decoding="async" ' +
-            'onerror="YL.photoFallback(this)" data-candy-id="' + esc(c.id) + '">'
-          : cellArt(c)) +
-        '</span>';
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (m) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m];
     });
-    if (extra > 0) html += '<span class="candy__more">+' + extra + '</span>';
-    return html + '</span>';
-  };
-
-  /* the vector stand-in for one collage pane */
-  function cellArt(candy) {
-    var rec = candy.recipe || [{ shape: 'bean', colors: { a: '#ff5ea8' } }];
-    return '<svg viewBox="0 0 60 60" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
-      '<rect width="60" height="60" fill="' + (candy.bg || '#fff2f8') + '"/>' +
-      '<g transform="translate(30 30) scale(1.5)">' + piece(rec[0].shape, rec[0].colors, rec[0].sour) + '</g>' +
-      '</svg>';
   }
 
+  /* hex -> lighter hex, for backgrounds behind drawn candy */
+  function tint(hex, amt) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+    if (!m) return '#f7efe6';
+    var n = parseInt(m[1], 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    function mix(c) { return Math.round(c + (255 - c) * amt); }
+    return 'rgb(' + mix(r) + ',' + mix(g) + ',' + mix(b) + ')';
+  }
+  YL.tint = tint;
+
   /* A local copy wins when tools/fetch-photos.js has put one there.
-     Otherwise it is the Shopify CDN, which resizes on the fly — asking
-     for the width we actually render keeps the cards light. Any other
-     host gets its URL back untouched. */
+     Otherwise it is the Shopify CDN, which resizes on the fly. */
   function photoUrl(candy, px) {
-    if (candy.photo && YL.PHOTO_BASE) return YL.PHOTO_BASE + candy.photo;
+    var local = YL.PHOTOS && YL.PHOTOS[candy.id];
+    if (local && YL.PHOTO_BASE) return YL.PHOTO_BASE + local;
     var url = candy.img;
     if (!/cdn\.shopify\.com/.test(url)) return url;
-    return url + (url.indexOf('?') > -1 ? '&' : '?') + 'width=' + px;
+    return url + (url.indexOf('?') > -1 ? '&' : '?') + 'width=' + (px || 400);
   }
   YL.photoUrl = photoUrl;
 
-  /* A photo that will not load falls back one step at a time: a missing
-     local copy retries the CDN, and only a candy with no working photo
-     at all drops to the generated pile. A card is never an empty box. */
+  /* ---------- the drawn stand-in for a candy photo ---------- */
+  function drawnCandy(candy, w, h, density) {
+    var recipe = candy.recipe || [{ shape: 'bean', colors: { a: candy.swatch || '#c8102e' } }];
+    return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" ' +
+      'role="img" aria-label="' + esc(candy.name) + '">' +
+      '<rect width="' + w + '" height="' + h + '" fill="' + tint(candy.swatch, 0.84) + '"/>' +
+      pile({
+        seed: candy.id, recipe: recipe, w: w + 30, h: h + 30, x: -15, y: -15,
+        cols: density || 5, rows: Math.max(3, Math.round((density || 5) * h / w)), scale: w / (28 * (density || 5))
+      }) + '</svg>';
+  }
+
+  /* ---------- candy picture for cards ---------- */
+  YL.candyTile = function (candy, opts) {
+    opts = opts || {};
+    if (candy.img && !opts.vector) {
+      return '<img class="candy-photo" src="' + esc(photoUrl(candy, opts.px || 420)) + '" ' +
+        'alt="' + esc(candy.name) + '" loading="lazy" decoding="async" ' +
+        'onerror="YL.photoFallback(this)" data-candy-id="' + esc(candy.id) + '" data-density="' + (opts.density || 5) + '">';
+    }
+    return drawnCandy(candy, 150, 110, opts.density || 5);
+  };
+
+  /* A photo that will not load retries the CDN once (if a local copy was
+     missing) and then draws the candy. A card is never an empty frame. */
   YL.photoFallback = function (img) {
     var candy = YL.getCandy && YL.getCandy(img.getAttribute('data-candy-id'));
     if (!candy || !img.parentNode) return;
-    if (!img.getAttribute('data-retried') && candy.photo && candy.img &&
+    if (!img.getAttribute('data-retried') && YL.PHOTOS && YL.PHOTOS[candy.id] && candy.img &&
         img.getAttribute('src').indexOf('cdn.shopify.com') < 0) {
       img.setAttribute('data-retried', '1');
       img.src = candy.img;
       return;
     }
-    var plain = {}, k;
-    for (k in candy) if (Object.prototype.hasOwnProperty.call(candy, k)) plain[k] = candy[k];
-    plain.img = null;
-    img.outerHTML = img.className.indexOf('candy-dot') > -1
-      ? YL.candyDot(plain, parseInt(img.getAttribute('width'), 10) || 40)
-      : YL.candyTile(candy, { vector: true });
+    img.outerHTML = drawnCandy(candy, 150, 110, parseInt(img.getAttribute('data-density'), 10) || 5);
   };
 
-  /* ---------- a few pieces drifting into the hero box ----------
-     Decoration only, and deliberately slight: a handful of the same drawn
-     pieces the rest of the site uses, falling on long staggered loops so
-     the hero has a pulse without asking to be watched. */
-  YL.heroFall = function () {
-    var drops = [
-      { shape: 'bear', colors: { a: '#ff4757' }, x: 14, size: 30, dur: 9.5, delay: 0 },
-      { shape: 'worm', colors: { a: '#4cd964', b: '#ffd23f' }, x: 30, size: 34, dur: 11, delay: 2.2 },
-      { shape: 'ring', colors: { a: '#ffb26b' }, x: 45, size: 26, dur: 8.5, delay: 4.1 },
-      { shape: 'bear', colors: { a: '#3fb8ff' }, x: 58, size: 28, dur: 12, delay: 1.1 },
-      { shape: 'ball', colors: { a: '#ff2e8b' }, x: 22, size: 22, dur: 10.5, delay: 5.6 },
-      { shape: 'ring', colors: { a: '#4bb9ff' }, x: 38, size: 24, dur: 13, delay: 7.3 },
-      { shape: 'bear', colors: { a: '#ffd23f' }, x: 52, size: 26, dur: 9, delay: 3.4 }
-    ];
-    return '<span class="hero__fall" aria-hidden="true">' + drops.map(function (d) {
-      return '<span class="hero__drop" style="left:' + d.x + '%;' +
-        'animation-duration:' + d.dur + 's;animation-delay:-' + d.delay + 's">' +
-        '<svg viewBox="-16 -16 32 32" width="' + d.size + '" height="' + d.size + '">' +
-        piece(d.shape, d.colors) + '</svg></span>';
-    }).join('') + '</span>';
+  /* collage of up to four members, for a group tile */
+  YL.groupTile = function (group, members) {
+    var list = members.slice(0, 4);
+    return '<span class="collage">' + list.map(function (c) {
+      return '<span class="collage__cell" style="background:' + c.swatch + '">' +
+        YL.candyTile(c, { px: 240, density: 3 }) + '</span>';
+    }).join('') +
+      (members.length > 4 ? '<span class="collage__more">+' + (members.length - 4) + '</span>' : '') +
+      '</span>';
   };
 
-  /* ---------- the spill between the hero and the builder ----------
-     That seam was a flat band of pink doing nothing. Rather than decorate
-     the emptiness, this puts candy across the join so the marketing half
-     appears to spill into the tool half. Deliberately low contrast: it is
-     texture, not content, and it bobs rather than races. */
-  YL.seamCandy = function () {
-    var bits = [
-      /* Evenly spaced and symmetric about the centre, and spaced so the
-         odd-numbered ones a phone keeps are still both. */
-      { shape: 'bear', colors: { a: '#ff4757' }, x: 5, s: 30, d: 0 },
-      { shape: 'ring', colors: { a: '#ffb26b' }, x: 12.5, s: 24, d: 1.4 },
-      { shape: 'ball', colors: { a: '#3fb8ff' }, x: 20, s: 20, d: 2.7 },
-      { shape: 'worm', colors: { a: '#4cd964', b: '#ffd23f' }, x: 27.5, s: 32, d: .6 },
-      { shape: 'bean', colors: { a: '#a76bff' }, x: 35, s: 20, d: 3.1 },
-      { shape: 'ring', colors: { a: '#4bb9ff' }, x: 42.5, s: 26, d: 1.9 },
-      { shape: 'bear', colors: { a: '#ffd23f' }, x: 50, s: 28, d: 2.2 },
-      { shape: 'ball', colors: { a: '#ff2e8b' }, x: 57.5, s: 22, d: .3 },
-      { shape: 'worm', colors: { a: '#ff6fb0', b: '#3fb8ff' }, x: 65, s: 30, d: 2.9 },
-      { shape: 'bean', colors: { a: '#a8e05f' }, x: 72.5, s: 20, d: 1.1 },
-      { shape: 'ring', colors: { a: '#ff8f6b' }, x: 80, s: 26, d: 3.4 },
-      { shape: 'bear', colors: { a: '#4cd964' }, x: 87.5, s: 28, d: 1.7 },
-      { shape: 'ball', colors: { a: '#ffd23f' }, x: 95, s: 18, d: 2.4 }
-    ];
-    return bits.map(function (b, i) {
-      return '<span class="seam__bit" style="left:' + b.x + '%;animation-delay:-' + b.d + 's;' +
-        'animation-duration:' + (5.5 + (i % 4) * 1.3) + 's">' +
-        '<svg viewBox="-16 -16 32 32" width="' + b.s + '" height="' + b.s + '">' +
-        piece(b.shape, b.colors) + '</svg></span>';
-    }).join('');
+  /* small round swatch of a candy (review lists, cart) */
+  YL.candyDot = function (candy) {
+    return '<span class="candy-dot" style="background:' + tint(candy.swatch, 0.2) + '">' +
+      YL.candyTile(candy, { px: 120, density: 3 }) + '</span>';
   };
 
-  /* ---------- little round swatch (used in lists) ---------- */
-  YL.candyDot = function (candy, size) {
-    var s = size || 40;
-    if (candy.img) {
-      return '<img class="candy-dot" src="' + esc(photoUrl(candy, 120)) + '" alt="" loading="lazy" ' +
-        'onerror="YL.photoFallback(this)" data-candy-id="' + esc(candy.id) + '" ' +
-        'width="' + s + '" height="' + s + '" style="background:' + (candy.bg || '#fff2f8') + '">';
+  /* ---------- one cup of the tray ---------- */
+  function cup(candy, i, opts) {
+    var tag = opts.interactive ? 'button' : 'span';
+    var attrs = opts.interactive
+      ? ' type="button" data-cup="' + i + '" aria-label="' +
+        esc('Cup ' + (i + 1) + ': ' + (candy ? candy.name + ' — tap to choose this cup' : 'empty — tap to fill')) + '"'
+      : '';
+    var cls = 'cup' + (candy ? '' : ' cup--empty') + (opts.selected === i ? ' is-selected' : '');
+    if (!candy) {
+      return '<' + tag + ' class="' + cls + '"' + attrs + '>' +
+        '<span class="cup__plus" aria-hidden="true">' + (opts.interactive ? YL.icon('plus') : '') + '</span>' +
+        (opts.interactive ? '<span class="cup__hint">Cup ' + (i + 1) + '</span>' : '') +
+        '</' + tag + '>';
     }
-    var rec = (candy.recipe || [{ shape: 'bean', colors: { a: '#ff5ea8' } }]);
-    return '<svg viewBox="0 0 40 40" width="' + s + '" height="' + s + '" aria-hidden="true">' +
-      '<rect width="40" height="40" rx="12" fill="' + (candy.bg || '#fff2f8') + '"/>' +
-      '<g transform="translate(20 20) scale(.86)">' + piece(rec[0].shape, rec[0].colors, rec[0].sour) + '</g>' +
-      '<g transform="translate(31 30) scale(.5)">' + piece(rec[rec.length - 1].shape, rec[rec.length - 1].colors) + '</g>' +
-      '</svg>';
+    return '<' + tag + ' class="' + cls + '"' + attrs + '>' +
+      '<span class="cup__fill">' + YL.candyTile(candy, { px: 360, density: 4 }) + '</span>' +
+      '<span class="cup__label"><small>Yummyland</small><b>' + esc(candy.label || candy.name) + '</b>' +
+      '<i style="background:' + candy.swatch + '"></i></span>' +
+      '</' + tag + '>';
+  }
+
+  /* ---------- lid photo placeholder, per occasion ----------
+     Until the photo for an occasion is generated, the polaroid shows a
+     soft gradient in the occasion's colours with its emblem — it reads
+     as a design choice, not as a missing image. */
+  YL.lidPlaceholder = function (occId, n) {
+    var occ = (YL.getOccasion && YL.getOccasion(occId)) || { id: 'x', tint: ['#e9c7a9', '#b98a67'], icon: 'heart' };
+    var uid = 'lp' + occ.id.replace(/\W/g, '') + n;
+    var a = occ.tint[n === 2 ? 1 : 0], b = occ.tint[n === 2 ? 0 : 1];
+    return '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+      '<defs><linearGradient id="' + uid + '" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient></defs>' +
+      '<rect width="100" height="100" fill="url(#' + uid + ')"/>' +
+      '<g fill="#fff" opacity=".22"><circle cx="18" cy="20" r="3"/><circle cx="82" cy="16" r="2"/>' +
+      '<circle cx="74" cy="80" r="3.5"/><circle cx="26" cy="84" r="2"/></g>' +
+      '<g transform="translate(26 26) scale(2.2)" fill="none" stroke="#fff" stroke-width="1.3" ' +
+      'stroke-linecap="round" stroke-linejoin="round" opacity=".85">' + (I[occ.icon] || I.heart) + '</g></svg>';
   };
 
-  /* ---------- the hero: an open Yummyland box you can fill ---------- */
-  var BOX_COLORS = {
-    pink: { front: '#ff2e8b', dark: '#d1006a', light: '#ff77b4', lid: '#ff4f9d' },
-    purple: { front: '#9b6bff', dark: '#6f3fd6', light: '#c3a5ff', lid: '#ab80ff' },
-    blue: { front: '#45b8ff', dark: '#1a8bd6', light: '#8fd8ff', lid: '#5fc4ff' },
-    mint: { front: '#35c9a4', dark: '#149c7c', light: '#86e5cd', lid: '#4dd4b3' },
-    gold: { front: '#ffc933', dark: '#e0a200', light: '#ffe08a', lid: '#ffd457' }
+  YL.lidFallback = function (img) {
+    if (!img.parentNode) return;
+    var span = document.createElement('span');
+    span.className = 'pola__ph';
+    span.innerHTML = YL.lidPlaceholder(img.getAttribute('data-occ'), parseInt(img.getAttribute('data-n'), 10));
+    img.parentNode.replaceChild(span, img);
   };
 
-  YL.boxArt = function (opts) {
+  function pola(src, caption, occId, n) {
+    /* customer uploads are data URLs we made ourselves on a canvas;
+       anything else that claims to be one is dropped */
+    var isData = /^data:/.test(src);
+    if (isData && !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(src)) src = '';
+    return '<figure class="pola pola--' + n + '"><span class="pola__tape"></span>' +
+      '<span class="pola__img"><img src="' + (isData ? src : esc(src)) + '" alt="" loading="lazy" decoding="async" ' +
+      'data-occ="' + esc(occId) + '" data-n="' + n + '" onerror="YL.lidFallback(this)"></span>' +
+      '<figcaption>' + esc(caption) + ' <span aria-hidden="true">♡</span></figcaption></figure>';
+  }
+
+  /* ---------- the open gift box ----------
+     Lid on top — script headline, two polaroids, the side line and the
+     four promises — and the 3 × 2 cup tray below, exactly as the real
+     box opens. `opts.interactive` turns cups into buttons for the
+     builder; `opts.selected` rings the cup being filled. */
+  YL.giftBox = function (box, opts) {
     opts = opts || {};
-    var c = BOX_COLORS[opts.color] || BOX_COLORS.pink;
-    var recipe = opts.recipe && opts.recipe.length ? opts.recipe : null;
-    var fill = opts.fill == null ? 1 : Math.max(0.15, Math.min(1, opts.fill));
-    var seed = opts.seed || 'box';
-    var uid = 'b' + Math.abs(seedFrom(seed + (opts.color || '') + fill)).toString(36);
-    var empty = !recipe;
-    var rec = recipe || [
-      { shape: 'bean', colors: { a: '#ffd0e4' } }, { shape: 'ball', colors: { a: '#ffe0ee' } },
-      { shape: 'cube', colors: { a: '#ffd9ea' } }, { shape: 'ring', colors: { a: '#ffc8e0' } }
-    ];
-
-    /* mound height grows with how full the box is */
-    var top = 214 - 96 * fill;
-    var clip = 'M78 252 L140 176 Q260 ' + (top - 34).toFixed(0) + ' 380 176 L442 252 Z';
-    var rows = Math.max(2, Math.round((252 - top) / 30));
-
-    /* candy spilled around the base — kept clear of the printed logo */
-    var confetti =
-      pile({ seed: seed + 'cl', recipe: rec, w: 86, h: 60, x: -4, y: 292, cols: 2, rows: 2, scale: 1 }) +
-      pile({ seed: seed + 'cr', recipe: rec, w: 86, h: 60, x: 438, y: 292, cols: 2, rows: 2, scale: 1 }) +
-      pile({ seed: seed + 'cb', recipe: rec, w: 330, h: 26, x: 95, y: 330, cols: 5, rows: 1, scale: .9 });
-
-    return '<svg viewBox="0 0 520 400" width="100%" role="img" aria-label="Your Yummyland box preview">' +
-      '<defs>' +
-      '<clipPath id="' + uid + '"><path d="' + clip + '"/></clipPath>' +
-      '<linearGradient id="' + uid + 'f" x1="0" y1="0" x2="0" y2="1">' +
-      '<stop offset="0" stop-color="' + c.lid + '"/><stop offset="1" stop-color="' + c.front + '"/></linearGradient>' +
-      '<linearGradient id="' + uid + 'l" x1="0" y1="0" x2="1" y2="1">' +
-      '<stop offset="0" stop-color="' + c.lid + '"/><stop offset="1" stop-color="' + c.front + '"/></linearGradient>' +
-      '</defs>' +
-      /* soft shadow */
-      '<ellipse cx="260" cy="352" rx="188" ry="26" fill="' + c.dark + '" opacity=".13"/>' +
-      /* opened lid, tilted behind */
-      '<g transform="rotate(-8 260 150)"><rect x="146" y="58" width="238" height="74" rx="12" fill="url(#' + uid + 'l)"/>' +
-      '<rect x="146" y="58" width="238" height="14" rx="7" fill="#fff" opacity=".18"/>' +
-      '<text x="265" y="106" text-anchor="middle" font-family="Baloo 2, Nunito, sans-serif" font-size="30" font-weight="800" fill="#fff" opacity=".95">YUMMYLAND</text></g>' +
-      /* box interior */
-      '<path d="M140 176 L380 176 L442 250 L78 250 Z" fill="' + c.dark + '"/>' +
-      '<path d="M140 176 L380 176 L380 186 L140 186 Z" fill="#000" opacity=".12"/>' +
-      /* candy mound */
-      '<g clip-path="url(#' + uid + ')" opacity="' + (empty ? '.5' : '1') + '">' +
-      pile({
-        seed: seed + 'in', recipe: rec,
-        w: 400, h: 252 - top + 46, x: 60, y: top - 16,
-        cols: 9, rows: rows, scale: 1.5
-      }) + '</g>' +
-      /* front panel */
-      '<path d="M78 250 L442 250 L442 322 Q442 336 428 336 L92 336 Q78 336 78 322 Z" fill="url(#' + uid + 'f)"/>' +
-      '<path d="M78 250 L442 250 L442 262 L78 262 Z" fill="#fff" opacity=".16"/>' +
-      '<text x="260" y="304" text-anchor="middle" font-family="Baloo 2, Nunito, sans-serif" font-size="40" font-weight="800" fill="#fff" letter-spacing="1">YUMMYLAND</text>' +
-      '<text x="260" y="322" text-anchor="middle" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#fff" opacity=".82" letter-spacing="2">YUMMYLANDCANDY.COM</text>' +
-      /* spilled pieces in front */
-      '<g opacity="' + (empty ? '.5' : '1') + '">' + confetti + '</g>' +
-      '</svg>';
-  };
-
-  /* ---------- box size pictogram ---------- */
-  YL.boxIcon = function (scale, color) {
-    var s = scale || 1;
-    var c = color || '#ff2e8b';
-    return '<svg viewBox="0 0 70 56" width="' + Math.round(56 * s) + '" height="' + Math.round(46 * s) + '" aria-hidden="true">' +
-      '<path d="M14 20 L56 20 L62 30 L8 30 Z" fill="' + c + '" opacity=".35"/>' +
-      '<path d="M8 30 h54 v16 a4 4 0 0 1-4 4 H12 a4 4 0 0 1-4-4 Z" fill="' + c + '"/>' +
-      '<path d="M8 30 h54 v4 H8 Z" fill="#fff" opacity=".25"/>' +
-      '<circle cx="24" cy="16" r="4" fill="' + c + '" opacity=".55"/>' +
-      '<circle cx="35" cy="12" r="5" fill="' + c + '" opacity=".75"/>' +
-      '<circle cx="46" cy="16" r="4" fill="' + c + '" opacity=".55"/>' +
-      '</svg>';
+    var lid = YL.boxLid(box);
+    var cups = box.cups.map(function (id, i) { return cup(id ? YL.getCandy(id) : null, i, opts); }).join('');
+    return '<div class="gbox' + (opts.compact ? ' gbox--compact' : '') + '">' +
+      '<div class="gbox__lid">' +
+      '<p class="gbox__script">' + esc(lid.headline) + ' <span aria-hidden="true">♡</span></p>' +
+      '<div class="gbox__polas">' +
+      pola(lid.photos[0], lid.captions[0], lid.occasion.id, 1) +
+      pola(lid.photos[1], lid.captions[1], lid.occasion.id, 2) +
+      '</div>' +
+      '<p class="gbox__side">' + esc(lid.side) + '<span aria-hidden="true">♡</span></p>' +
+      (opts.compact ? '' : '<div class="gbox__promises">' + YL.TRUST.map(function (t) {
+        return '<span>' + YL.icon(t.icon) + t.title + '</span>';
+      }).join('') + '</div>') +
+      '</div>' +
+      '<div class="gbox__base">' +
+      '<div class="gbox__cups" style="grid-template-columns:repeat(' + YL.BOX.cols + ',1fr)">' + cups + '</div>' +
+      '<div class="gbox__front"><b>YUMMYLAND<sup>®</sup></b><span>Ruby Signature Gift</span></div>' +
+      '</div></div>';
   };
 
   /* ---------- logo ---------- */
   YL.logoMark = function () {
     return '<svg class="logo__mark" viewBox="0 0 48 48" aria-hidden="true">' +
-      '<circle cx="24" cy="24" r="21" fill="#ff2e8b"/>' +
-      '<path d="M24 38 C8 27 10 14 18 12 C22.5 11 24 15 24 17 C24 15 25.5 11 30 12 C38 14 40 27 24 38 Z" fill="#fff"/>' +
-      '<circle cx="16" cy="18" r="2.4" fill="#ff2e8b" opacity=".35"/>' +
-      '</svg>';
+      '<circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="1.4"/>' +
+      '<path d="M24 35 C12 27 13.5 17 19 15.6 C22 14.8 24 17.4 24 19 C24 17.4 26 14.8 29 15.6 C34.5 17 36 27 24 35 Z" ' +
+      'fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
   };
 
   /* ---------- line icons ---------- */
   var I = {
     box: '<path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
     candy: '<circle cx="12" cy="12" r="4.5"/><path d="M7 9L3 5v6l4-2zM17 15l4 4v-6l-4 2z"/>',
-    gift: '<rect x="3" y="9" width="18" height="12" rx="2"/><path d="M3 13h18M12 9v12"/><path d="M12 9S9.5 3 7 4.5 9 9 12 9zM12 9s2.5-6 5-4.5S15 9 12 9z"/>',
+    gift: '<rect x="3" y="9" width="18" height="12" rx="1"/><path d="M3 13h18M12 9v12"/><path d="M12 9S9.5 3 7 4.5 9 9 12 9zM12 9s2.5-6 5-4.5S15 9 12 9z"/>',
     truck: '<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/>',
     heart: '<path d="M12 20S3.5 14.5 3.5 8.9A4.4 4.4 0 0 1 12 6.8a4.4 4.4 0 0 1 8.5 2.1C20.5 14.5 12 20 12 20z"/>',
     sparkle: '<path d="M12 3l2 5.5L19.5 11 14 13l-2 5.5L10 13 4.5 11 10 8.5z"/>',
     check: '<path d="M20 6L9 17l-5-5"/>',
-    cart: '<circle cx="9" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/><path d="M2 3h3l2.6 12.4a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 7H6"/>',
+    cart: '<path d="M6 7h12l-1 13H7z"/><path d="M9 7V5.5a3 3 0 0 1 6 0V7"/>',
     user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
-    search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     minus: '<path d="M5 12h14"/>',
     x: '<path d="M6 6l12 12M18 6L6 18"/>',
     refresh: '<path d="M20 11a8 8 0 1 0-1.6 5.6"/><path d="M20 4v7h-7"/>',
     shield: '<path d="M12 3l8 3v6c0 5-3.4 8.3-8 9-4.6-.7-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
     star: '<path d="M12 3l2.7 5.9 6.3.7-4.7 4.3 1.3 6.1L12 17l-5.6 3 1.3-6.1L3 9.6l6.3-.7z"/>',
-    note: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
-    sticker: '<path d="M4 12a8 8 0 1 1 12.5 6.6L20 12"/><circle cx="12" cy="12" r="8"/><path d="M14 20v-4a2 2 0 0 1 2-2h4"/>',
-    wrap: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16M3 12h18"/>',
-    dice: '<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.4"/><circle cx="15.5" cy="15.5" r="1.4"/><circle cx="12" cy="12" r="1.4"/>',
-    palette: '<path d="M12 3a9 9 0 1 0 0 18c1.2 0 2-.9 2-2 0-1.7 1.3-2 2.5-2H19a3 3 0 0 0 3-3c0-5-4.5-9-10-9z"/><circle cx="8" cy="10" r="1.2"/><circle cx="12" cy="7.5" r="1.2"/><circle cx="16" cy="10" r="1.2"/>',
+    note: '<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+    leaf: '<path d="M20 4C10 4 4 9 4 16c0 2.2.8 4 .8 4S8 12 20 4z"/><path d="M4 20s4-9 16-16"/>',
     cake: '<path d="M4 20h16v-6c0-1.7-1.6-3-4-3H8c-2.4 0-4 1.3-4 3z"/><path d="M12 11V7M9 7c0-1.5 3-1.5 3-3 0 1.5 3 1.5 3 3"/><path d="M4 16c2 1.5 4 1.5 6 0s4-1.5 6 0 2 1.5 4 0"/>',
-    briefcase: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18"/>',
-    film: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 5v14M16 5v14M3 12h18"/>',
-    party: '<path d="M4 20l5-13 8 8z"/><path d="M15 4v2M19 7l1.5-1M18 12h2"/>',
-    tree: '<path d="M12 3l5 7h-3l4 6H6l4-6H7z"/><path d="M11 16h2v5h-2z"/>',
-    question: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5A2.5 2.5 0 1 1 12 12.5V14"/><circle cx="12" cy="17.5" r=".6" fill="currentColor"/>',
+    rings: '<circle cx="9" cy="14" r="5.5"/><circle cx="15" cy="14" r="5.5"/><path d="M10.5 5.5L12 3.5l1.5 2L12 7z"/>',
+    baby: '<circle cx="12" cy="13" r="7"/><path d="M12 6c-1.5-2 .5-3.5 2-2.5"/><circle cx="9.5" cy="12.5" r=".6" fill="currentColor"/><circle cx="14.5" cy="12.5" r=".6" fill="currentColor"/><path d="M10 16c1.2.9 2.8.9 4 0"/>',
+    friends: '<circle cx="8" cy="8" r="3.2"/><circle cx="16.5" cy="9" r="2.7"/><path d="M2.5 20c0-3.6 2.5-6 5.5-6s5.5 2.4 5.5 6"/><path d="M14 14.4c.8-.3 1.6-.4 2.5-.4 2.7 0 5 2 5 5.5"/>',
+    rose: '<path d="M12 12c-3 0-4.5-2-4.5-4.5S9.5 3 12 3s4.5 2 4.5 4.5S15 12 12 12z"/><path d="M12 12v9M12 17c-2-2.5-5-2.5-6-1.5 1.5 1.5 4 2 6 1.5zM12 15c1.5-2 4-2.5 5.5-1.5-1 1.5-3.5 2-5.5 1.5"/><path d="M10 6c1 1 3 1 4 0"/>',
+    camera: '<path d="M4 7h3.5L9 5h6l1.5 2H20a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.8"/>',
+    ribbon: '<path d="M12 11c-3-4-7.5-4.5-7.5-1.5S9 12 12 11zM12 11c3-4 7.5-4.5 7.5-1.5S15 12 12 11z"/><path d="M11 12l-3.5 8.5 2.2-1 1.3 2.1L12 13M13 12l3.5 8.5-2.2-1-1.3 2.1L12 13"/>',
+    upload: '<path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>',
+    trash: '<path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/>',
+    edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+    palette: '<path d="M12 3a9 9 0 1 0 0 18c1.2 0 2-.9 2-2 0-1.7 1.3-2 2.5-2H19a3 3 0 0 0 3-3c0-5-4.5-9-10-9z"/><circle cx="8" cy="10" r="1.2"/><circle cx="12" cy="7.5" r="1.2"/><circle cx="16" cy="10" r="1.2"/>',
+    briefcase: '<rect x="3" y="7" width="18" height="13" rx="1"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18"/>',
     chevron: '<path d="M6 9l6 6 6-6"/>',
     arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    back: '<path d="M19 12H5M11 6l-6 6 6 6"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
-    leaf: '<path d="M20 4C10 4 4 9 4 16c0 2.2.8 4 .8 4S8 12 20 4z"/><path d="M4 20s4-9 16-16"/>',
     instagram: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".9" fill="currentColor"/>',
     tiktok: '<path d="M15 4c.5 2.5 2 4 4.5 4.2v3.2c-1.7 0-3.3-.5-4.5-1.5v5.6a5.5 5.5 0 1 1-5.5-5.5c.3 0 .6 0 .9.1v3.3a2.3 2.3 0 1 0 1.6 2.2V4z"/>',
     facebook: '<path d="M14 8h3V4.5h-3A4 4 0 0 0 10 8.5V11H7.5v3.5H10V21h3.5v-6.5H16l.7-3.5H13.5V9a1 1 0 0 1 1-1z"/>',
@@ -485,23 +408,11 @@ window.YL = window.YL || {};
 
   YL.icon = function (name, cls) {
     var d = I[name] || I.candy;
-    return '<svg class="' + (cls || '') + '" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" ' +
-      'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+    return '<svg class="' + (cls || 'ico') + '" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
   };
 
-  /* solid-filled variant for footer socials etc. */
-  YL.iconSolid = function (name, cls) {
-    var d = I[name] || I.candy;
-    return '<svg class="' + (cls || '') + '" viewBox="0 0 24 24" fill="currentColor" stroke="none" width="18" height="18" aria-hidden="true">' + d + '</svg>';
-  };
-
-  function esc(s) {
-    return String(s).replace(/[&<>"]/g, function (m) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m];
-    });
-  }
   YL.esc = esc;
   YL.pile = pile;
   YL.piece = piece;
-  YL.BOX_COLORS = BOX_COLORS;
 })(window.YL);

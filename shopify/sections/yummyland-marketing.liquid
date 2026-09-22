@@ -1,84 +1,57 @@
 {%- comment -%}
   Yummyland — marketing blocks that go with the builder
-  (how it works, popular boxes, occasions, reviews, FAQ).
-  Add it below the builder section, or on any other page.
+  (collections, occasions, how it works, candy range, refill pouches,
+  corporate banner, FAQ). Add it below the builder section, or on any page.
 {%- endcomment -%}
 
 {{ 'yummyland-style.css' | asset_url | stylesheet_tag }}
 
 <div class="yummyland">
   {%- for block in section.blocks -%}
+    {%- liquid
+      assign tint = ''
+      if block.settings.tint == 'paper'
+        assign tint = ' section--paper'
+      elsif block.settings.tint == 'ruby'
+        assign tint = ' section--ruby'
+      endif
+    -%}
     {%- case block.type -%}
-
-      {%- when 'how' -%}
-        <section class="section section--tint" {{ block.shopify_attributes }}>
-          <div class="wrap">
-            <div class="section__head">
-              {%- if block.settings.eyebrow != blank -%}<span class="eyebrow">{{ block.settings.eyebrow }}</span>{%- endif -%}
-              <h2>{{ block.settings.title | default: 'What happens after you order' }}</h2>
-              {%- if block.settings.text != blank -%}<p>{{ block.settings.text }}</p>{%- endif -%}
-            </div>
-            <div data-yl-render="how"></div>
-          </div>
-        </section>
-
-      {%- when 'boxes' -%}
-        <section class="section" {{ block.shopify_attributes }}>
-          <div class="wrap">
-            <div class="section__head">
-              <h2>{{ block.settings.title | default: 'Popular box ideas' }}</h2>
-              {%- if block.settings.text != blank -%}<p>{{ block.settings.text }}</p>{%- endif -%}
-            </div>
-            <div data-yl-render="prebuilt" data-limit="{{ block.settings.limit | default: 4 }}"></div>
-          </div>
-        </section>
-
-      {%- when 'occasions' -%}
-        <section class="section section--tint" {{ block.shopify_attributes }}>
-          <div class="wrap">
-            <div class="section__head"><h2>{{ block.settings.title | default: 'Perfect for any occasion' }}</h2></div>
-            <div data-yl-render="occasions"></div>
-          </div>
-        </section>
-
-      {%- when 'reviews' -%}
-        <section class="section" {{ block.shopify_attributes }}>
-          <div class="wrap">
-            <div class="section__head"><h2>{{ block.settings.title | default: 'What our yummy fans say' }}</h2></div>
-            <div data-yl-render="reviews"></div>
-          </div>
-        </section>
-
-      {%- when 'faq' -%}
-        <section class="section section--tint" {{ block.shopify_attributes }}>
-          <div class="wrap">
-            <div class="section__head"><h2>{{ block.settings.title | default: 'Good to know' }}</h2></div>
-            <div data-yl-render="faq" data-limit="{{ block.settings.limit | default: 6 }}"></div>
-          </div>
-        </section>
-
       {%- when 'banner' -%}
-        <section class="section" {{ block.shopify_attributes }}>
+        <section class="section{{ tint }}" {{ block.shopify_attributes }}>
           <div class="wrap">
             <div class="banner">
               <div>
-                <h2 style="margin:0 0 10px">{{ block.settings.title | default: 'Candy boxes for offices, events & teams' }}</h2>
+                <span class="eyebrow">{{ block.settings.eyebrow }}</span>
+                <h2>{{ block.settings.title }}</h2>
                 <p>{{ block.settings.text }}</p>
                 {%- if block.settings.url != blank -%}
-                  <a class="btn btn--lg" href="{{ block.settings.url }}" style="margin-top:18px">
-                    {{ block.settings.label | default: 'Learn more' }}</a>
+                  <a class="btn btn--lg btn--gold" href="{{ block.settings.url }}" style="margin-top:22px">{{ block.settings.label }}</a>
                 {%- endif -%}
               </div>
-              <div class="banner__list"
-                   data-yl-list="briefcase|Office deliveries;party|Events &amp; pop-ups;gift|Corporate gifting;cake|Birthday surprises"></div>
+              <div class="banner__list" data-yl-list="gift|Custom lid with your logo;briefcase|Volume pricing from 25 boxes;truck|Ship to a list of addresses;note|Personal card in every box"></div>
             </div>
           </div>
         </section>
-
+      {%- else -%}
+        <section class="section{{ tint }}" {{ block.shopify_attributes }}>
+          <div class="wrap">
+            <div class="section__head">
+              {%- if block.settings.eyebrow != blank -%}<span class="eyebrow">{{ block.settings.eyebrow }}</span>{%- endif -%}
+              <h2>{{ block.settings.title }}</h2>
+              {%- if block.settings.text != blank -%}<p>{{ block.settings.text }}</p>{%- endif -%}
+            </div>
+            <div data-yl-render="{{ block.type }}" data-limit="{{ block.settings.limit }}"></div>
+          </div>
+        </section>
     {%- endcase -%}
   {%- endfor -%}
 </div>
 
+<script>
+  window.YL = window.YL || {};
+  window.YL.ASSET_BASE = {{ 'yummyland-style.css' | asset_url | split: 'yummyland-style.css' | first | json }};
+</script>
 <script src="{{ 'yummyland-config.js' | asset_url }}" defer></script>
 <script src="{{ 'yummyland-art.js' | asset_url }}" defer></script>
 <script src="{{ 'yummyland-data.js' | asset_url }}" defer></script>
@@ -97,10 +70,11 @@
       var limit = parseInt(el.getAttribute('data-limit'), 10) || null;
       el.id = el.id || 'yl-render-' + (i++);
       var sel = '#' + el.id;
-      if (kind === 'how') YL.renderHow(sel);
-      if (kind === 'prebuilt') YL.renderPrebuilt(sel, limit);
+      if (kind === 'collections') YL.renderCollections(sel, limit ? YL.COLLECTIONS.slice(0, limit) : null);
       if (kind === 'occasions') YL.renderOccasions(sel);
-      if (kind === 'reviews') YL.renderReviews(sel, limit);
+      if (kind === 'how') YL.renderHow(sel);
+      if (kind === 'candy') YL.renderCandyWall(sel);
+      if (kind === 'pouches') YL.renderProducts(sel);
       if (kind === 'faq') YL.renderFaq(sel, limit);
     });
     Array.prototype.forEach.call(document.querySelectorAll('[data-yl-list]'), function (el) {
@@ -117,46 +91,73 @@
   "name": "Yummyland marketing",
   "tag": "section",
   "class": "yummyland-section",
-  "max_blocks": 8,
+  "max_blocks": 10,
   "blocks": [
     {
-      "type": "how", "name": "How it works",
+      "type": "collections", "name": "Collections",
       "settings": [
-        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Sweet and simple" },
-        { "type": "text", "id": "title", "label": "Title", "default": "What happens after you order" },
-        { "type": "text", "id": "text", "label": "Text", "default": "You did the fun part. Here is everything we do next." }
-      ]
-    },
-    {
-      "type": "boxes", "name": "Popular boxes",
-      "settings": [
-        { "type": "text", "id": "title", "label": "Title", "default": "Popular box ideas" },
-        { "type": "text", "id": "text", "label": "Text" },
-        { "type": "range", "id": "limit", "label": "How many", "min": 2, "max": 6, "step": 1, "default": 4 }
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Ready when you are" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Our collections" },
+        { "type": "text", "id": "text", "label": "Text", "default": "Six cups, composed for you. Send one as it is, or swap any cup." },
+        { "type": "range", "id": "limit", "label": "How many", "min": 3, "max": 12, "step": 3, "default": 6 },
+        { "type": "select", "id": "tint", "label": "Background", "default": "none", "options": [{ "value": "none", "label": "Cream" }, { "value": "paper", "label": "Paper" }, { "value": "ruby", "label": "Ruby" }] }
       ]
     },
     {
       "type": "occasions", "name": "Occasions",
-      "settings": [{ "type": "text", "id": "title", "label": "Title", "default": "Perfect for any occasion" }]
-    },
-    {
-      "type": "banner", "name": "Business banner",
       "settings": [
-        { "type": "text", "id": "title", "label": "Title", "default": "Candy boxes for offices, events & teams" },
-        { "type": "textarea", "id": "text", "label": "Text" },
-        { "type": "text", "id": "label", "label": "Button", "default": "Learn more" },
-        { "type": "url", "id": "url", "label": "Button link" }
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "A lid for every moment" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Choose the occasion" },
+        { "type": "text", "id": "text", "label": "Text" },
+        { "type": "select", "id": "tint", "label": "Background", "default": "paper", "options": [{ "value": "none", "label": "Cream" }, { "value": "paper", "label": "Paper" }, { "value": "ruby", "label": "Ruby" }] }
       ]
     },
     {
-      "type": "reviews", "name": "Reviews",
-      "settings": [{ "type": "text", "id": "title", "label": "Title", "default": "What our yummy fans say" }]
+      "type": "how", "name": "How it works",
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Sweet and simple" },
+        { "type": "text", "id": "title", "label": "Title", "default": "How it works" },
+        { "type": "text", "id": "text", "label": "Text" },
+        { "type": "select", "id": "tint", "label": "Background", "default": "none", "options": [{ "value": "none", "label": "Cream" }, { "value": "paper", "label": "Paper" }, { "value": "ruby", "label": "Ruby" }] }
+      ]
+    },
+    {
+      "type": "candy", "name": "Candy range",
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "What goes in the cups" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Our candy" },
+        { "type": "text", "id": "text", "label": "Text" },
+        { "type": "select", "id": "tint", "label": "Background", "default": "none", "options": [{ "value": "none", "label": "Cream" }, { "value": "paper", "label": "Paper" }, { "value": "ruby", "label": "Ruby" }] }
+      ]
+    },
+    {
+      "type": "pouches", "name": "Refill pouches",
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "When the cups run out" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Refill pouches" },
+        { "type": "text", "id": "text", "label": "Text" },
+        { "type": "select", "id": "tint", "label": "Background", "default": "paper", "options": [{ "value": "none", "label": "Cream" }, { "value": "paper", "label": "Paper" }, { "value": "ruby", "label": "Ruby" }] }
+      ]
+    },
+    {
+      "type": "banner", "name": "Corporate banner",
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Corporate gifting" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Your logo on the lid, their favourites in the cups" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Client thank-yous, onboarding, events and holidays. Custom lid printing from 25 boxes." },
+        { "type": "text", "id": "label", "label": "Button", "default": "Talk to us" },
+        { "type": "url", "id": "url", "label": "Button link" },
+        { "type": "select", "id": "tint", "label": "Background", "default": "none", "options": [{ "value": "none", "label": "Cream" }, { "value": "paper", "label": "Paper" }] }
+      ]
     },
     {
       "type": "faq", "name": "FAQ",
       "settings": [
-        { "type": "text", "id": "title", "label": "Title", "default": "Good to know" },
-        { "type": "range", "id": "limit", "label": "How many questions", "min": 3, "max": 10, "step": 1, "default": 6 }
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Good to know" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Questions, answered" },
+        { "type": "text", "id": "text", "label": "Text" },
+        { "type": "range", "id": "limit", "label": "How many questions", "min": 3, "max": 10, "step": 1, "default": 5 },
+        { "type": "select", "id": "tint", "label": "Background", "default": "paper", "options": [{ "value": "none", "label": "Cream" }, { "value": "paper", "label": "Paper" }, { "value": "ruby", "label": "Ruby" }] }
       ]
     }
   ],
@@ -164,8 +165,8 @@
     {
       "name": "Yummyland marketing",
       "blocks": [
-        { "type": "how" }, { "type": "boxes" }, { "type": "occasions" },
-        { "type": "banner" }, { "type": "reviews" }, { "type": "faq" }
+        { "type": "collections" }, { "type": "occasions" }, { "type": "how" },
+        { "type": "banner" }, { "type": "faq" }
       ]
     }
   ]
