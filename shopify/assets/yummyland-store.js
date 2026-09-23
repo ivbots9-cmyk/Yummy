@@ -28,6 +28,11 @@ window.YL = window.YL || {};
      cups       exactly YL.BOX.cups candy ids, null for an empty cup,
                 in reading order: top row left→right, then bottom row
      collection the collection it started from, if any (analytics only)
+     lid        how the lid is dressed, asked in the builder:
+                'own'  the customer's two photos (paid add-on 'photos')
+                'ours' our photos for the occasion (free)
+                'none' the printed lid with no photos
+                null   not chosen yet — shown as 'ours'
      photos     [{ src: dataURL }, …] — only when the customer uploads
      captions   the two lines under the polaroids (free to edit)
      extras     ids from YL.EXTRAS
@@ -36,7 +41,7 @@ window.YL = window.YL || {};
     var cups = [];
     for (var i = 0; i < YL.BOX.cups; i++) cups.push(null);
     return {
-      occasion: null, cups: cups, collection: null,
+      occasion: null, cups: cups, collection: null, lid: null,
       photos: [null, null], captions: null,
       extras: [], card: { to: '', from: '', message: '' }
     };
@@ -50,18 +55,24 @@ window.YL = window.YL || {};
       b.cups[i] = id && YL.getCandy(id) ? id : null;
     });
     b.collection = box.collection || null;
+    if (box.lid === 'own' || box.lid === 'ours' || box.lid === 'none') b.lid = box.lid;
     if (box.photos) b.photos = [0, 1].map(function (i) {
       var p = box.photos[i];
       return p && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(p.src) ? { src: p.src } : null;
     });
     if (box.captions) b.captions = [String(box.captions[0] || ''), String(box.captions[1] || '')];
     b.extras = (box.extras || []).filter(function (id) { return !!YL.getExtra(id); });
+    /* the photo add-on and the 'own' lid always travel together */
+    if (!b.lid && b.extras.indexOf('photos') > -1) b.lid = 'own';
+    b.extras = b.extras.filter(function (id) { return id !== 'photos' || b.lid === 'own'; });
+    if (b.lid === 'own' && b.extras.indexOf('photos') < 0) b.extras.push('photos');
     if (box.card) b.card = { to: box.card.to || '', from: box.card.from || '', message: box.card.message || '' };
     return b;
   };
 
-  YL.boxFromCollection = function (col, occasion) {
+  YL.boxFromCollection = function (col, occasion, lid) {
     var b = YL.emptyBox();
+    b.lid = lid || null;
     b.cups = col.cups.slice(0, YL.BOX.cups);
     b.collection = col.id;
     b.occasion = occasion || (col.occasions && col.occasions[0]) || null;
@@ -76,15 +87,20 @@ window.YL = window.YL || {};
   YL.boxLid = function (box) {
     var occ = YL.getOccasion(box.occasion) || YL.OCCASIONS[0];
     var caps = box.captions || occ.captions;
+    var mode = box.lid || 'ours';
+    var photos = mode === 'own'
+      ? [box.photos[0] ? box.photos[0].src : null, box.photos[1] ? box.photos[1].src : null]
+      : mode === 'ours'
+        ? [YL.img('assets/img/lid/' + occ.id + '-1.webp'), YL.img('assets/img/lid/' + occ.id + '-2.webp')]
+        : null;
     return {
       occasion: occ,
+      mode: mode,
       headline: occ.headline,
       side: occ.side,
       captions: [caps[0] != null ? caps[0] : occ.captions[0], caps[1] != null ? caps[1] : occ.captions[1]],
-      photos: YL.hasOwnPhotos(box) && box.extras.indexOf('photos') > -1
-        ? [box.photos[0].src, box.photos[1].src]
-        : [YL.img('assets/img/lid/' + occ.id + '-1.webp'), YL.img('assets/img/lid/' + occ.id + '-2.webp')],
-      own: YL.hasOwnPhotos(box) && box.extras.indexOf('photos') > -1
+      photos: photos,
+      own: mode === 'own' && YL.hasOwnPhotos(box)
     };
   };
 

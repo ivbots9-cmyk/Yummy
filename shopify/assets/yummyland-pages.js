@@ -56,7 +56,8 @@ window.YL = window.YL || {};
       var b = e.target.closest('[data-quick]');
       if (!b) return;
       var col = YL.getCollection(b.getAttribute('data-quick'));
-      var box = YL.boxFromCollection(col, occasion);
+      /* straight from the shelf: our photos for the occasion */
+      var box = YL.boxFromCollection(col, occasion, 'ours');
       YL.addToCart(box, 1);
       YL.trackAdd && YL.trackAdd(box);
       YL.toast(col.name + ' added — lid designed for ' + YL.getOccasion(box.occasion).name + '.');

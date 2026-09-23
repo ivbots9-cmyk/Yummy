@@ -321,11 +321,15 @@ window.YL = window.YL || {};
   function pola(src, caption, occId, n) {
     /* customer uploads are data URLs we made ourselves on a canvas;
        anything else that claims to be one is dropped */
-    var isData = /^data:/.test(src);
+    var isData = /^data:/.test(src || '');
     if (isData && !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(src)) src = '';
+    var inner = src
+      ? '<img src="' + (isData ? src : esc(src)) + '" alt="" loading="lazy" decoding="async" ' +
+        'data-occ="' + esc(occId) + '" data-n="' + n + '" onerror="YL.lidFallback(this)">'
+      /* an 'own' lid still waiting for its upload */
+      : '<span class="pola__yours">' + I.camera.replace(/^/, '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">') + '</svg>Your photo</span>';
     return '<figure class="pola pola--' + n + '"><span class="pola__tape"></span>' +
-      '<span class="pola__img"><img src="' + (isData ? src : esc(src)) + '" alt="" loading="lazy" decoding="async" ' +
-      'data-occ="' + esc(occId) + '" data-n="' + n + '" onerror="YL.lidFallback(this)"></span>' +
+      '<span class="pola__img">' + inner + '</span>' +
       '<figcaption>' + esc(caption) + ' <span aria-hidden="true">♡</span></figcaption></figure>';
   }
 
@@ -338,22 +342,23 @@ window.YL = window.YL || {};
     opts = opts || {};
     var lid = YL.boxLid(box);
     var cups = box.cups.map(function (id, i) { return cup(id ? YL.getCandy(id) : null, i, opts); }).join('');
-    return '<div class="gbox' + (opts.compact ? ' gbox--compact' : '') + '">' +
+    return '<div class="gbox' + (opts.compact ? ' gbox--compact' : '') + (opts.lidOnly ? ' gbox--lid' : '') + '">' +
       '<div class="gbox__lid">' +
       '<p class="gbox__script">' + esc(lid.headline) + ' <span aria-hidden="true">♡</span></p>' +
-      '<div class="gbox__polas">' +
-      pola(lid.photos[0], lid.captions[0], lid.occasion.id, 1) +
-      pola(lid.photos[1], lid.captions[1], lid.occasion.id, 2) +
-      '</div>' +
+      (lid.photos
+        ? '<div class="gbox__polas">' +
+          pola(lid.photos[0], lid.captions[0], lid.occasion.id, 1) +
+          pola(lid.photos[1], lid.captions[1], lid.occasion.id, 2) + '</div>'
+        : '<div class="gbox__polas gbox__polas--none"><span>' + YL.icon('heart') + '</span></div>') +
       '<p class="gbox__side">' + esc(lid.side) + '<span aria-hidden="true">♡</span></p>' +
       (opts.compact ? '' : '<div class="gbox__promises">' + YL.TRUST.map(function (t) {
         return '<span>' + YL.icon(t.icon) + t.title + '</span>';
       }).join('') + '</div>') +
       '</div>' +
-      '<div class="gbox__base">' +
+      (opts.lidOnly ? '</div>' : '<div class="gbox__base">' +
       '<div class="gbox__cups" style="grid-template-columns:repeat(' + YL.BOX.cols + ',1fr)">' + cups + '</div>' +
       '<div class="gbox__front"><b>YUMMYLAND<sup>®</sup></b><span>Ruby Signature Gift</span></div>' +
-      '</div></div>';
+      '</div></div>');
   };
 
   /* ---------- logo ---------- */

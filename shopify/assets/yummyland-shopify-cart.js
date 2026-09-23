@@ -51,7 +51,8 @@ window.YL = window.YL || {};
       'Occasion': lid.occasion.name,
       'Lid headline': lid.headline,
       'Photo captions': lid.captions[0] + ' / ' + lid.captions[1],
-      'Lid photos': lid.own ? 'Customer photos (attached)' : 'Yummyland photos for ' + lid.occasion.name
+      'Lid photos': lid.mode === 'own' ? 'Customer photos (attached)'
+        : lid.mode === 'none' ? 'No photos' : 'Yummyland photos for ' + lid.occasion.name
     };
     box.cups.forEach(function (id, i) {
       var c = YL.getCandy(id);
@@ -93,7 +94,7 @@ window.YL = window.YL || {};
     var props = properties(box);
     props._yl_group = group;
     props._yl_payload = JSON.stringify({
-      occasion: box.occasion, cups: box.cups, captions: box.captions, extras: box.extras, card: box.card
+      occasion: box.occasion, lid: box.lid, cups: box.cups, captions: box.captions, extras: box.extras, card: box.card
     });
 
     var first;

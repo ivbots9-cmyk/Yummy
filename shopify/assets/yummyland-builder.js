@@ -3,7 +3,9 @@
    Yummyland — the gift box builder
    Three steps, one at a time:
      1 Candy        → fill the six cups (a ready box or cup by cup)
-     2 Personalize  → occasion for the lid, our photos or yours (+$5.99)
+     2 Lid & photos → who it's for, then how the lid is dressed:
+                      their own photos (+$5.99, the one we push),
+                      our photos for the occasion, or no photos
      3 Extras       → ribbon, card, summary and add to cart
    The live box preview sits beside the steps on a wide screen and
    above them on a phone, and every choice redraws it.
@@ -16,11 +18,12 @@ window.YL = window.YL || {};
 
   var STEPS = [
     { id: 'cups', name: 'Candy' },
-    { id: 'personal', name: 'Personalize' },
+    { id: 'personal', name: 'Lid & photos' },
     { id: 'finish', name: 'Extras & checkout' }
   ];
 
   var box, step = 0, selected = null;
+  var view = 'inside';  /* preview: the open box, or the closed box as it arrives */
   var seen = {};  /* steps the customer has opened — only those can show as done */
   var filter = { type: 'all', color: null };
   var root;
@@ -36,20 +39,22 @@ window.YL = window.YL || {};
     if (!seen[i] && i > 0) return false;
     switch (STEPS[i].id) {
       case 'cups': return YL.boxComplete(box);
-      case 'personal': return box.extras.indexOf('photos') < 0 || YL.hasOwnPhotos(box);
+      case 'personal': return !!box.lid && (box.lid !== 'own' || YL.hasOwnPhotos(box));
       default: return false;
     }
   }
 
-  /* The occasion is optional — without one the lid reads "Life is
-     Sweeter Together", which suits any gift. */
+  /* The occasion defaults to Just Because. The lid is always an explicit
+     choice: the photos are what make this gift, so we ask rather than
+     decide for the customer — and still let them say no. */
   function blocker() {
     if (!YL.boxComplete(box)) {
       var left = YL.BOX.cups - YL.boxFilled(box);
       return { step: 0, text: 'Fill ' + left + ' more cup' + (left > 1 ? 's' : '') + '.' };
     }
-    if (box.extras.indexOf('photos') > -1 && !YL.hasOwnPhotos(box)) {
-      return { step: 1, text: 'Upload both photos, or switch back to our photos.' };
+    if (!box.lid) return { step: 1, text: 'Choose how the lid looks — your photos, ours, or none.' };
+    if (box.lid === 'own' && !YL.hasOwnPhotos(box)) {
+      return { step: 1, text: 'Upload both photos, or pick one of the other lid options.' };
     }
     if (box.extras.indexOf('card') > -1 && !box.card.message.trim()) {
       return { step: 2, text: 'Write the message for your greeting card.' };
@@ -73,16 +78,30 @@ window.YL = window.YL || {};
   /* ---------------------------------------------------------------
      PREVIEW (box + price + next)
      --------------------------------------------------------------- */
+  function outside() {
+    var wrap = box.extras.indexOf('wrap') > -1, card = box.extras.indexOf('card') > -1;
+    return '<div class="closed">' +
+      '<img src="' + YL.img(wrap ? 'assets/img/box-wrapped.webp' : 'assets/img/box-closed.webp') + '" alt="' +
+      (wrap ? 'The closed box tied with a satin ribbon and gift tag' : 'The closed box') + '">' +
+      (card ? '<span class="closed__card"><img src="' + YL.img('assets/img/card.webp') + '" alt="Greeting card">' +
+        (box.card.message ? '<i>' + esc(box.card.message.slice(0, 60)) + (box.card.message.length > 60 ? '…' : '') + '</i>' : '') + '</span>' : '') +
+      '<span class="closed__tags">' + (wrap ? '<b>' + YL.icon('ribbon') + ' Ribbon</b>' : '') +
+      (card ? '<b>' + YL.icon('note') + ' Card</b>' : '') + '</span></div>';
+  }
+
   function renderPreview() {
     var p = YL.boxPrice(box);
     var filled = YL.boxFilled(box);
     $('#b-preview').innerHTML =
-      YL.giftBox(box, { interactive: true, selected: selected }) +
+      '<div class="views" role="tablist" aria-label="Preview">' +
+      '<button type="button" role="tab" class="views__btn' + (view === 'inside' ? ' is-on' : '') + '" data-view="inside" aria-selected="' + (view === 'inside') + '">Inside</button>' +
+      '<button type="button" role="tab" class="views__btn' + (view === 'outside' ? ' is-on' : '') + '" data-view="outside" aria-selected="' + (view === 'outside') + '">How it arrives</button></div>' +
+      (view === 'inside' ? YL.giftBox(box, { interactive: true, selected: selected }) : outside()) +
       '<div class="bprev__bar">' +
       '<div><span class="bprev__label">' + esc(YL.BOX.name) + '</span>' +
       '<span class="bprev__meta">' + filled + ' of ' + YL.BOX.cups + ' cups · ' + YL.BOX.size + '</span></div>' +
       '<b class="bprev__price">' + YL.money(p.total) + '</b></div>' +
-      (selected != null && box.cups[selected]
+      (selected != null && box.cups[selected] && view === 'inside'
         ? '<div class="bprev__sel">Cup ' + (selected + 1) + ' selected — pick a candy to swap it, or ' +
           '<button type="button" class="link-btn" data-empty-cup="' + selected + '">empty this cup</button></div>'
         : '');
@@ -93,13 +112,13 @@ window.YL = window.YL || {};
      --------------------------------------------------------------- */
   function occasionPicker() {
     var cur = box.occasion || 'just-because';
-    return '<h3 class="sub">What’s the occasion?</h3>' +
+    return '<h3 class="sub">Who’s it for?</h3>' +
       '<div class="occ-grid">' + YL.OCCASIONS.map(function (o) {
         var on = cur === o.id;
         return '<button type="button" class="occ' + (on ? ' is-on' : '') + '" data-occ="' + o.id + '" aria-pressed="' + on + '">' +
           '<span class="occ__ico">' + YL.icon(o.icon) + '</span><b>' + o.name + '</b></button>';
       }).join('') + '</div>' +
-      '<p class="muted small occ-note">The lid will read <b>“' + esc(YL.getOccasion(cur).headline) + '”</b>.</p>';
+      '<p class="muted small occ-note">Sets the words on the lid — <b>“' + esc(YL.getOccasion(cur).headline) + '”</b> — and the photos we pick if you use ours.</p>';
   }
 
   function dots(cups) {
@@ -228,35 +247,46 @@ window.YL = window.YL || {};
   /* ---------------------------------------------------------------
      STEP 3 — LID PHOTOS
      --------------------------------------------------------------- */
-  function stepLid() {
-    var occ = YL.getOccasion(box.occasion) || YL.OCCASIONS[0];
-    var own = box.extras.indexOf('photos') > -1;
-    var photoExtra = YL.getExtra('photos');
-    var lid = YL.boxLid(box);
-    return head('Make it theirs', 'Pick the occasion and the photos printed inside the lid. Both are optional — skip ahead if you like.') +
-      occasionPicker() +
-      '<h3 class="sub">Photos inside the lid</h3>' +
-      '<div class="choice">' +
-      '<button type="button" class="choice__opt' + (!own ? ' is-on' : '') + '" data-lid="ours" aria-pressed="' + !own + '">' +
-      '<span class="choice__pics">' + ourPic(occ, 1) + ourPic(occ, 2) + '</span>' +
-      '<b>Our photos for ' + esc(occ.name) + '</b><small>Styled to match the lid. Included.</small>' +
-      '<span class="choice__price">Included</span></button>' +
-      '<button type="button" class="choice__opt' + (own ? ' is-on' : '') + '" data-lid="own" aria-pressed="' + own + '">' +
-      '<span class="choice__pics choice__pics--own">' + YL.icon('camera') + '</span>' +
-      '<b>Your own two photos</b><small>' + esc(photoExtra.desc.split('.')[0]) + '.</small>' +
-      '<span class="choice__price">+' + YL.money(photoExtra.price) + '</span></button>' +
-      '</div>' +
-      (own ? uploads() : '') +
-      '<h3 class="sub">Words under the photos <span class="muted">(optional)</span></h3>' +
-      '<div class="fields fields--2">' +
-      field('cap0', 'First photo', lid.captions[0], 22) +
-      field('cap1', 'Second photo', lid.captions[1], 22) +
-      '</div><p class="muted small">Printed in script under each polaroid. Leave them as they are, or make them yours.</p>';
+  /* The lid step is the showpiece. Each option carries a small picture
+     of that exact lid, so the choice is between three looks, not three
+     lines of text. Their own photos lead, carry the badge and are the
+     biggest card; the other two are there so nobody is cornered. */
+  function lidPreview(mode) {
+    var b = JSON.parse(JSON.stringify(box));
+    b.lid = mode;
+    if (mode === 'own' && b.extras.indexOf('photos') < 0) b.extras.push('photos');
+    return YL.giftBox(b, { lidOnly: true, compact: true });
   }
 
-  function ourPic(occ, n) {
-    return '<span class="mini-pola"><img src="' + YL.img('assets/img/lid/' + occ.id + '-' + n + '.webp') + '" alt="" ' +
-      'data-occ="' + occ.id + '" data-n="' + n + '" onerror="YL.lidFallback(this)"></span>';
+  function stepLid() {
+    var occ = YL.getOccasion(box.occasion) || YL.OCCASIONS[0];
+    var photoExtra = YL.getExtra('photos');
+    var lid = YL.boxLid(box);
+    var mode = box.lid;
+    function opt(id, cls, title, text, price, badge) {
+      var on = mode === id;
+      return '<button type="button" class="lidopt ' + cls + (on ? ' is-on' : '') + '" data-lid="' + id + '" aria-pressed="' + on + '">' +
+        '<span class="lidopt__art">' + lidPreview(id) + '</span>' +
+        '<span class="lidopt__body"><span class="lidopt__radio" aria-hidden="true"></span>' +
+        (badge ? '<span class="lidopt__badge">' + badge + '</span>' : '') +
+        '<b>' + title + '</b><small>' + text + '</small><span class="lidopt__price">' + price + '</span></span></button>';
+    }
+    return head('The lid — the best part', 'When they open the box, the first thing they see is two photos inside the lid. Choose how yours looks.') +
+      occasionPicker() +
+      '<h3 class="sub">Photos inside the lid</h3>' +
+      '<div class="lidopts">' +
+      opt('own', 'lidopt--main', 'Your own photos', 'Upload two photos — we print them as polaroids and set them in the lid. This is what makes it their gift.',
+        '+' + YL.money(photoExtra.price), '♥ Most loved') +
+      opt('ours', '', 'Our photos for ' + esc(occ.name), 'We pick two photos that match the occasion.', 'Included') +
+      opt('none', '', 'No photos', 'Just the printed lid and message.', 'Included') +
+      '</div>' +
+      (mode === 'own' ? '<h3 class="sub">Upload your two photos</h3>' + uploads() : '') +
+      (mode && mode !== 'none'
+        ? '<h3 class="sub">Words under the photos <span class="muted">(optional)</span></h3>' +
+          '<div class="fields fields--2">' +
+          field('cap0', 'First photo', lid.captions[0], 22) +
+          field('cap1', 'Second photo', lid.captions[1], 22) + '</div>'
+        : '');
   }
 
   function uploads() {
@@ -303,6 +333,13 @@ window.YL = window.YL || {};
     var p = YL.boxPrice(box);
     var block = blocker();
     return head('Extras & checkout', 'Add a finishing touch if you like, check your box and add it to the cart.') +
+      (box.lid !== 'own'
+        ? '<div class="upsell"><span class="upsell__art">' + lidPreview('own') + '</span>' +
+          '<div class="upsell__body"><strong class="upsell__title">Put your own photos in the lid?</strong>' +
+          '<span class="upsell__text">It is the part people remember. Two photos, printed and set inside — ' +
+          YL.money(YL.getExtra('photos').price) + '.</span>' +
+          '<button type="button" class="btn btn--sm btn--gold" data-lid="own" data-go-lid>' + YL.icon('camera') + ' Add my photos</button></div></div>'
+        : '') +
       '<div class="touches">' + touch(wrap, hasWrap) + touch(card, hasCard) + '</div>' +
       (hasCard
         ? '<div class="cardform"><div class="fields fields--2">' +
@@ -372,6 +409,7 @@ window.YL = window.YL || {};
 
   function go(i, scroll) {
     step = Math.max(0, Math.min(STEPS.length - 1, i));
+    if (step < 2) view = 'inside';
     selected = null;
     render();
     YL.trackStep && YL.trackStep(STEPS[step].id);
@@ -386,7 +424,7 @@ window.YL = window.YL || {};
     if (!col) return;
     var occ = box.occasion;
     var keep = { photos: box.photos, captions: box.captions, extras: box.extras, card: box.card };
-    box = YL.boxFromCollection(col, occ);
+    box = YL.boxFromCollection(col, occ, box.lid);
     box.photos = keep.photos; box.captions = keep.captions; box.extras = keep.extras; box.card = keep.card;
     selected = null;
     save();
@@ -448,16 +486,24 @@ window.YL = window.YL || {};
       if (d.add) { putCandy(d.add); return; }
       if (d.group) { openGroup(d.group); return; }
 
+      if (d.view) { view = d.view; renderPreview(); return; }
       if (d.lid) {
+        box.lid = d.lid;
         var i2 = box.extras.indexOf('photos');
         if (d.lid === 'own' && i2 < 0) box.extras.push('photos');
-        if (d.lid === 'ours' && i2 > -1) box.extras.splice(i2, 1);
-        save(); render();
+        if (d.lid !== 'own' && i2 > -1) box.extras.splice(i2, 1);
+        view = 'inside';
+        save();
+        YL.trackStep && YL.trackStep('lid', { lid: d.lid });
+        if (t.hasAttribute('data-go-lid')) { go(1); return; }
+        render();
         return;
       }
       if (d.extra) {
         var k = box.extras.indexOf(d.extra);
         if (k > -1) box.extras.splice(k, 1); else box.extras.push(d.extra);
+        /* show them the box as it will arrive, ribbon and card on */
+        view = 'outside';
         save(); render();
         return;
       }
@@ -475,7 +521,9 @@ window.YL = window.YL || {};
       if (up == null || !e.target.files[0]) return;
       readPhoto(e.target.files[0], function (src) {
         box.photos[parseInt(up, 10)] = { src: src };
+        box.lid = 'own';
         if (box.extras.indexOf('photos') < 0) box.extras.push('photos');
+        view = 'inside';
         save(); render();
       });
     });
@@ -526,7 +574,7 @@ window.YL = window.YL || {};
     if (col && YL.getCollection(col)) {
       var c = YL.getCollection(col);
       var keepOcc = box.occasion;
-      box = YL.boxFromCollection(c, occ || keepOcc);
+      box = YL.boxFromCollection(c, occ || keepOcc, box.lid);
     }
     save();
 

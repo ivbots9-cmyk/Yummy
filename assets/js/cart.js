@@ -20,7 +20,7 @@ window.YL = window.YL || {};
         var c = YL.getCandy(id);
         return c ? '<li><i style="background:' + c.swatch + '"></i>' + esc(c.label) + '</li>' : '';
       }).join('') + '</ul>' +
-      '<p class="meta">Lid: “' + esc(lid.headline) + '” · ' + (lid.own ? 'your photos' : 'our photos') + '</p>' +
+      '<p class="meta">Lid: “' + esc(lid.headline) + '” · ' + (lid.mode === 'own' ? 'your photos' : lid.mode === 'none' ? 'no photos' : 'our photos') + '</p>' +
       box.extras.map(function (id) {
         var e = YL.getExtra(id);
         return '<p class="meta">＋ ' + esc(e.name) + ' · ' + YL.money(e.price) + '</p>';
