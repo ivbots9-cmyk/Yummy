@@ -623,10 +623,9 @@ window.YL = window.YL || {};
   ];
 
   YL.HOW = [
-    { title: 'Choose the moment', text: 'Birthday, wedding, baby shower, best friend — the occasion sets the lid.' },
-    { title: 'Fill six cups', text: 'Start from a collection or pick every cup yourself, by type or by colour.' },
-    { title: 'Make it personal', text: 'Keep our lid photos or upload two of yours. Add a ribbon and a card.' },
-    { title: 'We pack it by hand', text: 'Sealed, labelled, boxed and shipped — free.' }
+    { title: 'Pick your candy', text: 'Take a ready box or fill the six cups yourself — by type or by colour.' },
+    { title: 'Add a personal touch', text: 'Choose the occasion, and our photos or yours inside the lid. Ribbon and card if you like.' },
+    { title: 'We pack and ship it', text: 'Sealed, labelled and boxed by hand within 1–2 days. Shipping is free.' }
   ];
 
   /* Placeholder testimonials. Replace with real ones before running ads —

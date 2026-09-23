@@ -50,7 +50,7 @@ Object.keys(JS).forEach((src) => {
 });
 
 /* ------------------------------------------------------------- fonts */
-const FONTS = ['cormorant', 'cormorant-italic', 'greatvibes', 'jost'];
+const FONTS = ['nunito', 'baloo2', 'greatvibes'];
 FONTS.forEach((f) => {
   fs.copyFileSync(path.join(ROOT, 'assets/fonts', f + '.woff2'), path.join(OUT, 'yummyland-' + f + '.woff2'));
   console.log('font     -> yummyland-' + f + '.woff2');
