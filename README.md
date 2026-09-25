@@ -116,8 +116,7 @@
 ## Картинки: что есть и что сгенерировать
 
 Уже в репозитории (нарезаны из мокапов бокса):
-`hero-girl.webp` — **девушка из старой версии со старой розовой коробкой, заглушка**: нужно
-сгенерировать заново с нашей бордовой коробкой (промпт в конце README);
+`hero-girl.webp` — девушка с открытым боксом (фон вырезан, 1038×1024, прозрачный WebP);
 `hero-box.webp/jpg` (герой), `box-open.webp` (бокс изнутри), `box-closed.webp`,
 `box-wrapped.webp` (с лентой — картинка допа), `card.webp` (открытка), `box-insert.webp`
 (вкладыш), `og.jpg` (превью ссылки), `lid/just-because-1/2.webp`.
@@ -178,12 +177,3 @@ tools/stamp-assets.js       ?v=<хеш> на css/js против смешанн�
 6. Terms / Privacy — настоящие тексты (сейчас ссылки ведут на FAQ).
 7. Приём денег — через Shopify (`shopify/README-SHOPIFY.md`); в статике чекаут симулируется.
 
-## Промпт для главного фото
-
-> Studio product photo, warm soft light, plain light background (for cut-out). A smiling woman, 25–27,
-> natural look, holding an open burgundy Yummyland gift box at chest height, slightly tilted to camera.
-> Inside the box: a tray of 8 clear cups of colourful gummies and chocolate; inside the lid two polaroid
-> photos taped in and gold script "Life is Sweeter Together". Box front reads YUMMYLAND in gold.
-> Three-quarter view, both hands on the box, nothing cropped. Photorealistic, 3:2.
-
-Вырезать фон в PNG/WebP с прозрачностью, ~1100 px по ширине, сохранить как `assets/img/hero-girl.webp`.

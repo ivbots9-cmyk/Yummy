@@ -628,7 +628,7 @@ window.YL = window.YL || {};
      MARKETING COPY
      --------------------------------------------------------------- */
   YL.ANNOUNCE = [
-    { icon: 'truck', text: 'Free shipping on every Signature Box' },
+    { icon: 'truck', text: 'Free shipping on every gift box' },
     { icon: 'camera', text: 'Put your own photos inside the lid', link: 'index.html#builder', linkText: 'Build yours' },
     { icon: 'gift', text: 'Gift-ready — no prices inside the box' }
   ];

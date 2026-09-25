@@ -157,8 +157,8 @@ body.modal-open { overflow: hidden; }
 .yummyland .hero__copy { padding-bottom: 48px; }
 .yummyland .hero__girl { position: relative; align-self: end; }
 .yummyland .hero__girl img { width: 100%; display: block; filter: drop-shadow(0 24px 40px rgba(90, 10, 35, .25)); }
-.yummyland .hero--girl .hero__stamp { left: 6%; bottom: 22%; font-size: 20px; }
-.yummyland .hero__perks { list-style: none; margin: 30px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px; }
+.yummyland .hero--girl .hero__stamp { left: 2%; right: auto; bottom: 8%; width: 116px; height: 116px; font-size: 19px; transform: rotate(-6deg); }
+.yummyland .hero__perks { list-style: none; margin: 30px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, max-content); gap: 12px 40px; }
 .yummyland .hero__perks li { display: grid; grid-template-columns: 22px 1fr; gap: 2px 10px; align-items: center; }
 .yummyland .hero__perks .ico { grid-row: 1 / 3; width: 22px; height: 22px; color: var(--ruby); }
 .yummyland .hero__perks b { font: 800 15px/1.1 var(--sans); color: var(--ink); }
@@ -643,9 +643,14 @@ body.modal-open { overflow: hidden; }
 .yummyland .nav.is-open { display: flex; }
 .yummyland .nav a { padding: 14px 0; border-bottom: 1px solid var(--line); }
 .yummyland .header__tools { margin-left: auto; }
-.yummyland .hero--girl .hero__in { grid-template-columns: minmax(0, 1fr); gap: 8px; padding-top: 36px; }
-.yummyland .hero__copy { padding-bottom: 0; }
-.yummyland .hero__girl { max-width: 520px; margin: 0 auto; }
+.yummyland .hero--girl .hero__in { grid-template-columns: 1.1fr .9fr; gap: 16px; padding-top: 32px; }
+.yummyland .hero__copy { padding-bottom: 28px; }
+.yummyland .hero--girl h1 { font-size: 38px; }
+.yummyland .hero--girl .hero__lede { font-size: 16px; margin-bottom: 20px; }
+.yummyland .hero__perks { gap: 10px 22px; margin-top: 22px; }
+.yummyland .hero__perks b { font-size: 14px; }
+.yummyland .hero__perks span { font-size: 12px; }
+.yummyland .hero--girl .hero__stamp { width: 96px; height: 96px; font-size: 15px; left: 0; }
 .yummyland .stats { grid-template-columns: 1fr 1fr; }
 .yummyland .hero__in { grid-template-columns: minmax(0, 1fr); gap: 40px; padding-top: 56px; padding-bottom: 56px; }
 .yummyland .hero__stamp { left: auto; right: 10px; bottom: -22px; width: 96px; height: 96px; font-size: 16px; }
@@ -689,10 +694,14 @@ body.modal-open { overflow: hidden; }
 .yummyland .hero__lede { font-size: 16px; }
 .yummyland .hero__cta .btn { flex: 1 1 100%; }
 .yummyland .hero__facts { gap: 18px; }
-.yummyland .hero__perks { grid-template-columns: 1fr 1fr; gap: 10px 12px; margin-top: 22px; }
-.yummyland .hero__perks b { font-size: 14px; }
-.yummyland .hero__perks span { font-size: 12px; }
-.yummyland .hero--girl .hero__stamp { left: auto; right: 4%; bottom: 30%; width: 92px; height: 92px; font-size: 15px; }
+.yummyland .hero--girl .hero__in { grid-template-columns: minmax(0, 1fr); gap: 4px; padding-top: 28px; }
+.yummyland .hero__copy { padding-bottom: 0; }
+.yummyland .hero--girl h1 { font-size: 36px; }
+.yummyland .hero__girl { width: min(100%, 400px); margin: 10px auto 0; }
+.yummyland .hero__perks { grid-template-columns: 1fr 1fr; gap: 10px 14px; margin-top: 20px; }
+.yummyland .hero__perks b { font-size: 13.5px; }
+.yummyland .hero__perks span { font-size: 11.5px; }
+.yummyland .hero--girl .hero__stamp { left: 0; bottom: 4%; width: 88px; height: 88px; font-size: 14px; }
 .yummyland .hero__facts b { font-size: 22px; }
 .yummyland .trust__item { padding: 16px 12px; gap: 10px; }
 .yummyland .trust__item span { font-size: 12px; }
