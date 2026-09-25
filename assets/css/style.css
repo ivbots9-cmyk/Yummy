@@ -385,6 +385,12 @@ button.cup:hover { transform: translateY(-2px); }
   background: repeating-linear-gradient(45deg, #fbeff2 0 2cqi, #fff 2cqi 4cqi); color: #a0153e; font: 800 2.2cqi/1 'Nunito', sans-serif; }
 .pola__yours svg { width: 7cqi; height: 7cqi; }
 
+/* the real lid, shown before the choice */
+.real { display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: center; margin: 0 0 8px; padding: 12px; background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); }
+.real img { width: 100%; border-radius: 10px; }
+.real figcaption { font-size: 14px; color: var(--ink-70); line-height: 1.45; }
+.real b { display: block; font: 800 16px/1.2 var(--serif); color: var(--ink); margin-bottom: 2px; }
+
 /* step 2 — lid options */
 .lidopts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .lidopt { position: relative; display: flex; flex-direction: column; padding: 0; text-align: left; overflow: hidden;
@@ -806,6 +812,7 @@ button.cup:hover { transform: translateY(-2px); }
   .lidopt__body > b { font-size: 15px; }
   .lidopt__body > small { font-size: 12.5px; }
   .upsell { grid-template-columns: 1fr; }
+  .real { grid-template-columns: 1fr; }
   .closed { padding: 16px; }
   .included ul { grid-template-columns: 1fr; }
   .review__cups { grid-template-columns: 1fr; }

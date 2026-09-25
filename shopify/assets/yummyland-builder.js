@@ -331,6 +331,9 @@ window.YL = window.YL || {};
         '<b>' + title + '</b><small>' + text + '</small><span class="lidopt__price">' + price + '</span></span></button>';
     }
     return head('The lid — the best part', 'When they open the box, the first thing they see is two photos inside the lid. Choose how yours looks.') +
+      /* the real thing, so nobody has to imagine what "photos in the lid" means */
+      '<figure class="real"><img src="' + YL.img('assets/img/lid-real.webp') + '" width="700" height="450" alt="A real Yummyland lid: two polaroid photos taped inside, above the cups" loading="lazy">' +
+      '<figcaption><b>This is how it arrives.</b> Two polaroids, printed and taped inside the lid — yours, or ours for the occasion.</figcaption></figure>' +
       occasionPicker() +
       '<h3 class="sub">Photos inside the lid</h3>' +
       '<div class="lidopts">' +
