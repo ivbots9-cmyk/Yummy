@@ -28,7 +28,7 @@ window.YL = window.YL || {};
   var view = 'inside';      /* preview: the open box, or the closed box as it arrives */
   var peekOpen = false;     /* phone: the sticky strip expanded into the full box */
   var active = 'size';      /* the section the reader is in, for the step bar */
-  var filter = { type: 'all', color: null };
+  var filter = { type: 'all', color: null, diets: [] };
   var root, spy;
 
   function save() {
@@ -191,6 +191,15 @@ window.YL = window.YL || {};
       }).join('') +
       (filter.color ? '<button type="button" class="link-btn" data-color="">Any colour</button>' : '') +
       '</div>' +
+      '<div class="diets" role="group" aria-label="Dietary">' +
+      '<span class="swatches__label">Dietary</span>' +
+      YL.DIETS.map(function (d) {
+        var on = filter.diets.indexOf(d.id) > -1;
+        return '<button type="button" class="chip chip--diet' + (on ? ' is-on' : '') + '" data-diet="' + d.id + '" aria-pressed="' + on + '">' +
+          (on ? YL.icon('check') + ' ' : '') + d.name + '</button>';
+      }).join('') +
+      '<small class="muted">Packed in a room that also handles nuts — check the label for serious allergies.</small>' +
+      '</div>' +
       '<div class="candies">' + candyCards() + '</div>' +
       '<div class="cups-tools">' +
       '<button type="button" class="link-btn" data-clear-cups>' + YL.icon('refresh') + ' Empty all cups</button></div>';
@@ -203,8 +212,8 @@ window.YL = window.YL || {};
   }
 
   function candyCards() {
-    var tiles = YL.candyTiles(filter.type, filter.color);
-    if (!tiles.length) return '<p class="muted">Nothing in that colour and type yet — try another colour.</p>';
+    var tiles = YL.candyTiles(filter.type, filter.color, filter.diets);
+    if (!tiles.length) return '<p class="muted">Nothing matches those filters yet — try clearing a colour or a dietary chip.</p>';
     var t = target();
     var addLabel = t == null ? 'Tap a cup to swap' : 'Add to cup ' + (t + 1);
     return tiles.map(function (tile) {
@@ -549,6 +558,11 @@ window.YL = window.YL || {};
       }
       if (d.type) { filter.type = d.type; render(); return; }
       if (d.color != null) { filter.color = d.color && filter.color !== d.color ? d.color : null; render(); return; }
+      if (d.diet) {
+        var di = filter.diets.indexOf(d.diet);
+        if (di > -1) filter.diets.splice(di, 1); else filter.diets.push(d.diet);
+        render(); return;
+      }
       if (d.add) { putCandy(d.add); return; }
       if (d.group) { openGroup(d.group); return; }
 

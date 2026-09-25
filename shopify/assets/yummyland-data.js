@@ -74,6 +74,14 @@ window.YL = window.YL || {};
     { id: 'hard', name: 'Hard candy' }
   ];
 
+  /* Dietary chips. Only facts we can state about the recipe; the site
+     always adds "check the label" beside them. */
+  YL.DIETS = [
+    { id: 'nut-free', name: 'Nut-free' },
+    { id: 'gluten-free', name: 'Gluten-free' },
+    { id: 'dairy-free', name: 'Dairy-free' }
+  ];
+
   YL.COLORS = [
     { id: 'red', name: 'Red', hex: '#c8102e' },
     { id: 'pink', name: 'Pink', hex: '#f28bb0' },
@@ -102,12 +110,18 @@ window.YL = window.YL || {};
   /* ---------------------------------------------------------------
      THE CANDY RANGE
      ---------------------------------------------------------------
-     Order is the order on the wall: Albanese gummies first — that is
-     the line a premium box is built on — then Albanese chocolate, then
+     Order is the order on the wall: our gummies first — that is the
+     line a premium box is built on — then our chocolate, then
      a short list of other favourites and old-fashioned hard candy.
 
      Fields
-       brand    shown on the card; 'Albanese' for the core line
+       brand    shown on the card. Our gummies and chocolate are sold as
+                Yummyland; `maker` keeps the supplier for ordering only and
+                is never printed anywhere on the site.
+       diet     what we can say plainly about the pack, for the dietary
+                filter: 'nut-free' (no peanuts or tree nuts in the recipe),
+                'gluten-free', 'dairy-free'. Anything with nuts gets `nuts`.
+                Always paired on the site with "check the label".
        type     one of YL.TYPES (sour candy is also a gummy: `types`)
        colors   what the cup looks like, for the colour filter
        label    the short name printed on the cup sticker
@@ -119,197 +133,197 @@ window.YL = window.YL || {};
        nuts     contains peanuts / tree nuts (shown on the card)
      --------------------------------------------------------------- */
   YL.CANDIES = [
-    /* ================= Albanese gummies ================= */
+    /* ================= gummies (house line) ================= */
     {
-      id: 'gummy-bears-12', name: '12 Flavor Gummi Bears', label: 'Gummi Bears', brand: 'Albanese',
-      types: ['gummies'], colors: ['rainbow'], swatch: '#e8a33d', tag: 'Bestseller',
+      id: 'gummy-bears-12', name: '12 Flavor Gummi Bears', label: 'Gummi Bears', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#e8a33d', tag: 'Bestseller',
       handle: '12-flavors-assorted-gummy-bears-bulk-candy-bag-soft-chewy-fruity-gummies-colorful-party-snack-bulk-candy-for-sharing',
       img: CDN + '12_Flavor_Bears.webp',
-      about: 'The bear that made Albanese famous — twelve real-fruit flavours and a soft, clean chew.',
+      about: 'The bear that made us — twelve real-fruit flavours and a soft, clean chew.',
       recipe: rc('bear', '#e53935', '#fdd835', '#43a047', '#1e88e5', '#fb8c00', '#8e24aa')
     },
     {
-      id: 'peach-rings', name: 'Gummi Peach Rings', label: 'Peach Rings', brand: 'Albanese',
-      types: ['gummies'], colors: ['orange', 'yellow'], swatch: '#f6a15b', tag: 'Fan favourite',
+      id: 'peach-rings', name: 'Gummi Peach Rings', label: 'Peach Rings', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['orange', 'yellow'], swatch: '#f6a15b', tag: 'Fan favourite',
       handle: 'gummi-peach-rings', img: CDN + '1_e66c821c-ebb6-4b66-87b8-d49dfab58255_1.jpg',
       about: 'Soft peach rings in a fine sugar coat. Sunset-coloured, so they light up any cup.',
       recipe: rc('ring', '#ffb26b', '#ff8f6b', '#ffd08a')
     },
     {
-      id: 'gummy-worms', name: 'Large Gummi Worms', label: 'Gummi Worms', brand: 'Albanese',
-      types: ['gummies'], colors: ['rainbow'], swatch: '#f1c232',
+      id: 'gummy-worms', name: 'Large Gummi Worms', label: 'Gummi Worms', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#f1c232',
       handle: 'large-assorted-fruit-gummi-worms-4', img: CDN + '50102_1.jpg',
       about: 'Four-inch two-tone worms in assorted fruit flavours.',
       recipe: rc('worm', { a: '#e53935', b: '#fdd835' }, { a: '#43a047', b: '#fb8c00' }, { a: '#1e88e5', b: '#f06292' })
     },
     {
-      id: 'worm-mini', name: 'Mini Gummi Worms', label: 'Mini Worms', brand: 'Albanese',
-      types: ['gummies'], colors: ['rainbow'], swatch: '#f7b733',
+      id: 'worm-mini', name: 'Mini Gummi Worms', label: 'Mini Worms', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#f7b733',
       handle: 'mini-assorted-fruit-gummi-worms-2', img: CDN + '50137_1.png',
       about: 'Two-inch worms — more pieces per cup, easier to share.',
       recipe: rc('worm', { a: '#e53935', b: '#fdd835' }, { a: '#43a047', b: '#fb8c00' })
     },
     {
-      id: 'gummy-sharks', name: 'Blue Raspberry Sharks', label: 'Blue Sharks', brand: 'Albanese',
-      types: ['gummies'], colors: ['blue', 'white'], swatch: '#3d8fe0',
+      id: 'gummy-sharks', name: 'Blue Raspberry Sharks', label: 'Blue Sharks', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['blue', 'white'], swatch: '#3d8fe0',
       handle: 'blue-gummi-sharks', img: CDN + 'medium_1024x1024_28f675f8-8df7-4338-b357-e9bcf72ce661.webp',
       about: 'Blue-raspberry sharks with a white belly. The easiest way to make a cup blue.',
       recipe: rc('shark', { a: '#3d8fe0', b: '#ffffff' }, { a: '#5aa9f0', b: '#f1f6ff' })
     },
     {
-      id: 'blue-raspberry-rings', name: 'Blue Raspberry Rings', label: 'Blue Rings', brand: 'Albanese',
-      types: ['gummies'], colors: ['blue'], swatch: '#2f7fd6',
+      id: 'blue-raspberry-rings', name: 'Blue Raspberry Rings', label: 'Blue Rings', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['blue'], swatch: '#2f7fd6',
       handle: 'gummi-blue-raspberry-rings', img: CDN + '2594844-ezgif.com-webp-to-jpg-converter.jpg',
       about: 'Sugar-sanded rings in a deep, glossy blue.',
       recipe: sour(rc('ring', '#2f7fd6', '#4b9be8', '#1f65b8'))
     },
     {
-      id: 'watermelon-slices', name: 'Gummi Watermelon Slices', label: 'Watermelon', brand: 'Albanese',
-      types: ['gummies'], colors: ['red', 'green'], swatch: '#e2475b',
+      id: 'watermelon-slices', name: 'Gummi Watermelon Slices', label: 'Watermelon', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['red', 'green'], swatch: '#e2475b',
       handle: 'gummi-watermelon-slices', img: CDN + '50456_1.jpg',
       about: 'Little watermelon wedges — red, green rind, sugar sparkle.',
       recipe: rc('slice', { a: '#ff5a6e', b: '#3fbf6a' }, { a: '#ff7384', b: '#2fa85a' })
     },
     {
-      id: 'gummy-butterflies', name: 'Mini Gummi Butterflies', label: 'Butterflies', brand: 'Albanese',
-      types: ['gummies'], colors: ['rainbow', 'pink'], swatch: '#f08cc0',
+      id: 'gummy-butterflies', name: 'Mini Gummi Butterflies', label: 'Butterflies', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow', 'pink'], swatch: '#f08cc0',
       handle: 'mini-gummi-butterflies', img: CDN + '50234_1.png',
       about: 'Tiny two-tone butterflies. Pretty enough for a wedding or baby shower cup.',
       recipe: rc('heart', '#f06292', '#ffd54f', '#81c784', '#64b5f6')
     },
     {
-      id: 'gummy-frogs', name: 'Gummi Rainforest Frogs', label: 'Frogs', brand: 'Albanese',
-      types: ['gummies'], colors: ['rainbow', 'green'], swatch: '#6cc06a',
+      id: 'gummy-frogs', name: 'Gummi Rainforest Frogs', label: 'Frogs', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow', 'green'], swatch: '#6cc06a',
       handle: 'gummi-rainforest-frogs', img: CDN + '50172_1.png',
       about: 'Bright two-tone frogs in assorted fruit flavours.',
       recipe: rc('bean', '#43a047', '#fdd835', '#e53935', '#1e88e5')
     },
     {
-      id: 'gummy-berries', name: 'Mixed Gummi Berries', label: 'Sweet Berries', brand: 'Albanese',
-      types: ['gummies'], colors: ['red', 'purple'], swatch: '#c2185b',
+      id: 'gummy-berries', name: 'Mixed Gummi Berries', label: 'Sweet Berries', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['red', 'purple'], swatch: '#c2185b',
       handle: 'mixed-gummi-berries', img: CDN + '61nqKx8C8jL.jpg',
       about: 'Raspberries and blackberries with a sugared, seedy finish.',
       recipe: rc('ball', '#c2185b', '#6a1b9a', '#e53935')
     },
     {
-      id: 'bear-cubs', name: 'Gummi Bear Cubs', label: 'Bear Cubs', brand: 'Albanese',
-      types: ['gummies'], colors: ['rainbow'], swatch: '#f3a64a',
+      id: 'bear-cubs', name: 'Gummi Bear Cubs', label: 'Bear Cubs', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#f3a64a',
       handle: '12-flavor-gummi-bear-cubs™', img: CDN + '50235_1.jpg',
       about: 'Mini bears, all twelve flavours. Twice the pieces in the same cup.',
       recipe: rc('bear', '#e53935', '#fdd835', '#43a047', '#1e88e5')
     },
     {
-      id: 'bear-natural', name: '5 Natural Flavor Bears', label: 'Natural Bears', brand: 'Albanese',
-      types: ['gummies'], colors: ['rainbow'], swatch: '#e9a95b',
+      id: 'bear-natural', name: '5 Natural Flavor Bears', label: 'Natural Bears', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#e9a95b',
       handle: '5-natural-flavor-gummi-bears™', img: CDN + '50270_1.jpg',
       about: 'Coloured with fruit and vegetable juice — softer, pastel tones.',
       recipe: rc('bear', '#f28b82', '#fbbc6b', '#fff176', '#aed581', '#ce93d8')
     },
     {
-      id: 'worm-natural-mini', name: '5 Natural Flavor Mini Worms', label: 'Natural Worms', brand: 'Albanese',
-      types: ['gummies'], colors: ['rainbow'], swatch: '#ecb06a',
+      id: 'worm-natural-mini', name: '5 Natural Flavor Mini Worms', label: 'Natural Worms', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#ecb06a',
       handle: '5-natural-flavor-mini-gummi-worms-2', img: CDN + '50271_2.png',
       about: 'Mini worms in soft, naturally coloured pastels.',
       recipe: rc('worm', { a: '#f28b82', b: '#fff176' }, { a: '#aed581', b: '#ce93d8' })
     },
 
-    /* ---- single-colour Albanese bears: one tile, a colour picker ---- */
-    { id: 'bear-cherry', name: 'Wild Cherry Bears', label: 'Cherry Bears', brand: 'Albanese', group: 'bears',
-      types: ['gummies'], colors: ['red'], swatch: '#c8102e', handle: 'wild-cherry-gummi-bears', img: CDN + '50107_1.png',
+    /* ---- single-colour bears: one tile, a colour picker ---- */
+    { id: 'bear-cherry', name: 'Wild Cherry Bears', label: 'Cherry Bears', brand: 'Yummyland', maker: 'Albanese', group: 'bears',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['red'], swatch: '#c8102e', handle: 'wild-cherry-gummi-bears', img: CDN + '50107_1.png',
       about: 'All red, all wild cherry.', recipe: rc('bear', '#c8102e', '#e0243f') },
-    { id: 'bear-strawberry', name: 'Strawberry Bears', label: 'Strawberry', brand: 'Albanese', group: 'bears',
-      types: ['gummies'], colors: ['red'], swatch: '#e23a4b', handle: 'strawberry-gummi-bears', img: CDN + '50114_1.png',
+    { id: 'bear-strawberry', name: 'Strawberry Bears', label: 'Strawberry', brand: 'Yummyland', maker: 'Albanese', group: 'bears',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['red'], swatch: '#e23a4b', handle: 'strawberry-gummi-bears', img: CDN + '50114_1.png',
       about: 'Ruby-red strawberry bears.', recipe: rc('bear', '#e23a4b', '#f0515f') },
-    { id: 'bear-watermelon', name: 'Watermelon Bears', label: 'Watermelon', brand: 'Albanese', group: 'bears',
-      types: ['gummies'], colors: ['pink'], swatch: '#f06d8a', handle: 'watermelon-gummi-bears', img: CDN + '50188_1.png',
+    { id: 'bear-watermelon', name: 'Watermelon Bears', label: 'Watermelon', brand: 'Yummyland', maker: 'Albanese', group: 'bears',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['pink'], swatch: '#f06d8a', handle: 'watermelon-gummi-bears', img: CDN + '50188_1.png',
       about: 'Rosy-pink watermelon bears.', recipe: rc('bear', '#f06d8a', '#f58aa2') },
-    { id: 'bear-grapefruit', name: 'Pink Grapefruit Bears', label: 'Grapefruit', brand: 'Albanese', group: 'bears',
-      types: ['gummies'], colors: ['pink'], swatch: '#f5a3b5', handle: 'pink-grapefruit-gummi-bears', img: CDN + '50176_1.png',
+    { id: 'bear-grapefruit', name: 'Pink Grapefruit Bears', label: 'Grapefruit', brand: 'Yummyland', maker: 'Albanese', group: 'bears',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['pink'], swatch: '#f5a3b5', handle: 'pink-grapefruit-gummi-bears', img: CDN + '50176_1.png',
       about: 'Soft blush-pink, gently tart.', recipe: rc('bear', '#f5a3b5', '#f8b8c6') },
-    { id: 'bear-orange', name: 'Orange Bears', label: 'Orange Bears', brand: 'Albanese', group: 'bears',
-      types: ['gummies'], colors: ['orange'], swatch: '#f08a24', handle: 'orange-gummi-bears', img: CDN + '50106_1.png',
+    { id: 'bear-orange', name: 'Orange Bears', label: 'Orange Bears', brand: 'Yummyland', maker: 'Albanese', group: 'bears',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['orange'], swatch: '#f08a24', handle: 'orange-gummi-bears', img: CDN + '50106_1.png',
       about: 'Bright orange, sweet orange.', recipe: rc('bear', '#f08a24', '#f59c3c') },
-    { id: 'bear-mango', name: 'Mango Bears', label: 'Mango Bears', brand: 'Albanese', group: 'bears',
-      types: ['gummies'], colors: ['orange', 'yellow'], swatch: '#f4a62a', handle: 'mango-gummi-bears', img: CDN + '50112_1.png',
+    { id: 'bear-mango', name: 'Mango Bears', label: 'Mango Bears', brand: 'Yummyland', maker: 'Albanese', group: 'bears',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['orange', 'yellow'], swatch: '#f4a62a', handle: 'mango-gummi-bears', img: CDN + '50112_1.png',
       about: 'Golden-orange mango.', recipe: rc('bear', '#f4a62a', '#f7b84a') },
-    { id: 'bear-pineapple', name: 'Pineapple Bears', label: 'Pineapple', brand: 'Albanese', group: 'bears',
-      types: ['gummies'], colors: ['yellow'], swatch: '#f4d03f', handle: 'pineapple-gummi-bears', img: CDN + '50108_1.png',
+    { id: 'bear-pineapple', name: 'Pineapple Bears', label: 'Pineapple', brand: 'Yummyland', maker: 'Albanese', group: 'bears',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['yellow'], swatch: '#f4d03f', handle: 'pineapple-gummi-bears', img: CDN + '50108_1.png',
       about: 'Sunny yellow pineapple.', recipe: rc('bear', '#f4d03f', '#f7dc6f') },
-    { id: 'bear-green-apple', name: 'Green Apple Bears', label: 'Green Apple', brand: 'Albanese', group: 'bears',
-      types: ['gummies'], colors: ['green'], swatch: '#5cb85c', handle: 'green-apple-gummi-bears', img: CDN + '50105_1.png',
+    { id: 'bear-green-apple', name: 'Green Apple Bears', label: 'Green Apple', brand: 'Yummyland', maker: 'Albanese', group: 'bears',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['green'], swatch: '#5cb85c', handle: 'green-apple-gummi-bears', img: CDN + '50105_1.png',
       about: 'Crisp green apple.', recipe: rc('bear', '#5cb85c', '#72c472') },
-    { id: 'bear-blue-raspberry', name: 'Blue Raspberry Bears', label: 'Blue Bears', brand: 'Albanese', group: 'bears',
-      types: ['gummies'], colors: ['blue'], swatch: '#2f7fd6', handle: 'blue-raspberry-gummi-bears', img: CDN + '50123_1.png',
+    { id: 'bear-blue-raspberry', name: 'Blue Raspberry Bears', label: 'Blue Bears', brand: 'Yummyland', maker: 'Albanese', group: 'bears',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['blue'], swatch: '#2f7fd6', handle: 'blue-raspberry-gummi-bears', img: CDN + '50123_1.png',
       about: 'Deep blue raspberry.', recipe: rc('bear', '#2f7fd6', '#4b93e0') },
-    { id: 'bear-grape', name: 'Grape Bears', label: 'Grape Bears', brand: 'Albanese', group: 'bears',
-      types: ['gummies'], colors: ['purple'], swatch: '#7b4bb3', handle: 'grape-gummi-bears', img: CDN + '50109_1.png',
+    { id: 'bear-grape', name: 'Grape Bears', label: 'Grape Bears', brand: 'Yummyland', maker: 'Albanese', group: 'bears',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['purple'], swatch: '#7b4bb3', handle: 'grape-gummi-bears', img: CDN + '50109_1.png',
       about: 'Royal purple grape.', recipe: rc('bear', '#7b4bb3', '#9063c4') },
-    { id: 'bear-banana', name: 'Strawberry-Banana Bears', label: 'Pearl Bears', brand: 'Albanese', group: 'bears',
-      types: ['gummies'], colors: ['white'], swatch: '#f3ead8', handle: 'white-strawberry-banana-gummi-bears', img: CDN + '50180_1.png',
+    { id: 'bear-banana', name: 'Strawberry-Banana Bears', label: 'Pearl Bears', brand: 'Yummyland', maker: 'Albanese', group: 'bears',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['white'], swatch: '#f3ead8', handle: 'white-strawberry-banana-gummi-bears', img: CDN + '50180_1.png',
       about: 'Pearly white — the wedding and baby-shower bear.', recipe: rc('bear', '#f3ead8', '#fbf4e6') },
 
-    /* ================= Albanese sour ================= */
+    /* ================= sour ================= */
     {
-      id: 'sour-gummy-bears', name: 'Sour Gummi Bears', label: 'Sour Bears', brand: 'Albanese',
-      types: ['gummies', 'sour'], colors: ['rainbow'], swatch: '#9ccc65',
+      id: 'sour-gummy-bears', name: 'Sour Gummi Bears', label: 'Sour Bears', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies', 'sour'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#9ccc65',
       handle: 'sour-gummi-bears', img: CDN + '50117_1.jpg',
       about: 'The same soft bear, rolled in sour sugar.',
       recipe: sour(rc('bear', '#e53935', '#fdd835', '#43a047', '#fb8c00'))
     },
     {
-      id: 'sour-neon-worms', name: 'Sour Neon Worms', label: 'Sour Worms', brand: 'Albanese',
-      types: ['gummies', 'sour'], colors: ['rainbow'], swatch: '#b5d334', tag: 'Fan favourite',
+      id: 'sour-neon-worms', name: 'Sour Neon Worms', label: 'Sour Worms', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies', 'sour'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#b5d334', tag: 'Fan favourite',
       handle: 'sour-large-neon-gummi-worms-4', img: CDN + '50104_1.png',
       about: 'Neon two-tone worms in a sparkling sour coat.',
       recipe: sour(rc('worm', { a: '#ff4fa3', b: '#fff04f' }, { a: '#4fd1ff', b: '#9cff4f' }))
     },
     {
-      id: 'worm-sour-mini-neon', name: 'Sour Mini Neon Worms', label: 'Mini Sour Worms', brand: 'Albanese',
-      types: ['gummies', 'sour'], colors: ['rainbow'], swatch: '#c6e04a',
+      id: 'worm-sour-mini-neon', name: 'Sour Mini Neon Worms', label: 'Mini Sour Worms', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies', 'sour'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#c6e04a',
       handle: 'sour-mini-neon-gummi-worms-2', img: CDN + '50124_1.jpg',
       about: 'Mini neon worms, sour-sanded.',
       recipe: sour(rc('worm', { a: '#ff4fa3', b: '#fff04f' }, { a: '#4fd1ff', b: '#9cff4f' }))
     },
     {
-      id: 'worm-large-sour', name: 'Large Sour Fruit Worms', label: 'Sour Fruit Worms', brand: 'Albanese',
-      types: ['gummies', 'sour'], colors: ['rainbow'], swatch: '#f0b429',
+      id: 'worm-large-sour', name: 'Large Sour Fruit Worms', label: 'Sour Fruit Worms', brand: 'Yummyland', maker: 'Albanese',
+      types: ['gummies', 'sour'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#f0b429',
       handle: 'large-sour-assorted-fruit-gummi-worms-4', img: CDN + '50118_1.png',
       about: 'Four-inch fruit worms with a sharp sour finish.',
       recipe: sour(rc('worm', { a: '#e53935', b: '#fdd835' }, { a: '#43a047', b: '#fb8c00' }))
     },
 
-    /* ================= Albanese chocolate =================
+    /* ================= chocolate (house line) =================
        Photos still to be shot — the cards draw the candy until then. */
     {
-      id: 'choc-nonpareils', name: 'Milk Chocolate Nonpareils', label: 'Nonpareils', brand: 'Albanese',
-      types: ['chocolate'], colors: ['brown', 'white'], swatch: '#5a3521',
+      id: 'choc-nonpareils', name: 'Milk Chocolate Nonpareils', label: 'Nonpareils', brand: 'Yummyland', maker: 'Albanese',
+      types: ['chocolate'], diet: ['gluten-free'], colors: ['brown', 'white'], swatch: '#5a3521',
       handle: '', img: '',
       about: 'Milk chocolate discs under a crunch of white sprinkles.',
       recipe: rc('lentil', '#5a3521', '#6b4028')
     },
     {
-      id: 'choc-malt-balls', name: 'Milk Chocolate Malt Balls', label: 'Choco Delights', brand: 'Albanese',
-      types: ['chocolate'], colors: ['brown'], swatch: '#4e2c18', tag: 'Fan favourite',
+      id: 'choc-malt-balls', name: 'Milk Chocolate Malt Balls', label: 'Choco Delights', brand: 'Yummyland', maker: 'Albanese',
+      types: ['chocolate'], diet: ['gluten-free'], colors: ['brown'], swatch: '#4e2c18', tag: 'Fan favourite',
       handle: '', img: '',
       about: 'Light, crisp malt centres in smooth milk chocolate.',
       recipe: rc('ball', '#4e2c18', '#6b4028', '#5a3521')
     },
     {
-      id: 'choc-pretzels', name: 'Milk Chocolate Pretzels', label: 'Choco Pretzels', brand: 'Albanese',
+      id: 'choc-pretzels', name: 'Milk Chocolate Pretzels', label: 'Choco Pretzels', brand: 'Yummyland', maker: 'Albanese',
       types: ['chocolate'], colors: ['brown'], swatch: '#6b4028',
       handle: '', img: '',
       about: 'Salty mini pretzels, fully coated in milk chocolate.',
       recipe: rc('pretzel', '#6b4028', '#5a3521')
     },
     {
-      id: 'choc-gummi-bears', name: 'Chocolate Covered Gummi Bears', label: 'Choco Bears', brand: 'Albanese',
-      types: ['chocolate', 'gummies'], colors: ['brown'], swatch: '#5a3521', tag: 'New',
+      id: 'choc-gummi-bears', name: 'Chocolate Covered Gummi Bears', label: 'Choco Bears', brand: 'Yummyland', maker: 'Albanese',
+      types: ['chocolate', 'gummies'], diet: ['gluten-free'], colors: ['brown'], swatch: '#5a3521', tag: 'New',
       handle: '', img: '',
-      about: 'An Albanese gummi bear inside a milk chocolate shell.',
+      about: 'Our gummi bear inside a milk chocolate shell.',
       recipe: rc('bear', '#5a3521', '#6b4028')
     },
     {
-      id: 'choc-peanuts', name: 'Milk Chocolate Peanuts', label: 'Choco Peanuts', brand: 'Albanese',
+      id: 'choc-peanuts', name: 'Milk Chocolate Peanuts', label: 'Choco Peanuts', brand: 'Yummyland', maker: 'Albanese',
       types: ['chocolate'], colors: ['brown'], swatch: '#6b4028', nuts: true,
       handle: '', img: '',
       about: 'Roasted peanuts in thick milk chocolate. Contains peanuts.',
@@ -317,7 +331,7 @@ window.YL = window.YL || {};
     },
     {
       id: 'rainbow-bites', name: 'Rainbow Chocolate Bites', label: 'Rainbow Bites', brand: 'Candy-coated',
-      types: ['chocolate'], colors: ['rainbow'], swatch: '#e53935',
+      types: ['chocolate'], diet: ['gluten-free'], colors: ['rainbow'], swatch: '#e53935',
       handle: '', img: '',
       about: 'Candy-shelled chocolate beads in every colour. The cup everyone photographs.',
       recipe: rc('ball', '#e53935', '#fdd835', '#43a047', '#1e88e5', '#fb8c00')
@@ -326,14 +340,14 @@ window.YL = window.YL || {};
     /* ================= more favourites ================= */
     {
       id: 'swedish-fish', name: 'Swedish Fish', label: 'Swedish Fish', brand: 'Swedish Fish',
-      types: ['gummies'], colors: ['red'], swatch: '#d62828',
+      types: ['gummies'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['red'], swatch: '#d62828',
       handle: 'swedish-fish-large-assorted-5lb', img: CDN + '102404_1.jpg',
       about: 'The classic red berry fish.',
       recipe: rc('shark', { a: '#d62828', b: '#e84545' })
     },
     {
       id: 'sour-patch-kids', name: 'Sour Patch Kids', label: 'Sour Patch', brand: 'Sour Patch Kids',
-      types: ['gummies', 'sour'], colors: ['rainbow'], swatch: '#f4d03f',
+      types: ['gummies', 'sour'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#f4d03f',
       handle: 'sour-patch-kids-5lb', img: CDN + '102415_1.png',
       about: 'Sour, then sweet. The one nobody needs explained.',
       recipe: sour(rc('bean', '#e53935', '#fdd835', '#43a047', '#1e88e5'))
@@ -342,57 +356,57 @@ window.YL = window.YL || {};
     /* ================= hard candy ================= */
     {
       id: 'jolly-assorted', name: 'Jolly Rancher Assorted', label: 'Jolly Rancher', brand: 'Jolly Rancher',
-      types: ['hard'], colors: ['rainbow'], swatch: '#e0245e',
+      types: ['hard'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['rainbow'], swatch: '#e0245e',
       handle: 'jolly-rancher-assorted-hard-candy', img: 'https://cdn.shopify.com/s/files/1/0665/5747/7161/products/91HWGWO064L._SL1500.jpg',
       about: 'Five bold fruit flavours, individually wrapped.',
       recipe: rc('wrapped', '#e0245e', '#43a047', '#8e24aa', '#1e88e5', '#fb8c00')
     },
     { id: 'jolly-cherry', name: 'Jolly Rancher Cherry', label: 'Cherry Jolly', brand: 'Jolly Rancher', group: 'jolly',
-      types: ['hard'], colors: ['red'], swatch: '#c8102e', handle: 'jolly-rancher-cherry-hard-candy-1', img: CDN + 'JOLLYRANCHER_3.jpg',
+      types: ['hard'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['red'], swatch: '#c8102e', handle: 'jolly-rancher-cherry-hard-candy-1', img: CDN + 'JOLLYRANCHER_3.jpg',
       about: 'All cherry, all red.', recipe: rc('wrapped', '#c8102e') },
     { id: 'jolly-watermelon', name: 'Jolly Rancher Watermelon', label: 'Watermelon Jolly', brand: 'Jolly Rancher', group: 'jolly',
-      types: ['hard'], colors: ['pink'], swatch: '#f06d8a', handle: 'jolly-rancher-watermelon-hard-candy-1', img: CDN + 'JOLLYRANCHER_5.jpg',
+      types: ['hard'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['pink'], swatch: '#f06d8a', handle: 'jolly-rancher-watermelon-hard-candy-1', img: CDN + 'JOLLYRANCHER_5.jpg',
       about: 'All watermelon.', recipe: rc('wrapped', '#f06d8a') },
     { id: 'jolly-green-apple', name: 'Jolly Rancher Green Apple', label: 'Apple Jolly', brand: 'Jolly Rancher', group: 'jolly',
-      types: ['hard'], colors: ['green'], swatch: '#43a047', handle: 'jolly-rancher-green-apple-hard-candy-1', img: CDN + 'A1ztBLaihxL._SL1500.jpg',
+      types: ['hard'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['green'], swatch: '#43a047', handle: 'jolly-rancher-green-apple-hard-candy-1', img: CDN + 'A1ztBLaihxL._SL1500.jpg',
       about: 'All green apple.', recipe: rc('wrapped', '#43a047') },
     { id: 'jolly-blue-raspberry', name: 'Jolly Rancher Blue Raspberry', label: 'Blue Jolly', brand: 'Jolly Rancher', group: 'jolly',
-      types: ['hard'], colors: ['blue'], swatch: '#1e88e5', handle: 'jolly-rancher-blue-raspberry-hard-candy-1', img: CDN + 'JOLLYRANCHER_2.jpg',
+      types: ['hard'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['blue'], swatch: '#1e88e5', handle: 'jolly-rancher-blue-raspberry-hard-candy-1', img: CDN + 'JOLLYRANCHER_2.jpg',
       about: 'All blue raspberry.', recipe: rc('wrapped', '#1e88e5') },
     { id: 'jolly-grape', name: 'Jolly Rancher Grape', label: 'Grape Jolly', brand: 'Jolly Rancher', group: 'jolly',
-      types: ['hard'], colors: ['purple'], swatch: '#7b4bb3', handle: 'jolly-rancher-grape-hard-candy', img: CDN + 'JOLLYRANCHER_4_26d213be-7a4e-45f5-a045-6270ff2e019e.jpg',
+      types: ['hard'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['purple'], swatch: '#7b4bb3', handle: 'jolly-rancher-grape-hard-candy', img: CDN + 'JOLLYRANCHER_4_26d213be-7a4e-45f5-a045-6270ff2e019e.jpg',
       about: 'All grape.', recipe: rc('wrapped', '#7b4bb3') },
     {
       id: 'starlight-mints', name: 'Starlight Peppermints', label: 'Starlight Mints', brand: 'Classic',
-      types: ['hard'], colors: ['red', 'white'], swatch: '#d62828',
+      types: ['hard'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['red', 'white'], swatch: '#d62828',
       handle: '', img: '',
       about: 'Red-and-white pinwheel mints, individually wrapped.',
       recipe: rc('swirl', { a: '#ffffff', b: '#d62828' })
     },
     {
       id: 'butterscotch', name: 'Butterscotch Discs', label: 'Butterscotch', brand: 'Classic',
-      types: ['hard'], colors: ['yellow'], swatch: '#d9a23b',
+      types: ['hard'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['yellow'], swatch: '#d9a23b',
       handle: '', img: '',
       about: 'Golden, buttery, wrapped in gold foil-look film.',
       recipe: rc('wrapped', '#d9a23b')
     },
     {
       id: 'root-beer-barrels', name: 'Root Beer Barrels', label: 'Root Beer', brand: 'Classic',
-      types: ['hard'], colors: ['brown'], swatch: '#7a4a24',
+      types: ['hard'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['brown'], swatch: '#7a4a24',
       handle: '', img: '',
       about: 'The candy-counter classic, individually wrapped.',
       recipe: rc('wrapped', '#7a4a24')
     },
     {
       id: 'cinnamon-discs', name: 'Cinnamon Discs', label: 'Cinnamon', brand: 'Classic',
-      types: ['hard'], colors: ['red'], swatch: '#b3122a',
+      types: ['hard'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['red'], swatch: '#b3122a',
       handle: '', img: '',
       about: 'Deep red, warm cinnamon heat.',
       recipe: rc('lentil', '#b3122a', '#c8102e')
     },
     {
       id: 'lemon-drops', name: 'Sugared Lemon Drops', label: 'Lemon Drops', brand: 'Classic',
-      types: ['hard', 'sour'], colors: ['yellow'], swatch: '#f4d03f',
+      types: ['hard', 'sour'], diet: ['nut-free', 'gluten-free', 'dairy-free'], colors: ['yellow'], swatch: '#f4d03f',
       handle: '', img: '',
       about: 'Sugar-sanded lemon drops, sweet then tart.',
       recipe: sour(rc('lentil', '#f4d03f', '#f7dc6f'))
@@ -404,8 +418,8 @@ window.YL = window.YL || {};
      --------------------------------------------------------------- */
   YL.GROUPS = [
     {
-      id: 'bears', name: 'Single-Colour Bears', brand: 'Albanese', swatch: '#c8102e',
-      about: 'Albanese bears sorted by colour — the building block of every colour-story box.',
+      id: 'bears', name: 'Single-Colour Bears', brand: 'Yummyland', maker: 'Albanese', swatch: '#c8102e',
+      about: 'Our bears sorted by colour — the building block of every colour-story box.',
       pick: 'Pick a colour'
     },
     {
@@ -490,13 +504,13 @@ window.YL = window.YL || {};
   YL.COLLECTIONS = [
     {
       id: 'signature', name: 'The Signature Mix', tag: 'Bestseller', family: 'gummies',
-      desc: 'Our Albanese greatest hits: bears, peach rings, worms, sharks and more.',
+      desc: 'Our greatest hits: bears, peach rings, worms, sharks and more.',
       cups: ['gummy-bears-12', 'peach-rings', 'gummy-worms', 'gummy-sharks', 'gummy-butterflies', 'sour-neon-worms', 'watermelon-slices', 'gummy-berries', 'bear-cubs', 'blue-raspberry-rings', 'gummy-frogs', 'swedish-fish'],
       occasions: ['just-because', 'thank-you', 'birthday']
     },
     {
       id: 'bear-bar', name: 'The Bear Bar', tag: 'All gummies', family: 'gummies',
-      desc: 'Nothing but Albanese bears — assorted, cubs, sour, natural and single colours.',
+      desc: 'Nothing but bears — assorted, cubs, sour, natural and single colours.',
       cups: ['gummy-bears-12', 'bear-cubs', 'bear-cherry', 'sour-gummy-bears', 'bear-natural', 'bear-blue-raspberry', 'bear-strawberry', 'bear-pineapple', 'bear-green-apple', 'bear-grape', 'bear-orange', 'bear-banana'],
       occasions: ['just-because', 'best-friend']
     },
@@ -532,7 +546,7 @@ window.YL = window.YL || {};
     },
     {
       id: 'chocolate-lounge', name: 'Chocolate Lounge', tag: 'Chocolate', family: 'chocolate',
-      desc: 'Albanese milk chocolate: malt balls, nonpareils, pretzels, choco bears, peanuts and rainbow bites.',
+      desc: 'Milk chocolate six ways: malt balls, nonpareils, pretzels, choco bears, peanuts and rainbow bites.',
       cups: ['choc-malt-balls', 'choc-nonpareils', 'choc-pretzels', 'choc-gummi-bears', 'choc-peanuts', 'rainbow-bites', 'root-beer-barrels', 'butterscotch', 'choc-malt-balls', 'choc-pretzels', 'choc-nonpareils', 'choc-gummi-bears'],
       occasions: ['thank-you', 'love'], nuts: true
     },
@@ -606,7 +620,7 @@ window.YL = window.YL || {};
     },
     {
       id: 'pouch-choc', name: 'Refill Pouch · Chocolate Malt Balls', price: 16.99, sku: 'YL-POUCH-MALT',
-      desc: '1 lb resealable pouch of Albanese malt balls.', candy: 'choc-malt-balls'
+      desc: '1 lb resealable pouch of chocolate malt balls.', candy: 'choc-malt-balls'
     }
   ];
 
@@ -621,7 +635,7 @@ window.YL = window.YL || {};
   YL.ANNOUNCE_INTERVAL = 5200;
 
   YL.TRUST = [
-    { icon: 'gift', title: 'Premium quality', text: 'Albanese candy, sealed cups' },
+    { icon: 'gift', title: 'Premium candy', text: 'Fresh, sealed in every cup' },
     { icon: 'leaf', title: 'Freshness sealed', text: 'Packed the day it ships' },
     { icon: 'heart', title: 'For any occasion', text: 'Eight lid designs' },
     { icon: 'friends', title: 'Made to share', text: '4, 8 or 12 cups' }
@@ -652,8 +666,8 @@ window.YL = window.YL || {};
       a: 'No — each box has its own tray, and overfilling stops the lid closing flat. If you want more candy, size up: 4, 8 or 12 cups.' },
     { q: 'Is there a price inside the box?',
       a: 'Never. The packing slip is price-free and goes on the outside, so you can ship straight to the person you are gifting.' },
-    { q: 'Do you have nut-free options?',
-      a: 'Our gummies and hard candy contain no nuts, but they are packed in a facility that handles chocolate with nuts. Candy containing nuts is marked on its card. Check each manufacturer’s label for full allergen information.' },
+    { q: 'Do you have nut-free, gluten-free or dairy-free options?',
+      a: 'Yes. Use the Nut-free, Gluten-free and Dairy-free chips in the builder — they show only candy whose recipe fits. Candy containing nuts is marked on its card. Our cups are packed in a room that also handles chocolate with nuts, so if an allergy is serious, check the label in the box before sharing.' },
     { q: 'How fast does it ship?',
       a: 'Boxes are packed within 1–2 business days and ship free across the USA.' }
   ];
@@ -679,12 +693,14 @@ window.YL = window.YL || {};
      collapse into one tile; with a colour picked, the matching members
      show directly — "blue" should put Blue Bears in front of you, not
      behind a picker. */
-  YL.candyTiles = function (type, color) {
+  YL.candyTiles = function (type, color, diets) {
     type = type || 'all';
+    diets = diets || [];
     var out = [], seenGroup = {};
     YL.CANDIES.forEach(function (c) {
       if (type !== 'all' && c.types.indexOf(type) < 0) return;
       if (color && c.colors.indexOf(color) < 0) return;
+      for (var d = 0; d < diets.length; d++) if (!c.diet || c.diet.indexOf(diets[d]) < 0) return;
       if (c.group && !color) {
         if (seenGroup[c.group]) return;
         seenGroup[c.group] = true;

@@ -15,7 +15,7 @@
 | `index.html` | Герой → готовые боксы → **конструктор** → что внутри → поводы → как это работает → корпоративным → FAQ |
 | `boxes.html` | Все коллекции с фильтром по семействам, «собери свой», витрина конфет, пакеты-рефиллы |
 | `gifts.html` | Лендинг под рекламу: `?for=wedding` / `birthday` / `baby-shower`… меняет заголовок и подборку коллекций под повод |
-| `about.html` | История, о конфетах, корпоративные заказы, контакты |
+| `about.html` | About us: since 2018, семейный бизнес, 500 000+ конфет, «наш новый gift-studio», ссылка на основной магазин, маркетплейсы, корпоративные заказы, контакты |
 | `faq.html` | FAQ, доставка, возвраты |
 | `cart.html` | Корзина: боксы с превью, рефиллы, промокод, итог |
 
@@ -85,7 +85,9 @@
     фото тоже нет.
 
   У каждой позиции: `label` (надпись на наклейке ячейки), `types`, `colors`, `swatch`,
-  `brand`, `about`, `img`, `nuts` (помечается «contains nuts»).
+  `brand` (на витрине **Yummyland** — поставщик Albanese хранится в `maker` и нигде не показывается),
+  `diet` (`nut-free` / `gluten-free` / `dairy-free` — фильтр «Dietary» в конструкторе),
+  `about`, `img`, `nuts` (помечается «contains nuts»).
   > ⚠️ Шоколад Albanese и леденцы вписаны по памяти — сайт Albanese из этой среды был
   > недоступен. Перед запуском сверить SKU и названия с тем, что реально закупается,
   > и проставить `handle` и `img`.
@@ -114,6 +116,8 @@
 ## Картинки: что есть и что сгенерировать
 
 Уже в репозитории (нарезаны из мокапов бокса):
+`hero-girl.webp` — **девушка из старой версии со старой розовой коробкой, заглушка**: нужно
+сгенерировать заново с нашей бордовой коробкой (промпт в конце README);
 `hero-box.webp/jpg` (герой), `box-open.webp` (бокс изнутри), `box-closed.webp`,
 `box-wrapped.webp` (с лентой — картинка допа), `card.webp` (открытка), `box-insert.webp`
 (вкладыш), `og.jpg` (превью ссылки), `lid/just-because-1/2.webp`.
@@ -173,3 +177,13 @@ tools/stamp-assets.js       ?v=<хеш> на css/js против смешанн�
 5. Пиксели GA4 / Meta / TikTok в `<head>` — события уже летят (`analytics.js`).
 6. Terms / Privacy — настоящие тексты (сейчас ссылки ведут на FAQ).
 7. Приём денег — через Shopify (`shopify/README-SHOPIFY.md`); в статике чекаут симулируется.
+
+## Промпт для главного фото
+
+> Studio product photo, warm soft light, plain light background (for cut-out). A smiling woman, 25–27,
+> natural look, holding an open burgundy Yummyland gift box at chest height, slightly tilted to camera.
+> Inside the box: a tray of 8 clear cups of colourful gummies and chocolate; inside the lid two polaroid
+> photos taped in and gold script "Life is Sweeter Together". Box front reads YUMMYLAND in gold.
+> Three-quarter view, both hands on the box, nothing cropped. Photorealistic, 3:2.
+
+Вырезать фон в PNG/WebP с прозрачностью, ~1100 px по ширине, сохранить как `assets/img/hero-girl.webp`.

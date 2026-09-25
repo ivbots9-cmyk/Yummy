@@ -10,6 +10,7 @@ window.YL = window.YL || {};
     { href: 'index.html#builder', label: 'Build a Gift Box', key: 'build' },
     { href: 'boxes.html', label: 'Collections', key: 'boxes' },
     { href: 'gifts.html', label: 'Occasions', key: 'gifts' },
+    { href: 'about.html', label: 'About us', key: 'about' },
     { href: 'about.html#corporate', label: 'Corporate', key: 'office' },
     { href: 'faq.html', label: 'FAQ', key: 'faq' }
   ];
@@ -20,7 +21,7 @@ window.YL = window.YL || {};
   function logo(href) {
     return '<a class="logo" href="' + href + '" aria-label="Yummyland — home">' +
       '<span class="logo__txt">YUMMYLAND<sup>®</sup></span>' +
-      '<span class="logo__sub">A little happiness inside</span></a>';
+      '<span class="logo__sub">A little happiness inside · since 2018</span></a>';
   }
 
   YL.renderHeader = function (active) {
@@ -68,7 +69,7 @@ window.YL = window.YL || {};
     host.innerHTML =
       '<div class="wrap"><div class="footer__grid">' +
       '<div class="footer__brand">' + logo('index.html') +
-      '<p>Premium candy gift boxes, filled by hand with Albanese gummies and chocolate. More than candy — it’s a moment.</p>' +
+      '<p>A family candy company since 2018. Premium gummies, chocolate and classics, packed by hand into gift boxes with your photos inside the lid.</p>' +
       '<div class="socials">' +
       ['instagram', 'tiktok', 'facebook', 'pinterest'].map(function (s) {
         return '<a href="#" aria-label="' + s + '">' + YL.icon(s) + '</a>';
