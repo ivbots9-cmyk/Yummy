@@ -342,7 +342,7 @@ window.YL = window.YL || {};
     opts = opts || {};
     var lid = YL.boxLid(box);
     var cups = box.cups.map(function (id, i) { return cup(id ? YL.getCandy(id) : null, i, opts); }).join('');
-    return '<div class="gbox' + (opts.compact ? ' gbox--compact' : '') + (opts.lidOnly ? ' gbox--lid' : '') + '">' +
+    return '<div class="gbox gbox--' + YL.boxSize(box).id + (opts.compact ? ' gbox--compact' : '') + (opts.lidOnly ? ' gbox--lid' : '') + '">' +
       '<div class="gbox__lid">' +
       '<p class="gbox__script">' + esc(lid.headline) + ' <span aria-hidden="true">♡</span></p>' +
       (lid.photos
@@ -356,8 +356,8 @@ window.YL = window.YL || {};
       }).join('') + '</div>') +
       '</div>' +
       (opts.lidOnly ? '</div>' : '<div class="gbox__base">' +
-      '<div class="gbox__cups" style="grid-template-columns:repeat(' + YL.BOX.cols + ',1fr)">' + cups + '</div>' +
-      '<div class="gbox__front"><b>YUMMYLAND<sup>®</sup></b><span>Ruby Signature Gift</span></div>' +
+      '<div class="gbox__cups" style="grid-template-columns:repeat(' + YL.boxSize(box).cols + ',1fr)">' + cups + '</div>' +
+      '<div class="gbox__front"><b>YUMMYLAND<sup>®</sup></b><span>' + esc(YL.boxSize(box).name) + '</span></div>' +
       '</div></div>');
   };
 

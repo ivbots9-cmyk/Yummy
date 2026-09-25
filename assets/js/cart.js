@@ -15,7 +15,7 @@ window.YL = window.YL || {};
     return '<article class="cart-item">' +
       '<div class="cart-item__art">' + YL.giftBox(box, { compact: true }) + '</div>' +
       '<div class="cart-item__info"><h3>' + esc(YL.boxLabel(box)) + '</h3>' +
-      '<p class="meta">' + esc(YL.BOX.name) + ' · ' + YL.BOX.size + '</p>' +
+      '<p class="meta">' + esc(YL.boxSize(box).name) + ' · ' + YL.boxSize(box).cups + ' cups · ' + YL.boxSize(box).dims + '</p>' +
       '<ul class="tags">' + box.cups.map(function (id) {
         var c = YL.getCandy(id);
         return c ? '<li><i style="background:' + c.swatch + '"></i>' + esc(c.label) + '</li>' : '';
@@ -54,7 +54,7 @@ window.YL = window.YL || {};
 
     if (!cart.length) {
       host.innerHTML = '<div class="empty"><span class="script">Your cart is empty</span>' +
-        '<p>Six cups, one lid, a moment someone will remember.</p>' +
+        '<p>Pick a size, fill the cups, put your photos in the lid.</p>' +
         '<a class="btn btn--lg btn--gold" href="' + YL.PATHS.builder + '#builder">Build a gift box</a></div>';
       sum.innerHTML = '';
       return;

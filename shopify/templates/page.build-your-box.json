@@ -3,13 +3,13 @@
     "builder": {
       "type": "yummyland-builder",
       "settings": {
-        "box_product": "ruby-signature-gift-box",
+        "box_product": "ruby-gift-box",
         "addons_collection": "gift-box-add-ons",
         "show_hero": true,
         "eyebrow": "The Ruby Signature Gift Box",
-        "heading": "More than candy.",
-        "heading_accent": "It’s a moment.",
-        "subheading": "Six sealed cups of Albanese gummies and chocolate, a lid printed for the occasion and, if you like, two of your own photos inside.",
+        "heading": "A candy gift box,",
+        "heading_accent": "filled your way.",
+        "subheading": "Albanese gummies, chocolate and classics in a gift-ready box — 4, 8 or 12 cups — with your own photos inside the lid.",
         "cta_label": "Build your gift box",
         "secondary_label": "Shop collections",
         "secondary_url": "shopify://collections/all",

@@ -33,7 +33,7 @@ window.YL = window.YL || {};
     if (!host) return;
     list = list || YL.COLLECTIONS;
     host.innerHTML = '<div class="cols">' + list.map(function (c) {
-      var box = YL.boxFromCollection(c, occasion);
+      var box = YL.boxFromCollection(c, occasion, null, YL.DEFAULT_SIZE);
       return '<article class="col-card">' +
         '<a class="col-card__art" href="' + link({ collection: c.id, occasion: occasion }) + '" aria-label="' + esc(c.name) + '">' +
         YL.giftBox(box, { compact: true }) + '</a>' +
@@ -41,14 +41,14 @@ window.YL = window.YL || {};
         '<span class="eyebrow">' + esc(c.tag) + '</span>' +
         '<h3>' + esc(c.name) + '</h3>' +
         '<p>' + esc(c.desc) + '</p>' +
-        '<ul class="col-card__cups">' + c.cups.map(function (id) {
+        '<ul class="col-card__cups">' + box.cups.map(function (id) {
           var k = YL.getCandy(id);
           return k ? '<li><i style="background:' + k.swatch + '"></i>' + esc(k.label) + '</li>' : '';
         }).join('') + '</ul>' +
-        '<div class="col-card__foot"><b class="price">' + YL.money(YL.BOX.price) + '</b>' +
+        '<div class="col-card__foot"><b class="price"><small>from</small> ' + YL.money(YL.SIZES[0].price) + '</b>' +
         '<div class="col-card__btns">' +
-        '<button type="button" class="btn btn--sm btn--gold" data-quick="' + c.id + '">Add to cart</button>' +
-        '<a class="btn btn--sm btn--line" href="' + link({ collection: c.id, occasion: occasion }) + '">Personalise</a>' +
+        '<a class="btn btn--sm btn--gold" href="' + link({ collection: c.id, occasion: occasion }) + '">Choose size &amp; personalise</a>' +
+        '<button type="button" class="btn btn--sm btn--line" data-quick="' + c.id + '">Quick add · ' + YL.getSize(YL.DEFAULT_SIZE).short + '</button>' +
         '</div></div></div></article>';
     }).join('') + '</div>';
 
@@ -57,10 +57,10 @@ window.YL = window.YL || {};
       if (!b) return;
       var col = YL.getCollection(b.getAttribute('data-quick'));
       /* straight from the shelf: our photos for the occasion */
-      var box = YL.boxFromCollection(col, occasion, 'ours');
+      var box = YL.boxFromCollection(col, occasion, 'ours', YL.DEFAULT_SIZE);
       YL.addToCart(box, 1);
       YL.trackAdd && YL.trackAdd(box);
-      YL.toast(col.name + ' added — lid designed for ' + YL.getOccasion(box.occasion).name + '.');
+      YL.toast(col.name + ' added — ' + YL.boxSize(box).name + ', our photos for ' + YL.getOccasion(box.occasion).name + '.');
     });
   };
 

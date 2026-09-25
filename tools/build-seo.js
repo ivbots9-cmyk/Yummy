@@ -22,7 +22,8 @@ vm.runInContext(fs.readFileSync(path.join(ROOT, 'assets/js/data.js'), 'utf8'), s
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'assets/js/store.js'), 'utf8'), sandbox);
 const YL = sandbox.window.YL;
 
-const price = YL.BOX.price.toFixed(2);
+const prices = YL.SIZES.map((s) => s.price);
+const low = Math.min.apply(null, prices).toFixed(2), high = Math.max.apply(null, prices).toFixed(2);
 
 const org = {
   '@type': 'Organization',
@@ -53,14 +54,12 @@ const website = {
 const builderProduct = {
   '@type': 'Product',
   name: YL.BOX.name,
-  sku: YL.BOX.sku,
-  description: 'A ' + YL.BOX.size + ' gift box with ' + YL.BOX.cups +
-    ' sealed cups of candy you choose and a lid printed for the occasion — with your own photos if you like.',
+  description: 'A rigid burgundy gift box with 4, 8 or 12 sealed cups of candy you choose and a lid printed for the occasion — with your own photos if you like.',
   image: [SITE + '/assets/img/hero-box.jpg', SITE + '/' + YL.BOX.photo],
   brand: { '@type': 'Brand', name: 'Yummyland' },
   offers: {
-    '@type': 'Offer', priceCurrency: 'USD', price: price,
-    availability: 'https://schema.org/InStock', url: SITE + '/'
+    '@type': 'AggregateOffer', priceCurrency: 'USD', lowPrice: low, highPrice: high,
+    offerCount: YL.SIZES.length, availability: 'https://schema.org/InStock', url: SITE + '/'
   }
 };
 
@@ -78,7 +77,7 @@ const collectionList = {
       image: SITE + '/' + YL.BOX.photo,
       brand: { '@type': 'Brand', name: 'Yummyland' },
       offers: {
-        '@type': 'Offer', priceCurrency: 'USD', price: price,
+        '@type': 'AggregateOffer', priceCurrency: 'USD', lowPrice: low, highPrice: high, offerCount: YL.SIZES.length,
         availability: 'https://schema.org/InStock', url: SITE + '/index.html?collection=' + c.id
       }
     }

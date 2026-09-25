@@ -50,10 +50,10 @@ window.YL = window.YL || {};
   /* a built box in the shape GA4 expects */
   YL.boxToItem = function (box) {
     return {
-      item_id: YL.BOX.sku,
+      item_id: YL.boxSize(box).sku,
       item_name: YL.boxLabel(box),
       item_category: 'Gift box',
-      item_variant: box.collection || 'custom',
+      item_variant: YL.boxSize(box).id + '/' + (box.collection || 'custom'),
       price: YL.boxPrice(box).total,
       quantity: 1,
       occasion: box.occasion || '',
@@ -84,7 +84,7 @@ window.YL = window.YL || {};
 
   YL.trackViewBox = function (col) {
     YL.track('view_item', {
-      value: YL.BOX.price, item_name: col.name,
+      value: YL.getSize(YL.DEFAULT_SIZE).price, item_name: col.name,
       items: [{ item_id: col.id, item_name: col.name, item_category: 'Collection' }]
     });
   };

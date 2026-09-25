@@ -162,19 +162,25 @@ const base = {
 
 const rows = [];
 
-/* 1. the gift box — one product, one variant; the order rides on it as
-      line item properties */
-rows.push(row(Object.assign({}, base, {
-  Handle: 'ruby-signature-gift-box',
-  Title: YL.BOX.name,
-  'Body (HTML)': '<p>A ' + YL.BOX.size + ' rigid gift box with ' + YL.BOX.cups + ' sealed cups of candy you choose ' +
-    '(about ' + YL.BOX.cupOz + ' oz each) and a lid printed for the occasion.</p>',
-  Type: 'Gift box',
-  Tags: 'yummyland, gift-box',
-  'Variant SKU': YL.BOX.sku,
-  'Variant Grams': Math.round((YL.BOX.cups * YL.BOX.cupOz + 14) * 28.3495),
-  'Variant Price': YL.BOX.price.toFixed(2)
-})));
+/* 1. the gift box — one product, one variant per size; the rest of the
+      order rides on the line as properties */
+YL.SIZES.forEach((sz, i) => {
+  rows.push(row(Object.assign({}, base, {
+    Handle: 'ruby-gift-box',
+    Title: i === 0 ? YL.BOX.name : '',
+    'Body (HTML)': i === 0
+      ? '<p>A rigid burgundy gift box with a tray of sealed candy cups you choose (about ' + YL.CUP_OZ +
+        ' oz each) and a lid printed for the occasion — with your own photos if you like. Three sizes: 4, 8 or 12 cups.</p>'
+      : '',
+    Type: i === 0 ? 'Gift box' : '',
+    Tags: i === 0 ? 'yummyland, gift-box' : '',
+    'Option1 Name': 'Size',
+    'Option1 Value': sz.name + ' — ' + sz.cups + ' cups',
+    'Variant SKU': sz.sku,
+    'Variant Grams': Math.round((sz.cups * YL.CUP_OZ + 12) * 28.3495),
+    'Variant Price': sz.price.toFixed(2)
+  })));
+});
 
 /* 2. finishing touches — added as their own lines, grouped to the box */
 YL.EXTRAS.forEach((e) => {

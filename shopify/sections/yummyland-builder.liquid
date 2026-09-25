@@ -19,7 +19,7 @@
       <div class="wrap hero__in">
         <div>
           <span class="eyebrow">{{ section.settings.eyebrow | default: 'The Ruby Signature Gift Box' }}</span>
-          <h1>{{ section.settings.heading | default: 'More than candy.' }}<em>{{ section.settings.heading_accent | default: 'It’s a moment.' }}</em></h1>
+          <h1>{{ section.settings.heading | default: 'A candy gift box,' }}<em>{{ section.settings.heading_accent | default: 'filled your way.' }}</em></h1>
           {%- if section.settings.subheading != blank -%}
             <p class="hero__lede">{{ section.settings.subheading }}</p>
           {%- endif -%}
@@ -44,9 +44,9 @@
   <section class="builder" id="builder">
     <div class="wrap">
       <div class="builder__head">
-        <span class="eyebrow">The Ruby Signature Gift Box · 12.75 × 6.5 × 3.75 in</span>
-        <h2>Build it <em>your way</em></h2>
-        <div class="divider"></div>
+        <span class="eyebrow">Build your box</span>
+        <h2>Your box, <em>your candy</em></h2>
+        <p>Pick a size, fill the cups, add photos to the lid — and it’s on its way.</p>
       </div>
     </div>
     <div class="bsteps-wrap"><div class="wrap" id="b-steps"></div></div>
@@ -69,7 +69,12 @@
       boxes: {{ section.settings.boxes_url | default: '/collections/gift-boxes' | json }}
     },
     goToCart: {{ section.settings.go_to_cart | json }},
-    box: {%- if box_product -%}{ "id": {{ box_product.selected_or_first_available_variant.id }}, "price": {{ box_product.selected_or_first_available_variant.price }} }{%- else -%}null{%- endif -%},
+    box: { "variants": [
+      {%- for v in box_product.variants -%}
+        { "sku": {{ v.sku | json }}, "title": {{ v.title | json }}, "id": {{ v.id }}, "price": {{ v.price }} }
+        {%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ] },
     addons: [
       {%- for p in addon_collection.products -%}
         { "handle": {{ p.handle | json }}, "sku": {{ p.variants.first.sku | json }}, "id": {{ p.variants.first.id }}, "price": {{ p.variants.first.price }} }
@@ -105,7 +110,7 @@
       "type": "product",
       "id": "box_product",
       "label": "Gift box product",
-      "info": "The 'Ruby Signature Gift Box' product (SKU YL-RUBY-SIGNATURE) from products.csv."
+      "info": "The 'Ruby Gift Box' product from products.csv — its three variants are the sizes (SKUs YL-BOX-SMALL / MEDIUM / LARGE)."
     },
     {
       "type": "collection",
@@ -117,11 +122,11 @@
     { "type": "checkbox", "id": "show_hero", "label": "Show hero above the builder", "default": true },
     { "type": "image_picker", "id": "hero_image", "label": "Hero photo" },
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The Ruby Signature Gift Box" },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "More than candy." },
-    { "type": "text", "id": "heading_accent", "label": "Heading, script line", "default": "It’s a moment." },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "A candy gift box," },
+    { "type": "text", "id": "heading_accent", "label": "Heading, script line", "default": "filled your way." },
     {
       "type": "textarea", "id": "subheading", "label": "Subheading",
-      "default": "Six sealed cups of Albanese gummies and chocolate, a lid printed for the occasion and, if you like, two of your own photos inside."
+      "default": "Albanese gummies, chocolate and classics in a gift-ready box — 4, 8 or 12 cups — with your own photos inside the lid."
     },
     { "type": "text", "id": "cta_label", "label": "Primary button", "default": "Build your gift box" },
     { "type": "text", "id": "secondary_label", "label": "Secondary button", "default": "Shop collections" },

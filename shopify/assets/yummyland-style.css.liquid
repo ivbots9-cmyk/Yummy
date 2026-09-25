@@ -261,17 +261,43 @@ body.modal-open { overflow: hidden; }
 .yummyland .bsteps__btn.is-done .bsteps__n { background: #2fb57c; border-color: #2fb57c; color: #fff; }
 .yummyland .builder__grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 48px; align-items: start; }
 .yummyland .bprev { position: sticky; top: 140px; }
+.yummyland .strip { display: none; }
+.yummyland .bprev__body { display: block; }
+.yummyland .bsec { padding: 8px 0 40px; margin-bottom: 24px; border-bottom: 1px solid var(--line); scroll-margin-top: 150px; }
+.yummyland .bsec:last-child { border-bottom: 0; }
+.yummyland .bsec__n { display: inline-block; font: 800 13px/1.2 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--pink); }
+.yummyland .sizes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.yummyland .sizecard { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 22px 14px 18px; text-align: center;
+  background: #fff; border: 2px solid var(--line); border-radius: var(--r-lg); transition: border-color .15s, box-shadow .15s, transform .15s; }
+.yummyland .sizecard:hover { border-color: var(--pink); transform: translateY(-2px); }
+.yummyland .sizecard.is-on { border-color: var(--ruby); box-shadow: 0 0 0 3px rgba(160, 21, 62, .12); background: linear-gradient(180deg, #fff, var(--blush)); }
+.yummyland .sizecard--pop { border-color: rgba(255, 79, 139, .5); }
+.yummyland .sizecard__badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 4px 12px; border-radius: 999px; background: var(--pink); color: #fff; font-size: 12.5px; font-weight: 800; }
+.yummyland .sizecard__tray { display: grid; gap: 3px; padding: 6px; border-radius: 8px; background: var(--ruby); margin-bottom: 8px; }
+.yummyland .sizecard__tray i { display: block; width: 14px; height: 11px; border-radius: 3px; background: rgba(255, 255, 255, .85); }
+.yummyland .sizecard > b { font: 800 19px/1.15 var(--serif); }
+.yummyland .sizecard__cups { font-weight: 800; color: var(--ruby); }
+.yummyland .sizecard__serves { font-size: 13.5px; color: var(--ink-50); }
+.yummyland .sizecard__price { font: 800 26px/1.1 var(--serif); color: var(--ink); margin-top: 6px; }
+.yummyland .sizecard > small { font-size: 13px; color: var(--ink-50); line-height: 1.4; margin-top: 2px; }
+.yummyland .sizecard__radio { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line-gold); background: #fff; }
+.yummyland .sizecard.is-on .sizecard__radio { border-color: var(--ruby); background: var(--ruby); box-shadow: inset 0 0 0 5px #fff; }
+.yummyland .sizes + .muted { margin-top: 14px; }
+.yummyland .mini { display: grid; gap: 3px; flex: 0 0 auto; }
+.yummyland .mini__cup { width: 22px; height: 16px; padding: 0; border: 0; border-radius: 3px; overflow: hidden; background: var(--paper); display: grid; place-items: center; font: 800 9px/1 var(--sans); color: var(--ruby); }
+.yummyland .mini__cup img, .yummyland .mini__cup svg { width: 100%; height: 100%; object-fit: cover; }
+.yummyland .mini__cup.is-empty { border: 1px dashed var(--line-gold); background: #fff; }
+.yummyland .mini__cup.is-selected { box-shadow: 0 0 0 2px var(--gold); }
 .yummyland .bprev__bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 18px; padding: 16px 20px; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); }
 .yummyland .bprev__label { display: block; font: 800 19px/1.1 var(--serif); color: var(--ruby); }
 .yummyland .bprev__meta { display: block; font-size: 12.5px; color: var(--ink-50); letter-spacing: .04em; margin-top: 3px; }
 .yummyland .bprev__price { font: 800 30px/1 var(--serif); color: var(--ruby); }
 .yummyland .bprev__sel { margin-top: 12px; padding: 12px 16px; border-radius: var(--r); background: rgba(201, 161, 90, .14); border: 1px solid var(--line-gold); font-size: 14px; color: var(--ruby-deep); }
-.yummyland .bstep { min-height: 360px; }
 .yummyland .bstep__title { font-size: clamp(28px, 3vw, 38px); margin: 6px 0 8px; color: var(--ink); }
 .yummyland .bstep__lede { color: var(--ink-50); margin-bottom: 28px; max-width: 560px; }
 .yummyland .sub { font: 800 18px/1.3 var(--serif); color: var(--ink); margin: 28px 0 12px; }
 .yummyland .sub .muted { font: 600 14px var(--sans); }
-.yummyland .bnav { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--line); }
+.yummyland .bnav { display: flex; justify-content: flex-end; margin-top: 28px; }
 .yummyland .occ-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .yummyland .occ {
   display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px; text-align: center;
@@ -362,7 +388,6 @@ body.modal-open { overflow: hidden; }
 .yummyland .collage__cell { overflow: hidden; }
 .yummyland .collage__cell img, .yummyland .collage__cell svg { width: 100%; height: 100%; object-fit: cover; }
 .yummyland .collage__more { position: absolute; right: 8px; bottom: 8px; padding: 3px 8px; border-radius: 999px; background: var(--ruby); color: var(--gold-2); font-size: 12px; }
-.yummyland .tray-mobile { display: none; }
 .yummyland .modal { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: rgba(42, 20, 24, .55); backdrop-filter: blur(4px); animation: fade .2s; }
 @keyframes fade { from { opacity: 0; } }
 .yummyland .modal__box { position: relative; width: min(640px, 100%); max-height: 88vh; overflow: auto; background: var(--cream); border-radius: var(--r-lg); padding: 28px; box-shadow: var(--shadow-lg); }
@@ -459,6 +484,7 @@ body.modal-open { overflow: hidden; }
 .yummyland .col-card__foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: auto; padding-top: 18px; flex-wrap: wrap; }
 .yummyland .col-card__btns { display: flex; gap: 8px; }
 .yummyland .price { font: 800 26px/1 var(--serif); color: var(--ruby); }
+.yummyland .price small { font: 700 13px/1 var(--sans); color: var(--ink-50); }
 .yummyland .occs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .yummyland .occ-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 26px 18px 24px; text-decoration: none; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); transition: all .25s var(--ease); }
 .yummyland .occ-card:hover { border-color: var(--pink); transform: translateY(-3px); box-shadow: var(--shadow); }
@@ -596,8 +622,27 @@ body.modal-open { overflow: hidden; }
 .yummyland .trust { grid-template-columns: 1fr 1fr; }
 .yummyland .trust__item:nth-child(3) { border-left: 0; }
 .yummyland .trust__item:nth-child(n+3) { border-top: 1px solid var(--line); }
-.yummyland .builder__grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
-.yummyland .bprev { position: static; }
+.yummyland .builder__grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.yummyland .bprev { position: sticky; top: 126px; z-index: 25; margin: 0 -16px; background: rgba(255, 241, 238, .97); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.yummyland .strip { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 16px; cursor: pointer; }
+.yummyland .strip__btn { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; padding: 0; border: 0; background: none; text-align: left; }
+.yummyland .strip__txt { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.yummyland .strip__txt b { font-size: 15px; }
+.yummyland .strip__txt small { font-size: 12px; color: var(--ink-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.yummyland .strip__price { margin-left: auto; font: 800 20px/1 var(--serif); color: var(--ruby); }
+.yummyland .strip__chev .ico { transition: transform .2s; }
+.yummyland .strip__btn[aria-expanded="true"] .strip__chev .ico { transform: rotate(180deg); }
+.yummyland .bprev__body { display: none; padding: 4px 16px 14px; max-height: calc(100vh - 200px); overflow: auto; }
+.yummyland .bprev__body.is-open { display: block; }
+.yummyland .bsec { scroll-margin-top: 200px; }
+.yummyland .sizes { grid-template-columns: 1fr; gap: 14px; }
+.yummyland .sizecard { flex-direction: row; flex-wrap: wrap; align-items: center; text-align: left; padding: 16px 44px 14px 14px; gap: 2px 12px; }
+.yummyland .sizecard__tray { margin: 0; }
+.yummyland .sizecard__tray i { width: 10px; height: 8px; }
+.yummyland .sizecard > b { flex: 1 1 auto; }
+.yummyland .sizecard__price { width: 100%; order: 5; margin-top: 4px; }
+.yummyland .sizecard > small { display: none; }
+.yummyland .sizecard__badge { left: auto; right: 44px; top: -11px; transform: none; }
 .yummyland .showcase { grid-template-columns: 1fr; gap: 36px; }
 .yummyland .reviews { grid-template-columns: 1fr; }
 .yummyland .banner { grid-template-columns: 1fr; padding: 36px 28px; }
@@ -628,7 +673,7 @@ body.modal-open { overflow: hidden; }
 .yummyland .how__item + .how__item { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); }
 .yummyland .how__item { padding: 22px 0; }
 .yummyland .builder { padding: 40px 0 64px; }
-.yummyland .bsteps-wrap { top: 62px; margin: 0 0 24px; }
+.yummyland .bsteps-wrap { top: 62px; margin: 0 0 12px; }
 .yummyland .bsteps-wrap .wrap { padding: 0 4px; }
 .yummyland .bsteps__btn { flex-direction: column; gap: 4px; padding: 10px 2px; font-size: 12.5px; }
 .yummyland .bprev__bar { padding: 12px 14px; }
@@ -642,12 +687,6 @@ body.modal-open { overflow: hidden; }
 .yummyland .candy__body b { font-size: 16px; }
 .yummyland .candy__body p { display: none; }
 .yummyland .candy__body .btn { width: 100%; padding: 0 8px; margin-top: 6px; }
-.yummyland .tray-mobile { display: block; position: sticky; top: 124px; z-index: 20; margin: 0 -16px 8px; padding: 10px 16px; background: rgba(255, 241, 238, .96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
-.yummyland .tray { container-type: inline-size; gap: 6px; padding: 8px; border-radius: 8px; background: var(--ruby); }
-.yummyland .tray .cup { aspect-ratio: 5 / 3; border-radius: 6px; border-width: 1px; }
-.yummyland .tray .cup__fill { inset: 2px; border-radius: 4px; }
-.yummyland .tray .cup__plus { font: 500 14px/1 var(--serif); }
-.yummyland .tray .cup.is-selected { box-shadow: 0 0 0 2px var(--gold-2); }
 .yummyland .choice, .yummyland .uploads, .yummyland .fields--2 { grid-template-columns: 1fr; }
 .yummyland .uploads { grid-template-columns: 1fr 1fr; }
 .yummyland .touch { grid-template-columns: 96px 1fr; }

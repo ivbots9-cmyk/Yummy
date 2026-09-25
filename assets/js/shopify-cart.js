@@ -6,7 +6,7 @@
    Expects window.YL_SHOPIFY, rendered by the Liquid section:
    {
      routes:  { cart: '/cart', cart_add: '/cart/add.js', builder: '/pages/build-your-box' },
-     box:     { id: 44444444, price: 5499 },            // the gift box variant
+     box:     { variants: [{ sku: 'YL-BOX-MEDIUM', id: 444, price: 5499 }, …] },  // one variant per size
      addons:  [{ sku: 'YL-ADD-PHOTOS', id: 555 }, …],   // add-ons + refill pouches
      goToCart: true
    }
@@ -42,11 +42,20 @@ window.YL = window.YL || {};
   });
   function variantFor(sku) { return BY_SKU[String(sku || '').toUpperCase()] || null; }
 
+  /* the box product's variants are the three sizes, matched by SKU
+     (YL-BOX-SMALL / MEDIUM / LARGE) so titles can say anything */
+  var BOX_BY_SKU = {};
+  ((CFG.box && CFG.box.variants) || []).forEach(function (v) {
+    if (v.sku) BOX_BY_SKU[String(v.sku).toUpperCase()] = v.id;
+  });
+  function boxVariant(box) { return BOX_BY_SKU[YL.boxSize(box).sku.toUpperCase()] || null; }
+
   /* human-readable order details — shown on the cart, the checkout and
      the packing slip, and the packing team works from them */
   function properties(box) {
     var lid = YL.boxLid(box);
     var props = {
+      'Size': YL.boxSize(box).name + ' — ' + YL.boxSize(box).cups + ' cups',
       'Occasion': lid.occasion.name,
       'Lid headline': lid.headline,
       'Photo captions': lid.captions[0] + ' / ' + lid.captions[1],
@@ -88,25 +97,26 @@ window.YL = window.YL || {};
      photos (file properties only work that way); add-ons follow as one
      JSON request, grouped to the box by a hidden property. */
   function addBox(box, qty) {
-    if (!CFG.box || !CFG.box.id) return Promise.reject(new Error('No gift box variant configured.'));
+    var variant = boxVariant(box);
+    if (!variant) return Promise.reject(new Error('No Shopify variant for size "' + box.size + '" — check the box product SKUs.'));
     var group = 'box-' + Date.now().toString(36);
     var props = properties(box);
     props._yl_group = group;
     props._yl_payload = JSON.stringify({
-      occasion: box.occasion, lid: box.lid, cups: box.cups, captions: box.captions, extras: box.extras, card: box.card
+      size: box.size, occasion: box.occasion, lid: box.lid, cups: box.cups, captions: box.captions, extras: box.extras, card: box.card
     });
 
     var first;
     if (YL.boxLid(box).own) {
       var fd = new FormData();
-      fd.append('id', CFG.box.id);
+      fd.append('id', variant);
       fd.append('quantity', qty);
       Object.keys(props).forEach(function (k) { fd.append('properties[' + k + ']', props[k]); });
       fd.append('properties[Photo 1]', dataUrlToBlob(box.photos[0].src), 'photo-1.jpg');
       fd.append('properties[Photo 2]', dataUrlToBlob(box.photos[1].src), 'photo-2.jpg');
       first = post(fd, true);
     } else {
-      first = post(JSON.stringify({ items: [{ id: CFG.box.id, quantity: qty, properties: props }] }));
+      first = post(JSON.stringify({ items: [{ id: variant, quantity: qty, properties: props }] }));
     }
 
     var addons = [], missing = [];

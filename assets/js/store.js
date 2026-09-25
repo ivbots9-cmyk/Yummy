@@ -24,7 +24,8 @@ window.YL = window.YL || {};
 
   /* ---------- box model ----------
      occasion   id from YL.OCCASIONS (sets the lid design)
-     cups       exactly YL.BOX.cups candy ids, null for an empty cup,
+     size       id from YL.SIZES — decides how many cups there are
+     cups       exactly size.cups candy ids, null for an empty cup,
                 in reading order: top row left→right, then bottom row
      collection the collection it started from, if any (analytics only)
      lid        how the lid is dressed, asked in the builder:
@@ -36,21 +37,22 @@ window.YL = window.YL || {};
      captions   the two lines under the polaroids (free to edit)
      extras     ids from YL.EXTRAS
      card       greeting card { to, from, message } */
-  YL.emptyBox = function () {
+  YL.emptyBox = function (size) {
+    var sz = YL.getSize(size || YL.DEFAULT_SIZE);
     var cups = [];
-    for (var i = 0; i < YL.BOX.cups; i++) cups.push(null);
+    for (var i = 0; i < sz.cups; i++) cups.push(null);
     return {
-      occasion: null, cups: cups, collection: null, lid: null,
+      size: sz.id, occasion: null, cups: cups, collection: null, lid: null,
       photos: [null, null], captions: null,
       extras: [], card: { to: '', from: '', message: '' }
     };
   };
 
   YL.normalizeBox = function (box) {
-    var b = YL.emptyBox();
+    var b = YL.emptyBox(box && box.size);
     if (!box) return b;
     if (box.occasion && YL.getOccasion(box.occasion)) b.occasion = box.occasion;
-    (box.cups || []).slice(0, YL.BOX.cups).forEach(function (id, i) {
+    (box.cups || []).slice(0, b.cups.length).forEach(function (id, i) {
       b.cups[i] = id && YL.getCandy(id) ? id : null;
     });
     b.collection = box.collection || null;
@@ -69,17 +71,40 @@ window.YL = window.YL || {};
     return b;
   };
 
-  YL.boxFromCollection = function (col, occasion, lid) {
-    var b = YL.emptyBox();
+  YL.boxFromCollection = function (col, occasion, lid, size) {
+    var b = YL.emptyBox(size);
     b.lid = lid || null;
-    b.cups = col.cups.slice(0, YL.BOX.cups);
+    b.cups = YL.collectionCups(col, b.size);
     b.collection = col.id;
     b.occasion = occasion || (col.occasions && col.occasions[0]) || null;
     return b;
   };
 
+  /* a collection's cups for a size: the first N of its twelve, padded
+     by repeating from the top if a collection is ever shorter */
+  YL.collectionCups = function (col, size) {
+    var n = YL.getSize(size).cups, out = [];
+    for (var i = 0; i < n; i++) out.push(col.cups[i % col.cups.length]);
+    return out;
+  };
+
+  /* Change the size and keep what fits: a box started from a collection
+     re-slices the collection, a hand-filled one keeps its first cups. */
+  YL.resizeBox = function (box, size) {
+    var sz = YL.getSize(size);
+    var col = box.collection && YL.getCollection(box.collection);
+    var untouched = col && YL.collectionCups(col, box.size).join() === box.cups.join();
+    box.size = sz.id;
+    if (untouched) { box.cups = YL.collectionCups(col, sz.id); return box; }
+    var cups = box.cups.slice(0, sz.cups);
+    while (cups.length < sz.cups) cups.push(null);
+    box.cups = cups;
+    return box;
+  };
+
+  YL.boxSize = function (box) { return YL.getSize(box.size); };
   YL.boxFilled = function (box) { return box.cups.filter(Boolean).length; };
-  YL.boxComplete = function (box) { return YL.boxFilled(box) === YL.BOX.cups; };
+  YL.boxComplete = function (box) { return YL.boxFilled(box) === YL.boxSize(box).cups; };
   YL.hasOwnPhotos = function (box) { return !!(box.photos && box.photos[0] && box.photos[1]); };
 
   /* the lid text for a box: occasion defaults, customer captions on top */
@@ -109,15 +134,16 @@ window.YL = window.YL || {};
       var e = YL.getExtra(id);
       if (e) extras += e.price;
     });
-    return { base: YL.BOX.price, extras: extras, total: YL.BOX.price + extras };
+    var base = YL.boxSize(box).price;
+    return { base: base, extras: extras, total: base + extras };
   };
 
   YL.boxLabel = function (box) {
     var col = box.collection && YL.getCollection(box.collection);
-    var custom = col && col.cups.join() !== box.cups.join();
+    var custom = col && YL.collectionCups(col, box.size).join() !== box.cups.join();
     var occ = YL.getOccasion(box.occasion);
-    var name = col && !custom ? col.name : 'Custom Six';
-    return name + (occ ? ' · ' + occ.name : '');
+    var name = col && !custom ? col.name : 'Your Own Mix';
+    return name + ' · ' + YL.boxSize(box).short + (occ ? ' · ' + occ.name : '');
   };
 
   /* candy recipe for the drawn art of a whole box */

@@ -2,11 +2,11 @@
    Yummyland — catalogue data
    Prices in USD.
 
-   One product, done properly: the Ruby Signature Gift Box. A rigid
-   burgundy mailer, 12.75 × 6.5 × 3.75 in, with six clear cups in a
-   3 × 2 grid and a printed lid that carries two photos. The customer
-   picks an occasion, fills the six cups, chooses whose photos go on
-   the lid and adds finishing touches. That is the whole product.
+   One product in three sizes: the Ruby Gift Box. A rigid burgundy box
+   with a tray of 4, 8 or 12 sealed clear cups and a printed lid that
+   carries two photos. The customer picks a size, fills the cups, chooses
+   whose photos go on the lid and adds finishing touches. That is the
+   whole product.
 
    Everything a customer can change lives in this file: the box, the
    candy range, the occasions and their lid designs, the ready-made
@@ -18,34 +18,39 @@ window.YL = window.YL || {};
   'use strict';
 
   /* ---------------------------------------------------------------
-     THE BOX
+     THE BOXES
      ---------------------------------------------------------------
-     A single size on purpose. The dieline, the cup tray and the lid
-     print are all built around it, so there is no "small" or "party"
-     to price, pack or photograph. Premium comes from the box, not from
-     a weight table.
+     Three sizes of the same burgundy gift box, all with the printed lid
+     and the two polaroids. The cup tray is what changes: 4, 8 or 12
+     sealed cups. Medium is the one we lead with.
 
-     Economics (conservative, candy at bulk shelf price ~$11/lb):
-        6 cups × ~6 oz ≈ 2 lb 4 oz of candy        ≈ $25
-        rigid mailer + cup tray + lid print + card   ≈ $7–9
-        price                                         $54.99
-     Paid add-ons are almost pure margin: printing two photos costs
-     cents, a ribbon and tag under a dollar.
+     Economics (conservative, candy at bulk shelf price ~$11/lb, cups
+     ~6 oz): candy ≈ $4/cup, box + tray + lid print + card ≈ $6–10.
+        small   4 cups  ≈ $16 candy + $6   →  $32.99
+        medium  8 cups  ≈ $33 candy + $8   →  $54.99
+        large  12 cups  ≈ $50 candy + $10  →  $79.99
+     Paid add-ons are almost pure margin.
 
-     `cupOz` is the working fill weight for one cup — change it here
-     if the tray you order holds more or less; every label on the site
-     reads from it.
+     `dims` are working sizes for the listing — confirm against the
+     boxes you order. `cupOz` is the fill weight of one cup.
      --------------------------------------------------------------- */
+  YL.SIZES = [
+    { id: 'small', name: 'The Little Box', short: 'Little', cups: 4, cols: 2, price: 32.99, serves: 'Serves 1–2',
+      dims: '7 × 7 × 3.75 in', sku: 'YL-BOX-SMALL', blurb: 'Four favourites. A sweet hello.' },
+    { id: 'medium', name: 'The Signature Box', short: 'Signature', cups: 8, cols: 4, price: 54.99, serves: 'Serves 3–5',
+      dims: '12.75 × 6.5 × 3.75 in', sku: 'YL-BOX-MEDIUM', blurb: 'Eight cups — the box in all our photos.', popular: true },
+    { id: 'large', name: 'The Grand Box', short: 'Grand', cups: 12, cols: 4, price: 79.99, serves: 'Serves 6–10',
+      dims: '12.75 × 9.5 × 3.75 in', sku: 'YL-BOX-LARGE', blurb: 'Twelve cups for a table, a team or a big thank-you.' }
+  ];
+  YL.CUP_OZ = 6;
+  YL.DEFAULT_SIZE = 'medium';
+  YL.getSize = function (id) {
+    return YL.SIZES.filter(function (s) { return s.id === id; })[0] || YL.SIZES[1];
+  };
+
+  /* the family name, shared by every size */
   YL.BOX = {
-    id: 'ruby-signature',
-    name: 'Ruby Signature Gift Box',
-    short: 'Signature Box',
-    size: '12.75 × 6.5 × 3.75 in',
-    cups: 6,
-    cols: 3,
-    cupOz: 6,
-    price: 54.99,
-    sku: 'YL-RUBY-SIGNATURE',
+    name: 'Ruby Gift Box',
     photo: 'assets/img/box-open.webp',
     closed: 'assets/img/box-closed.webp'
   };
@@ -430,7 +435,7 @@ window.YL = window.YL || {};
       id: 'birthday', name: 'Birthday', icon: 'cake',
       headline: 'Make a Sweet Wish', side: 'Another year sweeter.',
       captions: ['Birthday Magic', 'Make a Wish'], tint: ['#f6c1cf', '#e57f9c'],
-      blurb: 'Candles out, lid open, six cups of favourites.', collection: 'rainbow-row'
+      blurb: 'Candles out, lid open, cups full of favourites.', collection: 'rainbow-row'
     },
     {
       id: 'wedding', name: 'Wedding', icon: 'rings',
@@ -473,73 +478,73 @@ window.YL = window.YL || {};
   /* ---------------------------------------------------------------
      COLLECTIONS — ready-made boxes
      ---------------------------------------------------------------
-     A handful, not a hundred. Each one is six cup ids in reading order
-     (top row left→right, then bottom row) — the order matters because
-     colour stories are laid out by position. Every collection is the
-     same box at the same price; what the customer is buying is taste.
+     A handful, not a hundred. Each one is twelve cup ids in order of
+     importance: the first four make the Little Box, the first eight the
+     Signature Box, all twelve the Grand Box. Order also lays the colour
+     stories out on the tray, row by row.
 
      `photo` is the product shot for the listing — to be generated. The
      card falls back to the live drawn box until the file exists.
      --------------------------------------------------------------- */
   YL.COLLECTIONS = [
     {
-      id: 'signature', name: 'The Signature Six', tag: 'Bestseller', family: 'gummies',
-      desc: 'Our Albanese greatest hits: bears, peach rings, worms, sharks, butterflies and sour neon worms.',
-      cups: ['gummy-bears-12', 'peach-rings', 'gummy-worms', 'gummy-sharks', 'gummy-butterflies', 'sour-neon-worms'],
+      id: 'signature', name: 'The Signature Mix', tag: 'Bestseller', family: 'gummies',
+      desc: 'Our Albanese greatest hits: bears, peach rings, worms, sharks and more.',
+      cups: ['gummy-bears-12', 'peach-rings', 'gummy-worms', 'gummy-sharks', 'gummy-butterflies', 'sour-neon-worms', 'watermelon-slices', 'gummy-berries', 'bear-cubs', 'blue-raspberry-rings', 'gummy-frogs', 'swedish-fish'],
       occasions: ['just-because', 'thank-you', 'birthday']
     },
     {
       id: 'bear-bar', name: 'The Bear Bar', tag: 'All gummies', family: 'gummies',
-      desc: 'Six cups, nothing but Albanese bears — assorted, cubs, natural, sour and two single colours.',
-      cups: ['gummy-bears-12', 'bear-cubs', 'bear-cherry', 'bear-natural', 'sour-gummy-bears', 'bear-blue-raspberry'],
+      desc: 'Nothing but Albanese bears — assorted, cubs, sour, natural and single colours.',
+      cups: ['gummy-bears-12', 'bear-cubs', 'bear-cherry', 'sour-gummy-bears', 'bear-natural', 'bear-blue-raspberry', 'bear-strawberry', 'bear-pineapple', 'bear-green-apple', 'bear-grape', 'bear-orange', 'bear-banana'],
       occasions: ['just-because', 'best-friend']
     },
     {
       id: 'rainbow-row', name: 'Rainbow Row', tag: 'Colour story', family: 'colour',
       desc: 'One colour per cup, cherry to grape. It looks like a paint box when the lid comes up.',
-      cups: ['bear-cherry', 'bear-orange', 'bear-pineapple', 'bear-green-apple', 'bear-blue-raspberry', 'bear-grape'],
+      cups: ['bear-cherry', 'bear-pineapple', 'bear-green-apple', 'bear-blue-raspberry', 'bear-orange', 'bear-grape', 'bear-watermelon', 'bear-mango', 'bear-strawberry', 'gummy-sharks', 'bear-banana', 'gummy-bears-12'],
       occasions: ['birthday', 'congrats']
     },
     {
       id: 'ruby-sapphire', name: 'Ruby & Sapphire', tag: 'Colour story', family: 'colour',
-      desc: 'Red on top, blue below — cherry, strawberry and Swedish Fish over sharks, blue rings and blue bears.',
-      cups: ['bear-cherry', 'bear-strawberry', 'swedish-fish', 'gummy-sharks', 'blue-raspberry-rings', 'bear-blue-raspberry'],
+      desc: 'Red and blue, cup by cup — cherry bears and Swedish Fish beside sharks and blue bears.',
+      cups: ['bear-cherry', 'swedish-fish', 'gummy-sharks', 'bear-blue-raspberry', 'bear-strawberry', 'watermelon-slices', 'blue-raspberry-rings', 'jolly-blue-raspberry', 'jolly-cherry', 'gummy-berries', 'bear-watermelon', 'gummy-butterflies'],
       occasions: ['best-friend', 'birthday', 'congrats']
     },
     {
       id: 'ruby-romance', name: 'Ruby Romance', tag: 'Reds & pinks', family: 'colour',
       desc: 'Every shade of red and pink: cherry, strawberry, watermelon, grapefruit, berries and watermelon slices.',
-      cups: ['bear-cherry', 'bear-watermelon', 'gummy-berries', 'bear-strawberry', 'bear-grapefruit', 'watermelon-slices'],
+      cups: ['bear-cherry', 'bear-strawberry', 'bear-watermelon', 'gummy-berries', 'bear-grapefruit', 'watermelon-slices', 'swedish-fish', 'jolly-cherry', 'jolly-watermelon', 'cinnamon-discs', 'gummy-butterflies', 'peach-rings'],
       occasions: ['love', 'wedding']
     },
     {
       id: 'pearl-blush', name: 'Pearl & Blush', tag: 'Pastels', family: 'colour',
       desc: 'Pearl-white and blush-pink bears, butterflies, natural pastels and peach rings. Made for showers and weddings.',
-      cups: ['bear-banana', 'bear-grapefruit', 'gummy-butterflies', 'bear-natural', 'worm-natural-mini', 'peach-rings'],
+      cups: ['bear-banana', 'bear-grapefruit', 'gummy-butterflies', 'peach-rings', 'bear-natural', 'worm-natural-mini', 'bear-watermelon', 'bear-pineapple', 'bear-strawberry', 'choc-nonpareils', 'bear-mango', 'gummy-bears-12'],
       occasions: ['wedding', 'baby-shower']
     },
     {
       id: 'sour-edit', name: 'The Sour Edit', tag: 'Sour', family: 'gummies',
-      desc: 'Six cups of pucker: sour bears, neon worms, mini neon worms, sour fruit worms, Sour Patch and lemon drops.',
-      cups: ['sour-gummy-bears', 'sour-neon-worms', 'worm-sour-mini-neon', 'worm-large-sour', 'sour-patch-kids', 'lemon-drops'],
+      desc: 'All pucker: sour bears, neon worms, Sour Patch, lemon drops and more.',
+      cups: ['sour-gummy-bears', 'sour-neon-worms', 'sour-patch-kids', 'worm-large-sour', 'worm-sour-mini-neon', 'lemon-drops', 'blue-raspberry-rings', 'jolly-green-apple', 'jolly-blue-raspberry', 'gummy-sharks', 'bear-green-apple', 'peach-rings'],
       occasions: ['best-friend', 'birthday']
     },
     {
       id: 'chocolate-lounge', name: 'Chocolate Lounge', tag: 'Chocolate', family: 'chocolate',
-      desc: 'Albanese milk chocolate six ways — malt balls, nonpareils, pretzels, choco bears, peanuts and rainbow bites.',
-      cups: ['choc-malt-balls', 'choc-nonpareils', 'choc-pretzels', 'choc-gummi-bears', 'choc-peanuts', 'rainbow-bites'],
+      desc: 'Albanese milk chocolate: malt balls, nonpareils, pretzels, choco bears, peanuts and rainbow bites.',
+      cups: ['choc-malt-balls', 'choc-nonpareils', 'choc-pretzels', 'choc-gummi-bears', 'choc-peanuts', 'rainbow-bites', 'root-beer-barrels', 'butterscotch', 'choc-malt-balls', 'choc-pretzels', 'choc-nonpareils', 'choc-gummi-bears'],
       occasions: ['thank-you', 'love'], nuts: true
     },
     {
       id: 'gold-ruby', name: 'Gold & Ruby', tag: 'Best of both', family: 'mixed',
       desc: 'Half gummies, half chocolate: bears, peach rings and berries beside malt balls, nonpareils and choco bears.',
-      cups: ['gummy-bears-12', 'peach-rings', 'gummy-berries', 'choc-malt-balls', 'choc-nonpareils', 'choc-gummi-bears'],
+      cups: ['gummy-bears-12', 'choc-malt-balls', 'peach-rings', 'choc-nonpareils', 'gummy-berries', 'choc-gummi-bears', 'gummy-sharks', 'choc-pretzels', 'sour-neon-worms', 'rainbow-bites', 'watermelon-slices', 'choc-peanuts'],
       occasions: ['congrats', 'thank-you', 'just-because']
     },
     {
       id: 'candy-counter', name: 'The Candy Counter', tag: 'Hard candy', family: 'hard',
       desc: 'Old-fashioned and individually wrapped: Jolly Rancher, starlight mints, butterscotch, root beer barrels, cinnamon and lemon drops.',
-      cups: ['jolly-assorted', 'starlight-mints', 'butterscotch', 'root-beer-barrels', 'cinnamon-discs', 'lemon-drops'],
+      cups: ['jolly-assorted', 'starlight-mints', 'butterscotch', 'root-beer-barrels', 'cinnamon-discs', 'lemon-drops', 'jolly-cherry', 'jolly-green-apple', 'jolly-watermelon', 'jolly-blue-raspberry', 'jolly-grape', 'peach-rings'],
       occasions: ['thank-you', 'just-because']
     }
   ];
@@ -576,7 +581,7 @@ window.YL = window.YL || {};
 
   /* always in the box, never charged */
   YL.INCLUDED = [
-    'Six sealed clear cups, labelled',
+    'Sealed clear cups, each labelled',
     '“You found the sweet spot” insert card',
     'Lid printed for your occasion',
     'Gift-ready — no prices inside'
@@ -618,11 +623,11 @@ window.YL = window.YL || {};
     { icon: 'gift', title: 'Premium quality', text: 'Albanese candy, sealed cups' },
     { icon: 'leaf', title: 'Freshness sealed', text: 'Packed the day it ships' },
     { icon: 'heart', title: 'For any occasion', text: 'Eight lid designs' },
-    { icon: 'friends', title: 'Made to share', text: '2+ lb in six cups' }
+    { icon: 'friends', title: 'Made to share', text: '4, 8 or 12 cups' }
   ];
 
   YL.HOW = [
-    { title: 'Pick your candy', text: 'Take a ready box or fill the six cups yourself — by type or by colour.' },
+    { title: 'Pick a size and your candy', text: '4, 8 or 12 cups. Take a ready box or fill every cup yourself.' },
     { title: 'Add a personal touch', text: 'Choose the occasion, and our photos or yours inside the lid. Ribbon and card if you like.' },
     { title: 'We pack and ship it', text: 'Sealed, labelled and boxed by hand within 1–2 days. Shipping is free.' }
   ];
@@ -636,14 +641,14 @@ window.YL = window.YL || {};
   ];
 
   YL.FAQ = [
-    { q: 'How big is the box and how much candy is inside?',
-      a: 'The Ruby Signature Gift Box is 12.75 × 6.5 × 3.75 in. It holds six sealed clear cups of about 6 oz each — a little over 2 lb of candy in total.' },
+    { q: 'How big are the boxes and how much candy is inside?',
+      a: 'Three sizes: the Little Box with 4 cups (about 1½ lb of candy), the Signature Box with 8 cups (about 3 lb) and the Grand Box with 12 cups (about 4½ lb). Every cup is sealed and holds about 6 oz.' },
     { q: 'What happens if I do not upload my own photos?',
       a: 'The lid is printed with two photos we chose for your occasion, so the box always looks finished. Uploading your own two photos is $5.99 and we print them as polaroids.' },
     { q: 'What photos work best?',
       a: 'Bright, in-focus phone photos with faces near the middle. We crop them square-ish, so leave a little room around the edges.' },
-    { q: 'Can I add more candy or a bigger cup?',
-      a: 'No — the cup tray is made for this box, and overfilling stops the lid closing flat. Six cups is the design.' },
+    { q: 'Can I add an extra cup or fill a cup fuller?',
+      a: 'No — each box has its own tray, and overfilling stops the lid closing flat. If you want more candy, size up: 4, 8 or 12 cups.' },
     { q: 'Is there a price inside the box?',
       a: 'Never. The packing slip is price-free and goes on the outside, so you can ship straight to the person you are gifting.' },
     { q: 'Do you have nut-free options?',
